@@ -16,10 +16,17 @@ from app.llm.gemini import GeminiProvider
 from app.llm.groq import GroqProvider
 
 KEY = "sk-test-SECRET-KEY"
-GROQ_OK = {"choices": [{"message": {"content": '{"a": 1}'}}], "usage": {"total_tokens": 321}}
+GROQ_OK = {
+    "choices": [{"message": {"content": '{"a": 1}'}}],
+    "usage": {
+        "total_tokens": 321,
+        "prompt_tokens": 300,
+        "completion_tokens": 21,
+    },
+}
 GEMINI_OK = {
     "candidates": [{"content": {"parts": [{"text": '{"a": '}, {"text": "1}"}]}}],
-    "usageMetadata": {"totalTokenCount": 77},
+    "usageMetadata": {"totalTokenCount": 77, "promptTokenCount": 70, "candidatesTokenCount": 7},
 }
 
 
@@ -46,6 +53,7 @@ def test_groq_gpt_oss_gets_reasoning_params_and_json_mode():
     reply = groq_call(client(handler))
     body = json.loads(seen[0].content)
     assert reply.text == '{"a": 1}' and reply.tokens == 321
+    assert (reply.prompt_tokens, reply.completion_tokens) == (300, 21)
     assert body["reasoning_effort"] == "low" and body["include_reasoning"] is False
     assert body["temperature"] == 0 and body["response_format"] == {"type": "json_object"}
     assert body["messages"][0] == {"role": "system", "content": "sys"}
@@ -110,6 +118,7 @@ def test_gemini_sends_the_key_in_a_header_never_in_the_url():
     request = seen[0]
     body = json.loads(request.content)
     assert (reply.text, reply.tokens) == ('{"a": 1}', 77)
+    assert (reply.prompt_tokens, reply.completion_tokens) == (70, 7)
     assert request.headers["x-goog-api-key"] == KEY and KEY not in str(request.url)
     assert request.url.path.endswith("/models/gemini-3.8-flash:generateContent")
     assert body["systemInstruction"]["parts"][0]["text"] == "sys"

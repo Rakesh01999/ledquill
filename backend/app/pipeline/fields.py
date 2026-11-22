@@ -65,6 +65,10 @@ def extract_fields(
             raw.update(
                 llm=outcome.result.model_dump(mode="json"),  # exactly what the model said
                 llm_status="cached" if outcome.cached else "ok",
+                llm_tokens={
+                    "prompt": outcome.prompt_tokens,
+                    "completion": outcome.completion_tokens,
+                },
                 nulled_by_grounding=report.nulled,
             )
     raw["model"] = model

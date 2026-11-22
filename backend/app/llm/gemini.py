@@ -40,4 +40,9 @@ class GeminiProvider:
         except (KeyError, IndexError, TypeError, AttributeError) as exc:
             raise ServerError("The provider returned an unexpected body.") from exc
         usage = data.get("usageMetadata") or {}
-        return Reply(text=text, tokens=int(usage.get("totalTokenCount") or 0))
+        return Reply(
+            text=text,
+            tokens=int(usage.get("totalTokenCount") or 0),
+            prompt_tokens=int(usage.get("promptTokenCount") or 0),
+            completion_tokens=int(usage.get("candidatesTokenCount") or 0),
+        )

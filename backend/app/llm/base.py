@@ -37,6 +37,8 @@ class BadRequest(ProviderError):  # HTTP 400 / 422 and other 4xx: this model rej
 class Reply:
     text: str
     tokens: int  # total tokens the provider reports for this call; 0 if it reports none
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
 
 
 class Provider(Protocol):

@@ -46,7 +46,9 @@ class FakeProvider:
         item = self.queue.pop(0) if self.queue else self.default
         if isinstance(item, Exception):
             raise item
-        return Reply(item if isinstance(item, str) else json.dumps(item), self.tokens)
+        prompt = self.tokens * 7 // 10
+        text = item if isinstance(item, str) else json.dumps(item)
+        return Reply(text, self.tokens, prompt, self.tokens - prompt)
 
 
 def llm_json(confidence: float = 0.95, **fields: Any) -> dict:

@@ -39,4 +39,9 @@ class GroqProvider:
         except (KeyError, IndexError, TypeError) as exc:
             raise ServerError("The provider returned an unexpected body.") from exc
         usage = data.get("usage") or {}
-        return Reply(text=text, tokens=int(usage.get("total_tokens") or 0))
+        return Reply(
+            text=text,
+            tokens=int(usage.get("total_tokens") or 0),
+            prompt_tokens=int(usage.get("prompt_tokens") or 0),
+            completion_tokens=int(usage.get("completion_tokens") or 0),
+        )

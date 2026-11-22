@@ -59,6 +59,8 @@ class Outcome:
     model: str  # "provider:model" that produced it
     cached: bool = False
     tokens: int = 0
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
 
 
 @dataclass
@@ -105,12 +107,22 @@ class ExtractionClient:
         self, provider: Provider, spec: str, model: str, system: str, user: str
     ) -> Outcome | None:
         """Call one model, with one repair retry on invalid output. None = still invalid."""
-        spent = 0
+        spent = prompt = completion = 0
         for attempt_user in (user, user + REPAIR_SUFFIX):
             reply = self._call(provider, spec, model, system, attempt_user)
             spent += reply.tokens
+            prompt += reply.prompt_tokens
+            completion += reply.completion_tokens
+            log.info(
+                "llm_call",
+                model=spec,
+                prompt_tokens=reply.prompt_tokens,
+                completion_tokens=reply.completion_tokens,
+            )
             if (result := parse_reply(reply.text)) is not None:
-                return Outcome(result, spec, tokens=spent)
+                return Outcome(
+                    result, spec, tokens=spent, prompt_tokens=prompt, completion_tokens=completion
+                )
             log.info("llm_invalid_output", model=spec)
         return None
 
