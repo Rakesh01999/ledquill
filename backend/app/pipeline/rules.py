@@ -22,7 +22,7 @@ _MONTHS.update({n.lower(): i for i, n in enumerate(calendar.month_abbr) if n})
 _MONTHS["sept"] = 9
 
 _INVOICE_NO = re.compile(
-    r"(?i)\binvoice\s*(?:no\.?|number|num\.?|nr\.?|#)\s*[:#.\-]?[ \t]*"
+    r"(?i)\b(?:invoice|bill)\s*(?:no\.?|number|num\.?|nr\.?|#)\s*[:#.\-]?(?:[ \t]*\n)?[ \t]*"
     r"([A-Za-z0-9][A-Za-z0-9\-/_.]*)"
 )
 _DATE_ISO = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2})")

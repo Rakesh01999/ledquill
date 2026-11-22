@@ -123,3 +123,22 @@ def test_number_amount_or_table_rows_are_an_invoice_signal():
     assert has_invoice_signal(Segment([1], "Total   971.56"))
     assert has_invoice_signal(Segment([1], "Consulting 120,00"))  # decimal comma
     assert has_invoice_signal(Segment([1], "x", Table(["a", "b"], [["1", "2"]])))
+
+
+def test_bill_number_on_the_next_line_splits_invoices_and_the_continuation_page_joins():
+    # regression (multi_01.pdf): "BILL #" labels were not recognised, so 5 pages became 1 invoice
+    segments = split_document(
+        pages(
+            "Acme\nBILL #\nA-1\nTotal 10.00",
+            "Acme\nBILL #\nB-2\nTotal 20.00",
+            "Acme\nBILL #\nC-3\nTotal 30.00",
+            "Acme - continued (page 2)\nBill #: C-3\nTotal 5.00",
+        )
+    )
+    assert [s.page_numbers for s in segments] == [[1], [2], [3, 4]]
+
+
+def test_segments_from_ocr_pages_are_marked_so_they_are_never_dropped():
+    (ocr_seg,) = split_document(pages("noise", method="ocr"))
+    (text_seg,) = split_document(pages("noise", method="text"))
+    assert ocr_seg.ocr and not text_seg.ocr

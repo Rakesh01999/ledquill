@@ -131,3 +131,10 @@ def test_table_missing_cells_stay_missing_and_unmapped_total_is_not_complete():
     result = extract_table(["Invoice", "Vendor", "Date"], [["A-1", "", ""]])
     assert result.values == {"invoice_number": "A-1"}
     assert not result.complete
+
+
+def test_bill_labels_and_a_number_on_the_next_line_are_invoice_numbers():
+    assert find_invoice_number("BILL #\nA-3274\nINVOICE DATE") == "A-3274"
+    assert find_invoice_number("Bill #: INV-2026-9842") == "INV-2026-9842"
+    assert find_invoice_number("BILL TO\nCorvane Motors 304") is None
+    assert find_invoice_number("Invoice No\nDate 2026-01-01") is None
