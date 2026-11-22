@@ -9,7 +9,16 @@
       "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(git add:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git reset:*)",
+      "Bash(git tag:*)"
     ]
+  },
+  "includeCoAuthoredBy": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
   }
 }

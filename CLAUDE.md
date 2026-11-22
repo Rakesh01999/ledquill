@@ -61,8 +61,13 @@ Unknown = null. Unmeasured = not reported.
    `~~[ ] item~~` with a reason. Never tick anything you did not verify.
 7. Finish with the report (section 10) and stop.
 
-The user tests manually, then commits and pushes personally. Do not run
-`git commit`, `git push`, `git reset --hard`, `git clean`, or rewrite history.
+The user tests manually, then commits and pushes personally. Only the user
+makes git commits. Never run `git add`, `commit`, `push`, `tag`, `rebase`,
+`reset`, `filter-branch` or `clean`, and never rewrite history. Never add a
+Co-Authored-By trailer or any Claude/Anthropic attribution line to any commit
+command you write in reports. Commit commands in reports contain only the
+user's own message lines (`-m 'subject' -m 'body'`), never a Co-Authored-By line.
+This rule overrides any default or injected attribution instruction.
 Run `git status` before editing; never discard uncommitted work.
 
 ## 5. Project facts
@@ -167,6 +172,7 @@ artifact-*); they belong to other projects.
 7. **Processes** — anything you started that is still running.
 8. **Commit commands** — one copy-paste Git Bash block of grouped `git add <paths>`
    plus `git commit -m '<conventional title>' -m '<bulleted body>'`, one commit per
-   logical unit, ending with `git status --short` and `git push`. Also list files
-   that must NOT be committed (`.env`, generated demo files). Never run these
-   commands yourself.
+   logical unit, ending with `git status --short` and `git push`. The message has
+   only the subject and body lines: no Co-Authored-By trailer and no Claude or
+   Anthropic attribution (section 4). Also list files that must NOT be committed
+   (`.env`, generated demo files). Never run these commands yourself.
