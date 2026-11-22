@@ -59,7 +59,7 @@ def test_each_file_type_completes_and_produces_page_rows(
         select(ProcessingEvent).where(ProcessingEvent.status == "succeeded")
     ).all()
     assert [(e.stage, e.duration_ms is not None) for e in events] == [
-        (stage, True) for stage in ("detect", "extract", "split", "fields", "validate")
+        (stage, True) for stage in ("detect", "extract", "split", "fields", "validate", "index")
     ]
 
 

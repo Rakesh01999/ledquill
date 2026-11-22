@@ -14,7 +14,7 @@ from uuid import UUID
 
 import structlog
 from sqlalchemy import delete, select
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.errors import PermanentError, TransientError
@@ -22,7 +22,9 @@ from app.core.logging import get_logger
 from app.core.settings import Settings, get_settings
 from app.db.models import Document, Invoice, Job, Page, ProcessingEvent
 from app.llm.client import ExtractionClient, build_llm_client
+from app.pipeline import embed
 from app.pipeline.detect import HEAD_BYTES, detect
+from app.pipeline.embed import EmbeddingError
 from app.pipeline.extract import Limits, extract
 from app.pipeline.fields import extract_fields, fallback_outcome
 from app.pipeline.split import PageText, Segment, split_document
@@ -58,6 +60,7 @@ class Stage:
     name: str
     run: Callable[[StageContext], dict]
     weight: int
+    optional: bool = False  # an EmbeddingError is recorded as a failed event; the job goes on
 
 
 def run_detect(ctx: StageContext) -> dict:
@@ -179,12 +182,36 @@ def run_validate(ctx: StageContext) -> dict:
     }
 
 
+def run_index(ctx: StageContext) -> dict:
+    """Embed each invoice's search text for semantic search. Keyword search needs no vector, so a
+    model failure raises EmbeddingError, which this optional stage records without failing."""
+    session, doc = ctx.session, ctx.document
+    embedder = embed.get_embedder()
+    if embedder is None:
+        return {"embedded": 0, "skipped": "semantic search is disabled"}
+    invoices = session.scalars(
+        select(Invoice).where(Invoice.document_id == doc.id).order_by(Invoice.created_at)
+    ).all()
+    todo = [i for i in invoices if i.search_text]
+    if todo:
+        vectors = embedder.embed_passages([i.search_text for i in todo])
+        try:
+            for invoice, vector in zip(todo, vectors, strict=True):
+                invoice.embedding = vector
+            session.commit()
+        except SQLAlchemyError as exc:  # a failed vector write must not fail the job
+            session.rollback()
+            raise EmbeddingError(type(exc).__name__) from exc
+    return {"embedded": len(todo), "invoices": len(invoices)}
+
+
 STAGES: list[Stage] = [
     Stage("detect", run_detect, weight=1),
     Stage("extract", run_extract, weight=6),
     Stage("split", run_split, weight=1),
     Stage("fields", run_fields, weight=10),
     Stage("validate", run_validate, weight=2),
+    Stage("index", run_index, weight=1, optional=True),
 ]
 
 
@@ -201,7 +228,8 @@ def stage_events(ctx: StageContext, name: str) -> Iterator[dict]:
         yield detail
     except BaseException as exc:
         session.rollback()
-        detail["error"] = str(exc) if isinstance(exc, PermanentError) else type(exc).__name__
+        shown = isinstance(exc, PermanentError | EmbeddingError)
+        detail["error"] = str(exc) if shown else type(exc).__name__
         _add_event(ctx, name, "failed", began, detail)
         raise
     _add_event(ctx, name, "succeeded", began, detail)
@@ -260,6 +288,9 @@ def _run_job(
         log.warning("job_target_missing", document_id=str(document_id), job_id=str(job_id))
         return "missing"
     bound = log.bind(document_id=str(doc.id), job_id=str(job.id))
+    if job.status == "failed":  # superseded by a reprocess while it waited in the queue
+        bound.info("job_skipped_superseded")
+        return "superseded"
     stages = STAGES if stages is None else stages
     ctx = StageContext(
         session,
@@ -280,8 +311,13 @@ def _run_job(
         for stage in stages:
             ctx.span_start = 100 * done_weight / total_weight
             ctx.span_size = 100 * stage.weight / total_weight
-            with stage_events(ctx, stage.name) as detail:
-                detail.update(stage.run(ctx))
+            try:
+                with stage_events(ctx, stage.name) as detail:
+                    detail.update(stage.run(ctx))
+            except EmbeddingError as exc:
+                if not stage.optional:
+                    raise
+                bound.warning("optional_stage_failed", stage=stage.name, reason=str(exc))
             done_weight += stage.weight
             doc.progress = (
                 int(100 * done_weight / total_weight) if done_weight < total_weight else 99

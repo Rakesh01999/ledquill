@@ -28,7 +28,7 @@ def reload(session, document, job):
 
 
 def test_stage_list_is_ordered():
-    assert [s.name for s in STAGES] == ["detect", "extract", "split", "fields", "validate"]
+    assert [s.name for s in STAGES] == ["detect", "extract", "split", "fields", "validate", "index"]
 
 
 def test_digital_pdf_completes_with_events_pages_and_durations(db_session, fixtures_dir):
@@ -39,7 +39,7 @@ def test_digital_pdf_completes_with_events_pages_and_durations(db_session, fixtu
     assert (job.status, job.attempts) == ("completed", 1)
     assert events(db_session, doc) == [
         (stage, status)
-        for stage in ("detect", "extract", "split", "fields", "validate")
+        for stage in ("detect", "extract", "split", "fields", "validate", "index")
         for status in ("started", "succeeded")
     ]
     finished = db_session.scalars(
