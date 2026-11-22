@@ -38,6 +38,15 @@ class Settings(BaseSettings):
         "groq:openai/gpt-oss-120b,groq:qwen/qwen3.8-27b,"
         "groq:openai/gpt-oss-20b,gemini:gemini-3.8-flash"
     )
+    # Per-provider token limits, enforced at llm_limit_fraction of each value. Groq values are
+    # from design section 12.2; Gemini limits are unmeasured, so the defaults are conservative.
+    groq_tpm_limit: int = Field(8_000, gt=0)
+    groq_tpd_limit: int = Field(200_000, gt=0)
+    gemini_tpm_limit: int = Field(8_000, gt=0)
+    gemini_tpd_limit: int = Field(100_000, gt=0)
+    llm_limit_fraction: float = Field(0.9, gt=0, le=1)
+    llm_call_timeout_seconds: float = Field(30.0, gt=0)
+    llm_cache_ttl_seconds: int = Field(7 * 24 * 3600, gt=0)
     embedding_model: str = "BAAI/bge-small-en-v1.5"
 
     @property

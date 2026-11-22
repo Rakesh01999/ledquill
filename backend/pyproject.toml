@@ -13,11 +13,13 @@ select = ["E", "F", "I", "B", "UP", "S", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+"app/llm/prompts.py" = ["E501"]  # the prompt text is copied from design.md
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+markers = ["live: calls a real LLM provider; runs only with RUN_LIVE=1"]
 
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.File"]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Query"]
