@@ -3,7 +3,12 @@
     "started_at": "2026-11-22T15:38:37+00:00",
     "files_run": 58,
     "files_in_dataset": 58,
-    "subset": false
+    "subset": false,
+    "rescored_at": "2026-11-22T16:31:41+00:00",
+    "rerun_files": [
+      "clean_13.pdf",
+      "register_01.xlsx"
+    ]
   },
   "synthetic": {
     "files": [
@@ -68,6 +73,19 @@
     ],
     "aggregate": {
       "files": 58,
+      "routing": {
+        "defective_files": 12,
+        "defective_flagged": 9,
+        "silently_ready": [
+          "scan_08_medium.jpg",
+          "scan_09_medium.png",
+          "scan_10_medium.tif"
+        ],
+        "correct_files": 43,
+        "correct_flagged": 0,
+        "correct_flagged_names": [],
+        "routing_accuracy": 0.9454545454545454
+      },
       "fields": {
         "invoice_number": {
           "tp": 56,
@@ -110,12 +128,12 @@
           "recall": 0.873015873015873
         },
         "subtotal": {
-          "tp": 56,
+          "tp": 57,
           "fp": 0,
-          "fn": 8,
+          "fn": 7,
           "hallucinated": 0,
           "precision": 1.0,
-          "recall": 0.875
+          "recall": 0.890625
         },
         "tax": {
           "tp": 55,
@@ -126,28 +144,28 @@
           "recall": 0.873015873015873
         },
         "total": {
-          "tp": 54,
+          "tp": 55,
           "fp": 1,
-          "fn": 10,
+          "fn": 9,
           "hallucinated": 0,
-          "precision": 0.9818181818181818,
-          "recall": 0.84375
+          "precision": 0.9821428571428571,
+          "recall": 0.859375
         }
       },
       "line_items": {
-        "tp": 251,
-        "fp": 12,
-        "fn": 31,
-        "precision": 0.9543726235741445,
-        "recall": 0.8900709219858156
+        "tp": 254,
+        "fp": 2,
+        "fn": 28,
+        "precision": 0.9921875,
+        "recall": 0.900709219858156
       },
-      "needs_review_accuracy": 0.84375,
+      "needs_review_accuracy": 0.9375,
       "rules": {
         "V-01": {
           "tp": 3,
-          "fp": 10,
+          "fp": 9,
           "fn": 0,
-          "precision": 0.23076923076923078,
+          "precision": 0.25,
           "recall": 1.0
         },
         "V-02": {
@@ -193,14 +211,14 @@
           "recall": 1.0
         },
         "V-09": {
-          "tp": 1,
+          "tp": 2,
           "fp": 0,
-          "fn": 1,
+          "fn": 0,
           "precision": 1.0,
-          "recall": 0.5
+          "recall": 1.0
         }
       },
-      "rule_set_exact_match": 0.7758620689655172,
+      "rule_set_exact_match": 0.8103448275862069,
       "status_match": 1.0,
       "invoice_count_match": 1.0
     }
@@ -214,32 +232,32 @@
       "detect": {
         "n": 58,
         "p50_ms": 0,
-        "p95_ms": 2
+        "p95_ms": 3
       },
       "extract": {
         "n": 56,
         "p50_ms": 11,
-        "p95_ms": 1065
+        "p95_ms": 1060
       },
       "split": {
         "n": 56,
         "p50_ms": 2,
-        "p95_ms": 4
+        "p95_ms": 5
       },
       "fields": {
         "n": 56,
-        "p50_ms": 1411,
+        "p50_ms": 1377,
         "p95_ms": 2546
       },
       "validate": {
         "n": 56,
         "p50_ms": 7,
-        "p95_ms": 18
+        "p95_ms": 22
       },
       "index": {
         "n": 56,
-        "p50_ms": 21,
-        "p95_ms": 36
+        "p50_ms": 22,
+        "p95_ms": 60
       }
     },
     "end_to_end_s": {
@@ -249,10 +267,10 @@
     }
   },
   "tokens": {
-    "prompt": 46070,
-    "completion": 24042,
-    "total": 70112,
-    "files_with_llm": 51
+    "prompt": 45132,
+    "completion": 23530,
+    "total": 68662,
+    "files_with_llm": 50
   },
   "files": [
     {
@@ -382,6 +400,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_01.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -560,6 +585,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_02.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -738,6 +770,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_03.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -916,6 +955,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_04.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -1094,6 +1140,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_05.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -1272,6 +1325,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_06.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -1450,6 +1510,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_07.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -1628,6 +1695,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_08.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -1806,6 +1880,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_09.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -1984,6 +2065,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_10.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -2162,6 +2250,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_11.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -2340,6 +2435,13 @@
       ],
       "seconds": 4.0,
       "score": {
+        "file": "clean_12.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -2394,130 +2496,137 @@
     {
       "file": "clean_13.pdf",
       "group": "clean",
-      "document_id": "e3c095fa-d379-48af-b23d-9c7da45a2d81",
+      "document_id": "3d3d975c-85ad-4665-894b-4baf0fe1da80",
       "error": null,
       "events": [
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "detect",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:41:55.115106Z"
+          "created_at": "2026-11-22T16:31:05.252987Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "detect",
           "status": "succeeded",
-          "duration_ms": 0,
+          "duration_ms": 4,
           "detail": {
             "file_type": "pdf",
             "mime_type": "application/pdf",
             "size_bytes": 13420
           },
-          "created_at": "2026-11-22T15:41:55.119265Z"
+          "created_at": "2026-11-22T16:31:05.269102Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "extract",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:41:55.124404Z"
+          "created_at": "2026-11-22T16:31:05.275284Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "extract",
           "status": "succeeded",
-          "duration_ms": 12,
+          "duration_ms": 26,
           "detail": {
             "pages": 1,
             "text_pages": 1
           },
-          "created_at": "2026-11-22T15:41:55.139924Z"
+          "created_at": "2026-11-22T16:31:05.305130Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "split",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:41:55.143099Z"
+          "created_at": "2026-11-22T16:31:05.309308Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "split",
           "status": "succeeded",
-          "duration_ms": 3,
+          "duration_ms": 8,
           "detail": {
             "invoices": 1
           },
-          "created_at": "2026-11-22T15:41:55.150043Z"
+          "created_at": "2026-11-22T16:31:05.321029Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "fields",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:41:55.154551Z"
+          "created_at": "2026-11-22T16:31:05.326183Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "fields",
           "status": "succeeded",
-          "duration_ms": 1591,
+          "duration_ms": 139,
           "detail": {
             "invoices": 1,
-            "prompt_tokens": 938,
-            "completion_tokens": 512,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
             "rules+llm_invoices": 1
           },
-          "created_at": "2026-11-22T15:41:56.749338Z"
+          "created_at": "2026-11-22T16:31:05.470245Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "validate",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:41:56.752789Z"
+          "created_at": "2026-11-22T16:31:05.476748Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "validate",
           "status": "succeeded",
-          "duration_ms": 7,
+          "duration_ms": 34,
           "detail": {
-            "ready": 0,
-            "issues": 1,
+            "ready": 1,
+            "issues": 0,
             "invoices": 1,
-            "needs_review": 1
+            "needs_review": 0
           },
-          "created_at": "2026-11-22T15:41:56.764134Z"
+          "created_at": "2026-11-22T16:31:05.516530Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "index",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:41:56.769498Z"
+          "created_at": "2026-11-22T16:31:05.522488Z"
         },
         {
-          "job_id": "760bfb3c-fd4d-4e97-9094-727efc7979f1",
+          "job_id": "7422dbff-535d-4d3f-a73c-d2cf7da099ea",
           "stage": "index",
           "status": "succeeded",
-          "duration_ms": 18,
+          "duration_ms": 2015,
           "detail": {
             "embedded": 1,
             "invoices": 1
           },
-          "created_at": "2026-11-22T15:41:56.791518Z"
+          "created_at": "2026-11-22T16:31:07.541726Z"
         }
       ],
-      "seconds": 2.1,
+      "seconds": 4.1,
       "score": {
+        "file": "clean_13.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -2535,23 +2644,23 @@
             "tp": 1
           },
           "subtotal": {
-            "fn": 1
+            "tp": 1
           },
           "tax": {
             "tp": 1
           },
           "total": {
-            "fn": 1
+            "tp": 1
           }
         },
         "line_items": {
-          "tp": 5,
-          "fp": 3,
-          "fn": 3
+          "tp": 8,
+          "fp": 0,
+          "fn": 0
         },
         "review": {
           "total": 1,
-          "correct": 0
+          "correct": 1
         },
         "invoice_count": {
           "expected": 1,
@@ -2563,10 +2672,8 @@
         },
         "rules": {
           "expected": [],
-          "actual": [
-            "V-01"
-          ],
-          "exact": false
+          "actual": [],
+          "exact": true
         }
       },
       "kind": "synthetic"
@@ -2698,6 +2805,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_14.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -2876,6 +2990,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_15.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -3054,6 +3175,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_16.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -3232,6 +3360,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_17.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -3410,6 +3545,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_18.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -3588,6 +3730,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "clean_19.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -3766,6 +3915,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "clean_20.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -3945,6 +4101,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_01_mild.png",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "fn": 1,
@@ -3976,7 +4139,7 @@
         },
         "line_items": {
           "tp": 0,
-          "fp": 4,
+          "fp": 0,
           "fn": 4
         },
         "review": {
@@ -4129,6 +4292,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "scan_02_mild.png",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -4310,6 +4480,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "scan_03_mild.jpg",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -4489,6 +4666,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "scan_04_mild.jpg",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -4668,6 +4852,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_05_mild.tif",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -4847,6 +5038,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_06_medium.png",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "fn": 1
@@ -4877,7 +5075,7 @@
         },
         "line_items": {
           "tp": 3,
-          "fp": 1,
+          "fp": 0,
           "fn": 1
         },
         "review": {
@@ -5031,6 +5229,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_07_medium.jpg",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -5213,6 +5418,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_08_medium.jpg",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -5241,7 +5453,7 @@
         },
         "line_items": {
           "tp": 6,
-          "fp": 1,
+          "fp": 0,
           "fn": 1
         },
         "review": {
@@ -5392,6 +5604,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_09_medium.png",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -5574,6 +5793,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_10_medium.tif",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -5602,7 +5828,7 @@
         },
         "line_items": {
           "tp": 8,
-          "fp": 1,
+          "fp": 0,
           "fn": 1
         },
         "review": {
@@ -5755,6 +5981,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "scan_11_severe.jpg",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "fn": 1
@@ -5788,7 +6021,7 @@
         },
         "review": {
           "total": 1,
-          "correct": 0
+          "correct": 1
         },
         "invoice_count": {
           "expected": 1,
@@ -5936,6 +6169,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_12_severe.jpg",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "fn": 1
@@ -5969,7 +6209,7 @@
         },
         "review": {
           "total": 1,
-          "correct": 0
+          "correct": 1
         },
         "invoice_count": {
           "expected": 1,
@@ -6117,6 +6357,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "scan_13_severe.png",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "fn": 1
@@ -6150,7 +6397,7 @@
         },
         "review": {
           "total": 1,
-          "correct": 0
+          "correct": 1
         },
         "invoice_count": {
           "expected": 1,
@@ -6298,6 +6545,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "scan_14_severe.png",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "fn": 1
@@ -6331,7 +6585,7 @@
         },
         "review": {
           "total": 1,
-          "correct": 0
+          "correct": 1
         },
         "invoice_count": {
           "expected": 1,
@@ -6479,6 +6733,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "scan_15_severe.tif",
+        "routing": {
+          "applicable": true,
+          "defective": true,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "fn": 1
@@ -6512,7 +6773,7 @@
         },
         "review": {
           "total": 1,
-          "correct": 0
+          "correct": 1
         },
         "invoice_count": {
           "expected": 1,
@@ -6660,6 +6921,13 @@
       ],
       "seconds": 6.1,
       "score": {
+        "file": "multi_01.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 4
@@ -6838,6 +7106,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "absent_01_supplier.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -7018,6 +7293,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "absent_02_date.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -7198,6 +7480,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "absent_03_customer.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -7374,6 +7663,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "absent_04_tax.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -7550,6 +7846,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "absent_05_currency.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -7726,6 +8029,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "absent_06_number.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {},
           "invoice_date": {
@@ -7906,6 +8216,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "inconsistent_01_subtotal.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -8088,6 +8405,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "inconsistent_02_subtotal.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -8270,6 +8594,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "inconsistent_03_total.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -8452,6 +8783,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "inconsistent_04_total.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -8634,6 +8972,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "inconsistent_05_line.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -8816,6 +9161,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "inconsistent_06_line.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -9000,6 +9352,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "hostile_01_injection.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -9182,6 +9541,13 @@
       ],
       "seconds": 4.1,
       "score": {
+        "file": "hostile_02_subtle.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -9360,6 +9726,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "hostile_03_blank_template.pdf",
+        "routing": {
+          "applicable": false,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {},
           "invoice_date": {},
@@ -9435,6 +9808,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "failure_01_corrupt.pdf",
+        "routing": {
+          "applicable": false,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {},
           "invoice_date": {},
@@ -9510,6 +9890,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "failure_02_encrypted.pdf",
+        "routing": {
+          "applicable": false,
+          "defective": false,
+          "flagged": false,
+          "review_expected": false
+        },
         "fields": {
           "invoice_number": {},
           "invoice_date": {},
@@ -9665,6 +10052,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "dup_01.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -9847,6 +10241,13 @@
       ],
       "seconds": 2.1,
       "score": {
+        "file": "dup_02.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -10029,6 +10430,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "dup_03.pdf",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 1
@@ -10087,19 +10495,19 @@
     {
       "file": "register_01.xlsx",
       "group": "register",
-      "document_id": "bb0089be-4236-41c7-9f54-9d01b64b22eb",
+      "document_id": "3bcabdb8-ff2e-4923-a151-738c7fd146ac",
       "error": null,
       "events": [
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "detect",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:55:57.858904Z"
+          "created_at": "2026-11-22T16:31:08.993642Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "detect",
           "status": "succeeded",
           "duration_ms": 1,
@@ -10108,109 +10516,116 @@
             "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "size_bytes": 5366
           },
-          "created_at": "2026-11-22T15:55:57.864082Z"
+          "created_at": "2026-11-22T16:31:08.998922Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "extract",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:55:57.868427Z"
+          "created_at": "2026-11-22T16:31:09.005191Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "extract",
           "status": "succeeded",
-          "duration_ms": 1257,
+          "duration_ms": 166,
           "detail": {
             "pages": 1,
             "sheet_pages": 1
           },
-          "created_at": "2026-11-22T15:55:59.128316Z"
+          "created_at": "2026-11-22T16:31:09.174478Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "split",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:55:59.130938Z"
+          "created_at": "2026-11-22T16:31:09.177927Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "split",
           "status": "succeeded",
-          "duration_ms": 2,
+          "duration_ms": 3,
           "detail": {
             "invoices": 5
           },
-          "created_at": "2026-11-22T15:55:59.135626Z"
+          "created_at": "2026-11-22T16:31:09.184749Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "fields",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:55:59.139995Z"
+          "created_at": "2026-11-22T16:31:09.190039Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "fields",
           "status": "succeeded",
-          "duration_ms": 39,
+          "duration_ms": 25,
           "detail": {
             "invoices": 5,
             "prompt_tokens": 0,
             "rules_invoices": 5,
             "completion_tokens": 0
           },
-          "created_at": "2026-11-22T15:55:59.181528Z"
+          "created_at": "2026-11-22T16:31:09.219315Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "validate",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:55:59.184974Z"
+          "created_at": "2026-11-22T16:31:09.222945Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "validate",
           "status": "succeeded",
-          "duration_ms": 27,
+          "duration_ms": 44,
           "detail": {
             "ready": 0,
-            "issues": 5,
+            "issues": 6,
             "invoices": 5,
             "needs_review": 5
           },
-          "created_at": "2026-11-22T15:55:59.215158Z"
+          "created_at": "2026-11-22T16:31:09.270538Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "index",
           "status": "started",
           "duration_ms": null,
           "detail": null,
-          "created_at": "2026-11-22T15:55:59.218723Z"
+          "created_at": "2026-11-22T16:31:09.276952Z"
         },
         {
-          "job_id": "43ee168b-09a9-4e8a-82e7-a7a356ccf6ab",
+          "job_id": "9c166379-d0f6-4096-8d94-cde07a038e55",
           "stage": "index",
           "status": "succeeded",
-          "duration_ms": 62,
+          "duration_ms": 60,
           "detail": {
             "embedded": 5,
             "invoices": 5
           },
-          "created_at": "2026-11-22T15:55:59.283881Z"
+          "created_at": "2026-11-22T16:31:09.340463Z"
         }
       ],
-      "seconds": 2.1,
+      "seconds": 2.0,
       "score": {
+        "file": "register_01.xlsx",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 5
@@ -10260,9 +10675,10 @@
             "V-09"
           ],
           "actual": [
-            "V-07"
+            "V-07",
+            "V-09"
           ],
-          "exact": false
+          "exact": true
         }
       },
       "kind": "synthetic"
@@ -10394,6 +10810,13 @@
       ],
       "seconds": 2.0,
       "score": {
+        "file": "register_02.csv",
+        "routing": {
+          "applicable": true,
+          "defective": false,
+          "flagged": true,
+          "review_expected": true
+        },
         "fields": {
           "invoice_number": {
             "tp": 3
