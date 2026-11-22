@@ -3,10 +3,11 @@
 from decimal import Decimal as D
 
 import pytest
+from openpyxl import Workbook
 from sqlalchemy import func, select
 
 from app.core.errors import TransientError
-from app.db.models import Document, Invoice, ValidationIssue
+from app.db.models import Document, Invoice, ProcessingEvent, ValidationIssue
 from app.llm.base import RateLimited
 from app.pipeline.fields import extract_fields
 from app.workers import stages
@@ -111,26 +112,51 @@ def test_spreadsheet_with_synonym_headers_needs_no_llm_call(db_session, fake_llm
     assert second.status == "needs_review" and "V-05:total" in issues_of(db_session, second)
 
 
-def test_spreadsheet_template_with_labels_only_yields_all_null_fields(
+def test_spreadsheet_template_with_labels_only_yields_no_invoice(db_session, fake_llm, tmp_path):
+    fake_llm.script(llm_json(invoice_number="INV-0001", supplier_name="Phantom Ltd", total=500))
+    doc, job, status = process(db_session, template_xlsx(tmp_path / "form.xlsx"))
+    assert status == "completed" and job.status == "completed"
+    assert invoices_of(db_session, doc) == []  # never an invented invoice
+    assert fake_llm.calls == []  # nothing to extract, so no tokens spent
+    assert doc.error == "No invoice was found in this document."
+
+
+def test_help_sheet_without_invoice_signal_is_skipped_but_the_invoice_sheet_is_kept(
     db_session, fake_llm, tmp_path
 ):
-    invented = llm_json(
-        invoice_number="INV-0001", invoice_date="2026-01-01", supplier_name="Phantom Ltd",
-        customer_name="Ghost Inc", currency="USD", subtotal=400, tax=100, total=500,
-        line_items=[{"description": "Widget", "quantity": 1, "unit_price": 500, "amount": 500}],
-    )  # fmt: skip
-    fake_llm.script(invented)
-    doc, _, status = process(db_session, template_xlsx(tmp_path / "form.xlsx"))
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Invoice"
+    for row in (["Invoice No:", "INV-5001"], ["Supplier:", "Acme Ltd"], ["Total:", "100.00"]):
+        ws.append(row)
+    help_sheet = wb.create_sheet("Help")
+    for line in ("How to use this template", "Replace the labels with your details"):
+        help_sheet.append([line])
+    path = tmp_path / "two.xlsx"
+    wb.save(path)
+    fake_llm.script(llm_json(invoice_number="INV-5001", supplier_name="Acme Ltd", total=100))
+    doc, _, status = process(db_session, path)
+    assert status == "completed" and doc.error is None
+    (inv,) = invoices_of(db_session, doc)
+    assert inv.page_numbers == [1] and inv.invoice_number == "INV-5001"
+
+
+def test_actual_llm_tokens_are_recorded_on_the_invoice_and_the_fields_event(
+    db_session, fake_llm, tmp_path
+):
+    fake_llm.script(llm_json(invoice_number="INV-8001", supplier_name="Initech LLC", total=100))
+    doc, _, status = process(db_session, clean_pdf(tmp_path / "ok.pdf"))
     assert status == "completed"
-    (inv,) = invoices_of(db_session, doc)  # one row, never an invented invoice
-    for name in ("invoice_number", "invoice_date", "supplier_name", "customer_name", "currency",
-                 "subtotal", "tax", "total"):  # fmt: skip
-        assert getattr(inv, name) is None, name
-    assert inv.line_items == [] and set(inv.confidence.values()) == {0.0}
-    assert inv.raw_extraction["llm"]["total"] == "500"  # what the model said is kept for audit
-    assert "total" in inv.raw_extraction["nulled_by_grounding"]
-    assert inv.status == "needs_review"
-    assert {"V-01:invoice_number", "V-01:total"} <= set(issues_of(db_session, inv))
+    (inv,) = invoices_of(db_session, doc)
+    assert inv.raw_extraction["llm_tokens"] == {"prompt": 70, "completion": 30}
+    event = db_session.scalars(
+        select(ProcessingEvent).where(
+            ProcessingEvent.document_id == doc.id,
+            ProcessingEvent.stage == "fields",
+            ProcessingEvent.status == "succeeded",
+        )
+    ).one()
+    assert (event.detail["prompt_tokens"], event.detail["completion_tokens"]) == (70, 30)
 
 
 def test_prompt_injection_cannot_force_the_total(db_session, fake_llm, tmp_path):

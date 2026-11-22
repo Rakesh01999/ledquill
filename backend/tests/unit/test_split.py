@@ -1,4 +1,4 @@
-from app.pipeline.split import PageText, split_document
+from app.pipeline.split import PageText, Segment, Table, has_invoice_signal, split_document
 
 
 def pages(*texts: str, method: str = "text") -> list[PageText]:
@@ -110,3 +110,16 @@ def test_free_form_sheet_with_a_letterhead_row_is_one_invoice_not_one_per_row():
     )
     assert len(segments) == 1 and segments[0].table is None
     assert "TOTAL" in segments[0].text
+
+
+def test_blank_form_and_help_text_have_no_invoice_signal():
+    form = "Invoice No:\nDate:\nTotal:\nThank you for your business"
+    assert not has_invoice_signal(Segment([1], form))
+    assert not has_invoice_signal(Segment([2], "HELP\nGetting started\nCall 555-0100"))
+
+
+def test_number_amount_or_table_rows_are_an_invoice_signal():
+    assert has_invoice_signal(Segment([1], "Invoice No: INV-77"))
+    assert has_invoice_signal(Segment([1], "Total   971.56"))
+    assert has_invoice_signal(Segment([1], "Consulting 120,00"))  # decimal comma
+    assert has_invoice_signal(Segment([1], "x", Table(["a", "b"], [["1", "2"]])))

@@ -3079,27 +3079,9 @@
     "upload_order": 51,
     "depends_on": null,
     "expected_status": "completed",
-    "expected_invoices": [
-      {
-        "invoice_number": null,
-        "invoice_date": null,
-        "supplier_name": null,
-        "customer_name": null,
-        "currency": null,
-        "subtotal": null,
-        "tax": null,
-        "total": null,
-        "line_items": [],
-        "pages": [
-          1
-        ],
-        "expected_needs_review": true
-      }
-    ],
-    "expected_issues": [
-      "V-01"
-    ],
-    "notes": "Label-only blank form. Every field null; no line items. Hallucinating any value is counted as a hallucination."
+    "expected_invoices": [],
+    "expected_issues": [],
+    "notes": "Label-only blank form: no invoice signal, so no invoice is created. The document still completes with the message 'No invoice was found in this document.' Any invoice or value created from it counts as a hallucination."
   },
   "failure_01_corrupt.pdf": {
     "file": "failure_01_corrupt.pdf",

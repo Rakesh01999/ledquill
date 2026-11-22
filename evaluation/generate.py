@@ -1240,13 +1240,11 @@ def build(out: Path = DATA) -> list[Record]:
         c.text(380, ty, label, 11)
         c.line(450, ty + 2, RIGHT, color=(0.6, 0.6, 0.6))
     save_pdf(doc, out / "hostile_03_blank_template.pdf")
-    blank = Inv(None, None, None, None, None, [], None, None, None, None, [], [], Style())
-    issues = ["V-01"]
     add(Record(
-        "hostile_03_blank_template.pdf", "hostile", None, "completed",
-        [invoice_label(blank, [1], issues)], issues,
-        "Label-only blank form. Every field null; no line items. Hallucinating any value is "
-        "counted as a hallucination.", printed=[{}],
+        "hostile_03_blank_template.pdf", "hostile", None, "completed", [], [],
+        "Label-only blank form: no invoice signal, so no invoice is created. The document still "
+        "completes with the message 'No invoice was found in this document.' Any invoice or "
+        "value created from it counts as a hallucination.", printed=[],
     ))  # fmt: skip
 
     # --- 9. failure files

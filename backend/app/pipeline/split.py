@@ -5,10 +5,11 @@ invoice's number. Pages without a number, or repeating the same number, join the
 invoice. Spreadsheet rows are grouped by invoice number, one group per invoice.
 """
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from app.pipeline.rules import find_invoice_number, map_columns
+from app.pipeline.rules import extract_hints, find_invoice_number, map_columns
 from app.pipeline.sheets import detect_header_row
 
 
@@ -30,6 +31,21 @@ class Segment:
     page_numbers: list[int]
     text: str
     table: Table | None = None
+
+
+_DECIMAL_AMOUNT = re.compile(r"\d[\d,. ]*[.,]\d{2}\b")
+_SIGNAL_FIELDS = ("invoice_number", "subtotal", "tax", "total")
+
+
+def has_invoice_signal(segment: Segment) -> bool:
+    """False for blank forms, help and instruction sheets: no table rows, no invoice number,
+    no labelled amount and no decimal amount anywhere. Such a segment is not an invoice."""
+    if segment.table is not None and segment.table.rows:
+        return True
+    text = segment.text
+    if any(k in extract_hints(text).values for k in _SIGNAL_FIELDS):
+        return True
+    return _DECIMAL_AMOUNT.search(text) is not None
 
 
 def _key(number: str) -> str:

@@ -27,10 +27,11 @@ from app.pipeline.detect import HEAD_BYTES, detect
 from app.pipeline.embed import EmbeddingError
 from app.pipeline.extract import Limits, extract
 from app.pipeline.fields import extract_fields, fallback_outcome
-from app.pipeline.split import PageText, Segment, split_document
+from app.pipeline.split import PageText, Segment, has_invoice_signal, split_document
 from app.storage import Storage, get_storage
 from app.workers.invoices import delete_document_invoices, save_invoice, validate_invoice
 
+NO_INVOICE_NOTICE = "No invoice was found in this document."
 PAGE_BATCH = 10  # commit pages and update progress every N pages
 _HASH_CHUNK = 1024 * 1024
 log = get_logger(__name__)
@@ -47,6 +48,7 @@ class StageContext:
     span_size: float = 0.0  # percent of overall progress the running stage covers
     final_attempt: bool = False  # no Celery retries left: degrade instead of raising
     segments: list[Segment] = field(default_factory=list)  # set by split, read by fields
+    notice: str | None = None  # shown on a completed document, e.g. that no invoice was found
     llm: ExtractionClient | None = None  # built on first use; unusable-provider state is per job
 
     def set_progress(self, fraction: float) -> None:
@@ -131,10 +133,16 @@ def run_split(ctx: StageContext) -> dict:
     pages = session.scalars(
         select(Page).where(Page.document_id == doc.id).order_by(Page.page_no)
     ).all()
-    ctx.segments = split_document([PageText(p.page_no, p.method, p.text or "") for p in pages])
+    found = split_document([PageText(p.page_no, p.method, p.text or "") for p in pages])
+    ctx.segments = [seg for seg in found if has_invoice_signal(seg)]
+    skipped = len(found) - len(ctx.segments)
+    ctx.notice = None if ctx.segments else NO_INVOICE_NOTICE
     delete_document_invoices(session, doc.id)  # idempotent re-run
     session.commit()
-    return {"invoices": len(ctx.segments)}
+    detail: dict = {"invoices": len(ctx.segments)}
+    if skipped:
+        detail["skipped_no_invoice_signal"] = skipped
+    return detail
 
 
 def run_fields(ctx: StageContext) -> dict:
@@ -147,6 +155,7 @@ def run_fields(ctx: StageContext) -> dict:
         return ctx.llm
 
     methods: dict[str, int] = {}
+    tokens = {"prompt": 0, "completion": 0}
     total = len(ctx.segments)
     for done, segment in enumerate(ctx.segments, start=1):
         try:
@@ -156,11 +165,18 @@ def run_fields(ctx: StageContext) -> dict:
         except Exception as exc:  # one bad invoice must not fail the whole document
             log.error("invoice_extraction_failed", error_type=type(exc).__name__)
             outcome = fallback_outcome(segment, "error")
+        for kind, spent in outcome.raw.get("llm_tokens", {}).items():
+            tokens[kind] += spent
         save_invoice(session, doc, segment, outcome)
         session.commit()  # keep finished invoices if a later one raises a transient error
         methods[outcome.method] = methods.get(outcome.method, 0) + 1
         ctx.set_progress(done / total)
-    return {"invoices": total, **{f"{k}_invoices": v for k, v in methods.items()}}
+    return {
+        "invoices": total,
+        **{f"{k}_invoices": v for k, v in methods.items()},
+        "prompt_tokens": tokens["prompt"],
+        "completion_tokens": tokens["completion"],
+    }
 
 
 def run_validate(ctx: StageContext) -> dict:
@@ -339,7 +355,7 @@ def _run_job(
         _fail(session, doc, job, "Unexpected error while processing this file.")
         return "failed"
 
-    doc.status, doc.progress, doc.error = "completed", 100, None
+    doc.status, doc.progress, doc.error = "completed", 100, ctx.notice
     job.status, job.finished_at = "completed", datetime.now(UTC)
     session.commit()
     bound.info("job_completed", pages=doc.page_count)
