@@ -184,7 +184,7 @@ Base path `/api/v1`. JSON everywhere except upload. FastAPI generates the full O
 
 | Method | Path | Purpose | Task |
 | --- | --- | --- | --- |
-| POST | `/documents` | Upload one or many files (multipart `files[]`); returns 202 with document and job ids | Upload |
+| POST | `/documents` | Upload one or many files (multipart field `files`); returns 202 with document and job ids | Upload |
 | GET | `/documents` | List with filters `status`, `file_type`, `limit`, `offset` | Status |
 | GET | `/documents/{id}` | Metadata, status, progress, invoice ids | Status |
 | GET | `/documents/{id}/events` | Processing history with stage timings | History |
