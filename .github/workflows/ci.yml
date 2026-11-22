@@ -39,6 +39,10 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: backend/requirements*.txt
+      - name: Install Tesseract (the OCR tests need the engine; the Docker image has it)
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr
+          tesseract --version
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
       - run: ruff format --check .
