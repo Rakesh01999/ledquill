@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { EmptyState } from "@/components/shared/states";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { DashboardView } from "@/components/dashboard/dashboard-view";
+import { statsOptions } from "@/lib/query/options";
+import { getQueryClient, prefetch } from "@/lib/query/server";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-// Placeholder until this screen is built (P5 checkpoint C2 to C4).
-export default function Page() {
-  return <EmptyState title="This screen is not built yet." />;
+export default async function DashboardPage() {
+  await prefetch(statsOptions);
+  return (
+    <HydrationBoundary state={dehydrate(getQueryClient())}>
+      <DashboardView />
+    </HydrationBoundary>
+  );
 }
