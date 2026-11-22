@@ -54,7 +54,7 @@ export function DocumentsView() {
         <div
           aria-busy={isFetching}
           className={cn(
-            "min-h-0 flex-1 overflow-auto [&_[data-slot=table-container]]:overflow-visible",
+            "min-h-0 flex-1 scroll-pt-10 scroll-pb-2 overflow-auto [&_[data-slot=table-container]]:overflow-visible",
             isPlaceholderData && "opacity-60 transition-opacity",
           )}
         >

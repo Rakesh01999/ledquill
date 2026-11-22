@@ -89,6 +89,12 @@ export function describeError(error: unknown): ProblemMessage {
       };
     case 404:
       return { title: "Not found", message: error.detail || "That item no longer exists.", items: [] };
+    case 500:
+      return {
+        title: "Something went wrong on the server",
+        message: "Try again in a moment. If it keeps happening, tell an administrator.",
+        items: [],
+      };
     case 502:
     case 503:
     case 504:
@@ -96,4 +102,18 @@ export function describeError(error: unknown): ProblemMessage {
     default:
       return { title: error.title, message: error.detail || "Something went wrong. Try again.", items: [] };
   }
+}
+
+/**
+ * A page for an id that is not a valid UUID gets a 422 from the API. For the person looking at
+ * the page that is the same as "it does not exist", so say that instead of "values are not valid".
+ */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function invalidIdAsMissing(error: unknown, id: string): unknown {
+  // Only when the id itself is malformed: a 422 for a well-formed id is a real error to show.
+  if (error instanceof ApiProblem && error.status === 422 && !UUID.test(id)) {
+    return new ApiProblem(404, { title: "Not Found", detail: "That item does not exist." }, null);
+  }
+  return error;
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { describeError } from "@/lib/api/problem";
+import { ApiProblem, describeError } from "@/lib/api/problem";
 
 /** One line saying why it is empty, and the next action. */
 export function EmptyState({ title, action }: { title: string; action?: ReactNode }) {
@@ -21,7 +21,7 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
         <p className="text-sm font-semibold">{title}</p>
         <p className="mt-1 text-[13px] text-ink-2">{message}</p>
       </div>
-      {onRetry && (
+      {onRetry && !(error instanceof ApiProblem && error.status === 404) && (
         <Button variant="outline" size="sm" onClick={onRetry}>
           Try again
         </Button>

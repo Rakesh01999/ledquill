@@ -15,6 +15,8 @@ export function makeQueryClient(): QueryClient {
         gcTime: 5 * 60_000,
         refetchOnWindowFocus: false,
         retry: shouldRetry,
+        // 0.5 s then 1 s: a failing API shows its error state within about two seconds.
+        retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 2_000),
       },
       mutations: { retry: false },
       dehydrate: {

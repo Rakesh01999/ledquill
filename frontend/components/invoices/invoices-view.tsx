@@ -63,7 +63,7 @@ export function InvoicesView() {
         <div
           aria-busy={active.isFetching}
           className={cn(
-            "min-h-0 flex-1 overflow-auto [&_[data-slot=table-container]]:overflow-visible",
+            "min-h-0 flex-1 scroll-pt-10 scroll-pb-2 overflow-auto [&_[data-slot=table-container]]:overflow-visible",
             active.isPlaceholderData && "opacity-60 transition-opacity",
           )}
         >

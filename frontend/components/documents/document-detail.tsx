@@ -22,7 +22,7 @@ import { ProblemAlert } from "@/components/shared/problem-alert";
 import { StatusChip } from "@/components/shared/status-chip";
 import { ErrorState } from "@/components/shared/states";
 import { api, unwrap } from "@/lib/api/client";
-import { ApiProblem, describeError } from "@/lib/api/problem";
+import { ApiProblem, describeError, invalidIdAsMissing } from "@/lib/api/problem";
 import type { DocumentOut } from "@/lib/api/types";
 import { formatBytes } from "@/lib/format";
 import { formatWhen, isActive, stageText, typeTile } from "@/lib/documents";
@@ -89,7 +89,7 @@ export function DocumentDetail({ id }: { id: string }) {
   if (error && !doc) {
     return (
       <div className="rounded-lg border border-line bg-surface">
-        <ErrorState error={error} onRetry={() => void refetch()} />
+        <ErrorState error={invalidIdAsMissing(error, id)} onRetry={() => void refetch()} />
       </div>
     );
   }

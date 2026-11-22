@@ -33,7 +33,7 @@ export function ReviewView() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-line bg-surface">
-        <div className="min-h-0 flex-1 overflow-auto [&_[data-slot=table-container]]:overflow-visible">
+        <div className="min-h-0 flex-1 scroll-pt-10 scroll-pb-2 overflow-auto [&_[data-slot=table-container]]:overflow-visible">
           {isPending ? (
             <TableSkeleton rows={8} widths={["w-28", "w-44", "w-20", "w-72", "w-10"]} />
           ) : error ? (
