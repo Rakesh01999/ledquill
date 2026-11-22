@@ -13,7 +13,7 @@ import { ProblemAlert } from "@/components/shared/problem-alert";
 import { StatusChip } from "@/components/shared/status-chip";
 import { ErrorState } from "@/components/shared/states";
 import { api } from "@/lib/api/client";
-import { ApiProblem, fieldErrors } from "@/lib/api/problem";
+import { ApiProblem, fieldErrors, invalidIdAsMissing } from "@/lib/api/problem";
 import type { InvoiceOut } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
 import {
@@ -25,6 +25,7 @@ import {
 } from "@/lib/invoices";
 import { documentOptions, invoiceOptions, queueOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
+import { useShortcuts } from "@/lib/shortcuts";
 import { CorrectionsPanel } from "./corrections-panel";
 import { FieldRow } from "./field-row";
 import { IssuesBanner } from "./issues-banner";
@@ -32,6 +33,12 @@ import { LineItems } from "./line-items";
 import { useApproveInvoice, useCorrectInvoice } from "./use-invoice-actions";
 
 type Tab = "fields" | "source" | "issues";
+
+/** Mounted only once the invoice is loaded, so its handlers always see the current invoice. */
+function InvoiceShortcuts({ handlers }: { handlers: Record<string, () => void> }) {
+  useShortcuts(handlers);
+  return null;
+}
 
 function Section({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
   return (
@@ -92,7 +99,7 @@ export function InvoiceDetail({ id }: { id: string }) {
   if (invoiceQuery.error && !invoice) {
     return (
       <div className="rounded-lg border border-line bg-surface">
-        <ErrorState error={invoiceQuery.error} onRetry={() => void invoiceQuery.refetch()} />
+        <ErrorState error={invalidIdAsMissing(invoiceQuery.error, id)} onRetry={() => void invoiceQuery.refetch()} />
       </div>
     );
   }
@@ -149,10 +156,23 @@ export function InvoiceDetail({ id }: { id: string }) {
   }
 
   const sourceDoc = docQuery.data;
+  const shortcuts: Record<string, () => void> = {
+    // J and K walk the review queue; A approves when nothing blocks it; E edits the focused field.
+    j: () => inQueue && nextId && router.push(hrefFor(nextId)),
+    k: () => inQueue && prevId && router.push(hrefFor(prevId)),
+    a: () => {
+      if (!approved && !blocked && !approve.isPending) doApprove();
+    },
+    e: () => {
+      const el = document.activeElement;
+      if (el instanceof HTMLButtonElement && el.id.startsWith("field-")) el.click();
+    },
+  };
   const issuesLabel = `Issues${invoice.issues.length ? ` ${invoice.issues.length}` : ""}`;
 
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
+      <InvoiceShortcuts handlers={shortcuts} />
       <Link
         href={inQueue ? "/review" : "/invoices"}
         className="inline-flex w-fit items-center gap-1 text-[13px] text-link hover:underline"
@@ -161,7 +181,7 @@ export function InvoiceDetail({ id }: { id: string }) {
       </Link>
 
       <header className="flex flex-wrap items-start gap-x-4 gap-y-3">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-full sm:flex-1 sm:basis-0">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="min-w-0 truncate font-mono text-xl font-semibold">
               {invoice.invoice_number ?? "No invoice number"}
@@ -210,6 +230,7 @@ export function InvoiceDetail({ id }: { id: string }) {
           )}
           <Button
             onClick={doApprove}
+            title="Approve invoice (A)"
             disabled={approved || blocked || approve.isPending}
             aria-describedby={blocked ? "approve-hint" : undefined}
           >
@@ -228,6 +249,9 @@ export function InvoiceDetail({ id }: { id: string }) {
       <p role="status" className="min-h-0 text-[13px] text-ok empty:hidden">
         {saved}
       </p>
+      <p className="hidden text-xs text-ink-3 lg:block">
+        Shortcuts: {inQueue ? "J next, K previous, " : ""}A approve, E edit the focused field, / search.
+      </p>
 
       <div role="tablist" aria-label="Invoice sections" className="flex gap-1 border-b border-line lg:hidden">
         {(
@@ -240,11 +264,12 @@ export function InvoiceDetail({ id }: { id: string }) {
           <button
             key={key}
             role="tab"
+            data-focus-inset
             type="button"
             aria-selected={tab === key}
             onClick={() => setTab(key)}
             className={cn(
-              "-mb-px border-b-2 px-3 py-2 text-[13px] outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "-mb-px border-b-2 px-3 py-2 text-[13px] outline-none",
               tab === key ? "border-primary font-semibold text-ink" : "border-transparent text-ink-2",
             )}
           >

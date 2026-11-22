@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,16 @@ import { titleFor } from "./nav";
 import { SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { ApiStatus } from "./api-status";
+import { useShortcuts } from "@/lib/shortcuts";
 
 export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const searchInput = useRef<HTMLInputElement>(null);
+  // "/" jumps to the search field from anywhere that is not a text field.
+  useShortcuts(useMemo(() => ({ "/": () => searchInput.current?.focus() }), []));
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -58,13 +62,22 @@ export function Topbar() {
           aria-hidden="true"
         />
         <input
+          ref={searchInput}
           id="global-search"
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search invoices, suppliers, amounts"
-          className="h-8 w-full rounded-md border border-line bg-canvas pr-3 pl-8 text-[13px] text-ink outline-none placeholder:text-ink-3 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-8 w-full rounded-md border border-line bg-canvas pr-8 pl-8 text-[13px] text-ink outline-none placeholder:text-ink-3"
         />
+        {!query && (
+          <kbd
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded-sm border border-line px-1.5 font-mono text-[11px] text-ink-3"
+          >
+            /
+          </kbd>
+        )}
       </form>
       <ThemeToggle />
     </header>
