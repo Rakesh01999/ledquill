@@ -330,3 +330,37 @@ def test_a_near_blank_scan_ends_as_a_needs_review_invoice_that_explains_the_scan
     assert inv.status == "needs_review" and fake_llm.calls == []
     issues = issues_of(db_session, inv).values()
     assert any(i.rule_id == "V-08" and "scan" in i.message for i in issues)
+
+
+def test_text_pdf_with_indian_digit_grouping_keeps_the_totals(db_session, fake_llm, tmp_path):
+    # regression (clean_13.pdf): "10,50,125.00" was read as 10.50, so grounding nulled the totals
+    page = [
+        "Rilmoor Industrial Enterprise", "Invoice No: TX-006548", "Invoice Date: 2026-03-01",
+        "Bill To: Altamere Works", "Currency: BDT",
+        "Machining 1 10,50,125.00 10,50,125.00",
+        "Subtotal BDT 10,50,125.00", "VAT (7.5%) 78,759.38", "Total 11,28,884.38",
+    ]  # fmt: skip
+    fake_llm.script(
+        llm_json(
+            invoice_number="TX-006548",
+            supplier_name="Rilmoor Industrial Enterprise",
+            currency="BDT",
+            subtotal=1050125.00,
+            tax=78759.38,
+            total=1128884.38,
+            line_items=[
+                {
+                    "description": "Machining",
+                    "quantity": 1,
+                    "unit_price": 1050125.00,
+                    "amount": 1050125.00,
+                }
+            ],
+        )  # fmt: skip
+    )
+    doc, _, status = process(db_session, write_pdf(tmp_path / "in.pdf", [page]))
+    assert status == "completed"
+    (inv,) = invoices_of(db_session, doc)
+    assert (inv.subtotal, inv.total) == (D("1050125.00"), D("1128884.38"))
+    assert inv.raw_extraction["nulled_by_grounding"] == []
+    assert inv.line_items[0].amount == D("1050125.00") and inv.status == "ready"

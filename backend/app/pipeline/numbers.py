@@ -5,8 +5,18 @@ from decimal import Decimal, InvalidOperation
 
 # "1,250.00", "1.250,00", "1 250,00", "1250", "12.5": a run of 3-digit groups joined by one
 # separator with an optional decimal part, otherwise a plain number.
-NUMBER_TOKEN = re.compile(r"\d{1,3}(?:[  ,.']\d{3})+(?:[.,]\d{1,4})?|\d+(?:[.,]\d+)?")
+NUMBER_TOKEN = re.compile(
+    r"\d{1,2}(?:,\d{2})+,\d{3}(?:\.\d{1,4})?|"
+    r"\d{1,3}(?:[  ,.']\d{3})+(?:[.,]\d{1,4})?|"
+    r"\d+(?:[.,]\d+)?"
+)
 MAX_ABS = Decimal(10) ** 12  # numeric(14,2) holds less than this
+
+
+def _is_indian_grouping(parts: list[str]) -> bool:
+    """Indian grouping, e.g. 10,50,125: 1-2 digit head, 2-digit groups, one final 3-digit group."""
+    head, *middle, last = parts
+    return 1 <= len(head) <= 2 and all(len(p) == 2 for p in middle) and len(last) == 3
 
 
 def amount_candidates(token: str) -> list[Decimal]:
@@ -22,7 +32,7 @@ def amount_candidates(token: str) -> list[Decimal]:
         sep = "," if has_comma else "."
         parts = core.split(sep)
         if len(parts) > 2:
-            if all(len(p) == 3 for p in parts[1:]):
+            if all(len(p) == 3 for p in parts[1:]) or (sep == "," and _is_indian_grouping(parts)):
                 texts.append("".join(parts))
         else:
             head, tail = parts
