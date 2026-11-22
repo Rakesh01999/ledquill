@@ -55,9 +55,11 @@ Unknown = null. Unmeasured = not reported.
 2. State a short plan (3-6 lines). For a whole phase, wait for "go".
 3. Implement in small steps; run the relevant tests after each step.
 4. Review your own diff: scope, naming, dead code, secrets, error paths.
-5. Tick the items you completed in `docs/CHECKLIST.md` (`[x]`); mark cut items
+5. Before the report, run /code-review on your own diff and fix real findings;
+   do not widen scope.
+6. Tick the items you completed in `docs/CHECKLIST.md` (`[x]`); mark cut items
    `~~[ ] item~~` with a reason. Never tick anything you did not verify.
-6. Finish with the report (section 10) and stop.
+7. Finish with the report (section 10) and stop.
 
 The user tests manually, then commits and pushes personally. Do not run
 `git commit`, `git push`, `git reset --hard`, `git clean`, or rewrite history.
@@ -150,6 +152,8 @@ artifact-*); they belong to other projects.
   file, when it is long.
 - Do not repeat spec content back; reference section numbers.
 - Keep plans and reports short. One phase per session.
+- When showing logs or test output, show only the failing test names and the
+  last 40 lines; never paste full logs.
 
 ## 10. Final report (every task)
 
@@ -160,3 +164,8 @@ artifact-*); they belong to other projects.
 5. **Manual test steps** — 3-6 concrete steps for the user to try.
 6. **Open issues** — limits, risks, suggestions (not implemented).
 7. **Processes** — anything you started that is still running.
+8. **Commit commands** — one copy-paste Git Bash block of grouped `git add <paths>`
+   plus `git commit -m '<conventional title>' -m '<bulleted body>'`, one commit per
+   logical unit, ending with `git status --short` and `git push`. Also list files
+   that must NOT be committed (`.env`, generated demo files). Never run these
+   commands yourself.
