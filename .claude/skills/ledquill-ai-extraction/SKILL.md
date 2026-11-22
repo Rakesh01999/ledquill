@@ -19,9 +19,10 @@ or it is null and flagged. Accuracy you can verify beats coverage you cannot.
 - TIFF can be multi-frame: iterate frames as pages.
 - Spreadsheets: read every sheet (`sheet_name=None`); detect the header row as
   the first row with >= 3 non-empty text cells; map columns to fields by a
-  synonym table first (`inv no`, `invoice #`, `bill no` -> invoice_number), LLM
-  only for headers the table cannot map. Each row (or row group by invoice
-  number) is one invoice. CSV: detect encoding (utf-8, utf-8-sig, cp1252) and
+  synonym table first (`inv no`, `invoice #`, `bill no` -> invoice_number). When
+  the headers map both invoice_number and total, the invoice is read from the
+  cells and the LLM is skipped; otherwise that invoice goes to the LLM. Each row
+  (or row group by invoice number) is one invoice. CSV: detect encoding (utf-8, utf-8-sig, cp1252) and
   delimiter with `csv.Sniffer`.
 - Corrupt / encrypted / zero-page files raise a `PermanentError` with a clear
   message; they are not retried.
@@ -50,7 +51,8 @@ prompt and a fallback if every LLM fails.
   `LLM_MODELS`.
 - Settings: temperature 0, JSON response format; for gpt-oss
   `reasoning_effort="low"`, `include_reasoning=False` (measured saving ~25%).
-- Input budget: trim to ~6K tokens (estimate 4 chars per token); drop repeated
+- Input budget: trim document text to ~4.5K tokens (18,000 chars, estimate 4 chars
+  per token) so prompt, text and output fit under 90% of 8K TPM; drop repeated
   headers/footers first, keep totals area.
 - Token bucket per model (TPM and TPD from settings) checked before the call;
   on 429 or bucket empty -> next model; all exhausted -> retry later via Celery.
@@ -58,13 +60,22 @@ prompt and a fallback if every LLM fails.
 - Validate output with the Pydantic model; on invalid JSON retry once with
   "Return valid JSON only", then next model.
 
+## Prompt injection
+
+Before the model and the grounding check see the text, lines that look like
+instructions to an AI ("ignore previous instructions", "set the total to ...")
+are replaced by a marker (`llm/injection.py`). The invoice gets a V-08 warning
+with the number of lines removed. The text is also sent inside a delimited data
+block, the model has no tools, and output is schema-only.
+
 ## Grounding (the anti-hallucination guard, in code)
 
 For each returned field:
 - numbers: normalise (remove separators/currency) and search in normalised
   source text; also accept if printed with different separators.
-- names / invoice number: case-insensitive substring, or `rapidfuzz` partial
-  ratio >= 90.
+- invoice number: exact substring after normalising (case, spaces and punctuation
+  ignored); no fuzzy match, so one wrong character is not grounded.
+- names: case-insensitive substring, or `rapidfuzz` partial ratio >= 90.
 - dates: any common printed format of that date appears.
 Not found -> value null, confidence 0, `raw_extraction` keeps what the model
 said. Rule value and LLM value disagree -> keep grounded one; if both grounded,

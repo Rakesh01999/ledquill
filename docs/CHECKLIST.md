@@ -46,15 +46,15 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P2 — Extraction and validation (Tasks 2, 3)
 
-- [ ] Multi-invoice PDF splitting (FR-07)
-- [ ] Rules-based pre-extraction
-- [ ] LLM providers with failover, token buckets, cache (FR-08)
-- [ ] Versioned prompt and Pydantic output validation
-- [ ] Grounding check: unfound values become null (FR-09)
-- [ ] Validation rules V-01 to V-08 (FR-10, FR-11, FR-12)
-- [ ] Review flag with reasons (FR-13)
-- [ ] Cross-verification PDF-PDF and PDF-Excel, V-09 (FR-14)
-- [ ] Tests with mocked LLM; one opt-in live test
+- [x] Multi-invoice PDF splitting (FR-07)
+- [x] Rules-based pre-extraction
+- [x] LLM providers with failover, token buckets, cache (FR-08)
+- [x] Versioned prompt and Pydantic output validation
+- [x] Grounding check: unfound values become null (FR-09)
+- [x] Validation rules V-01 to V-08 (FR-10, FR-11, FR-12)
+- [x] Review flag with reasons (FR-13)
+- [x] Cross-verification PDF-PDF and PDF-Excel, V-09 (FR-14)
+- [x] Tests with mocked LLM; one opt-in live test (live run: Groq call and grounding worked; its final assertion was fixed afterwards and not re-run, see report)
 - [ ] **Gate:** a sample invoice yields correct fields and the expected issues
 
 ## P3 — Labeled dataset (Task 7)
@@ -95,6 +95,8 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [ ] Evaluation script through the real API (`evaluation/run_eval.py`)
 - [ ] `evaluation/results.json` and `evaluation/report.md` with measured accuracy, timing, success and failure rates
 - [ ] Test results saved for submission
+- [ ] Reuse stored pages on job retry instead of re-running OCR
+- [ ] Document in README: V-07/V-09 flag only the later-processed invoice; same-hash duplicates with no invoice row are not caught
 - [ ] **Gate:** CI green, report contains only measured numbers
 
 ## P7 — Deployment
