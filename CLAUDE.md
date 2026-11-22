@@ -22,6 +22,8 @@ fields with an LLM -> validate the numbers -> review, correct and search.
 - Specs are the source of truth:
   - `docs/requirements.md` — what to build (FR/NFR ids, validation rules V-01..V-09)
   - `docs/design.md` — how (schema, API, pipeline, prompt, config, phases)
+  - `docs/prd.md` — users, stories, screens, interactions, performance budget
+  - `docs/CHECKLIST.md` — progress tracker, updated every phase
   Follow them. If code and spec disagree, or the spec is unclear, stop and ask.
 
 ## 3. Operating principles
@@ -53,7 +55,9 @@ Unknown = null. Unmeasured = not reported.
 2. State a short plan (3-6 lines). For a whole phase, wait for "go".
 3. Implement in small steps; run the relevant tests after each step.
 4. Review your own diff: scope, naming, dead code, secrets, error paths.
-5. Finish with the report (section 10) and stop.
+5. Tick the items you completed in `docs/CHECKLIST.md` (`[x]`); mark cut items
+   `~~[ ] item~~` with a reason. Never tick anything you did not verify.
+6. Finish with the report (section 10) and stop.
 
 The user tests manually, then commits and pushes personally. Do not run
 `git commit`, `git push`, `git reset --hard`, `git clean`, or rewrite history.
