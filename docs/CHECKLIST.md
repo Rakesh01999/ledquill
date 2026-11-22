@@ -94,17 +94,17 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 ## P6 — Tests and evaluation (Task 7)
 
 - [x] Failure scenario tests (corrupt, encrypted, empty, oversized, wrong type, LLM down, rate-limited, duplicate): existing and new tests pass (500 passed, 2 skipped); duplicate upload pinned in `test_duplicate_upload.py`
-- [ ] Evaluation script through the real API (`evaluation/run_eval.py`): written and smoke-tested on 3 files with 8 scorer unit tests; the full run has not been done, so this stays open
-- [ ] `evaluation/results.json` and `evaluation/report.md` with measured accuracy, timing, success and failure rates
-- [ ] Test results saved for submission
-- [ ] Reuse stored pages on job retry instead of re-running OCR
-- [ ] Document in README: V-07/V-09 flag only the later-processed invoice; same-hash duplicates with no invoice row are not caught
-- [ ] `run_eval` uploads files with `depends_on` sequentially and waits for the partner to complete
-- [ ] Estimate LLM token use for ~60 files against daily limits before the full run: estimate is about 100K tokens (not measured, one run should fit one day); per-call tokens are now recorded, so the estimate is checked by the full run
-- [ ] Live Gemini failover test (`tests/live`, opt-in `RUN_LIVE_LLM=1`): written, but both attempts hit Gemini overload (503, then timeout), so the last failover step is not yet proven
-- ~~[ ] 1000-page PDF test~~ cut: document as a known limitation (not tested; page limit is enforced, rate limits and demo hosting limits apply)
-- ~~[ ] Lighthouse run~~ cut: document as a known limitation (not measured)
-- [ ] **Gate:** CI green, report contains only measured numbers
+- [x] Evaluation script through the real API (`evaluation/run_eval.py`) and labeled dataset (`evaluation/data`, 58 files): full run done, 58 of 58 files (see `evaluation/report.md`)
+- [x] `evaluation/results.json` and `evaluation/report.md` with measured accuracy, timing, success and failure rates
+- [x] Test results saved for submission: saved in evaluation/ (results.json, report.md)
+- [ ] Reuse stored pages on job retry instead of re-running OCR: not implemented: retry deletes page rows and re-runs OCR (backend/app/workers/stages.py run_extract); listed as a known limitation
+- [ ] Document in README: V-07/V-09 flag only the later-processed invoice; same-hash duplicates with no invoice row are not caught (README is written in P8)
+- [x] `run_eval` uploads files with `depends_on` sequentially and waits for the partner to complete: sequential; each file waits for terminal status; a failed partner does not block the dependent file (a note is printed)
+- [x] Estimate LLM token use for ~60 files against daily limits: measured: 68,662 tokens across 50 files (about 70K), under the earlier ~100K estimate
+- [ ] Live Gemini failover test (`tests/live`, opt-in `RUN_LIVE_LLM=1`, gemini-3.8-flash): not confirmed, provider overload (503 three times); failover covered by fake-provider tests
+- ~~[ ] 1000-page PDF test~~ cut from scope: not tested (page limit is enforced; rate limits and demo hosting limits apply)
+- ~~[ ] Lighthouse run~~ cut from scope: not measured
+- [x] **Gate:** CI green, report contains only measured numbers: CI green (confirmed on GitHub); report numbers verified against results.json
 
 ## P7 — Deployment
 
