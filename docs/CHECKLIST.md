@@ -67,14 +67,16 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P4 — API and search (Tasks 4, 5)
 
-- [ ] Document list, detail, events; job status (FR-15)
-- [ ] Invoice list with keyword filters (FR-18)
-- [ ] Invoice detail; PATCH corrections with audit trail and re-validation (FR-15, FR-21)
-- [ ] Approve; reprocess failed jobs (FR-15)
-- [ ] Embeddings at index stage; semantic and hybrid search (FR-19)
-- [ ] `/stats`; rate limiting; RFC 7807 errors
-- [ ] API tests incl. 401, 404, 413, 415, 422
-- [ ] **Gate:** every endpoint documented in `/docs`, API tests pass
+- [x] Document list, detail, events; job status (FR-15)
+- [x] Invoice list with keyword filters (FR-18)
+- [x] Invoice detail; PATCH corrections with audit trail and re-validation (FR-15, FR-21)
+- [x] Approve; reprocess failed jobs (FR-15)
+- [x] Embeddings at index stage; semantic and hybrid search (FR-19); stub embedder in tests, real model measured once (see report)
+- [x] `/stats`; RFC 7807 errors (401, 404, 405, 422, 429, 500 verified)
+- [x] Rate limiting on upload and search, with Retry-After
+- [x] Reprocess of a stale document; `DELETE /documents/{id}`; `LEDQUILL_SEMANTIC_ENABLED` switch
+- [x] API tests incl. 401, 404, 413, 415, 422
+- [x] **Gate:** every endpoint documented in `/docs`, API tests pass (462 passed, 1 skipped)
 
 ## P5 — Frontend (Task 6)
 
