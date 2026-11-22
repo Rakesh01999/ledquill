@@ -27,8 +27,8 @@ def reload(session, document, job):
     return session.get(Document, document.id), session.get(Job, job.id)
 
 
-def test_stage_list_is_ordered_detect_then_extract():
-    assert [s.name for s in STAGES] == ["detect", "extract"]
+def test_stage_list_is_ordered():
+    assert [s.name for s in STAGES] == ["detect", "extract", "split", "fields", "validate"]
 
 
 def test_digital_pdf_completes_with_events_pages_and_durations(db_session, fixtures_dir):
@@ -38,16 +38,15 @@ def test_digital_pdf_completes_with_events_pages_and_durations(db_session, fixtu
     assert (doc.status, doc.progress, doc.page_count, doc.error) == ("completed", 100, 2, None)
     assert (job.status, job.attempts) == ("completed", 1)
     assert events(db_session, doc) == [
-        ("detect", "started"),
-        ("detect", "succeeded"),
-        ("extract", "started"),
-        ("extract", "succeeded"),
+        (stage, status)
+        for stage in ("detect", "extract", "split", "fields", "validate")
+        for status in ("started", "succeeded")
     ]
     finished = db_session.scalars(
         select(ProcessingEvent).where(ProcessingEvent.status == "succeeded")
     ).all()
     assert all(e.duration_ms is not None and e.duration_ms >= 0 for e in finished)
-    assert finished[-1].detail["pages"] == 2
+    assert next(e for e in finished if e.stage == "extract").detail["pages"] == 2
     pages = db_session.scalars(select(Page).order_by(Page.page_no)).all()
     assert [(p.page_no, p.method) for p in pages] == [(1, "text"), (2, "text")]
 
@@ -65,7 +64,8 @@ def test_progress_is_reported_every_ten_pages(db_session, tmp_path, monkeypatch)
 
     def spy(self, fraction):
         original(self, fraction)
-        seen.append((round(fraction, 2), self.document.progress))
+        if self.job.current_stage == "extract":
+            seen.append((round(fraction, 2), self.document.progress))
 
     monkeypatch.setattr(StageContext, "set_progress", spy)
     run_job(db_session, doc.id, job.id, final_attempt=False)

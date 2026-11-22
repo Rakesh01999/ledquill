@@ -1,0 +1,271 @@
+"""Stages split, fields and validate through run_job, real DB and storage, FakeProvider LLM."""
+
+from decimal import Decimal as D
+
+import pytest
+from sqlalchemy import func, select
+
+from app.core.errors import TransientError
+from app.db.models import Document, Invoice, ValidationIssue
+from app.llm.base import RateLimited
+from app.pipeline.fields import extract_fields
+from app.workers import stages
+from app.workers.stages import run_job
+from tests.fakes import llm_json
+from tests.fixtures.builders import (
+    MISMATCH_LLM,
+    injection_pdf,
+    invoice_page,
+    mismatch_pdf,
+    synonym_register_xlsx,
+    template_xlsx,
+    two_invoice_pdf,
+    write_pdf,
+)
+from tests.helpers import create_document
+
+pytestmark = pytest.mark.usefixtures("db_clean")
+
+
+def process(session, path, *, final_attempt=False):
+    doc, job = create_document(session, path)
+    status = run_job(session, doc.id, job.id, final_attempt=final_attempt)
+    session.expire_all()
+    return doc, job, status
+
+
+def invoices_of(session, doc) -> list[Invoice]:
+    return list(
+        session.scalars(
+            select(Invoice).where(Invoice.document_id == doc.id).order_by(Invoice.created_at)
+        )
+    )
+
+
+def issues_of(session, invoice) -> dict[str, ValidationIssue]:
+    rows = session.scalars(select(ValidationIssue).where(ValidationIssue.invoice_id == invoice.id))
+    return {f"{r.rule_id}:{r.field}": r for r in rows}
+
+
+def clean_pdf(path, number="INV-8001"):
+    page = invoice_page(
+        number, "2026-09-05", "Initech LLC", "Globex Corp",
+        [("Consulting", "1", "100.00", "100.00")], "100.00", "15.00", "115.00",
+    )  # fmt: skip
+    return write_pdf(path, [page])
+
+
+CLEAN_LLM = llm_json(
+    invoice_number="INV-8001", invoice_date="2026-09-05", supplier_name="Initech LLC",
+    customer_name="Globex Corp", currency="USD", subtotal=100, tax=15, total=115,
+)  # fmt: skip
+
+
+def test_total_mismatch_flags_v05_and_keeps_what_the_model_said(db_session, fake_llm, tmp_path):
+    fake_llm.script(MISMATCH_LLM)
+    doc, _, status = process(db_session, mismatch_pdf(tmp_path / "m.pdf"))
+    assert status == "completed"
+    (inv,) = invoices_of(db_session, doc)
+    assert (inv.invoice_number, inv.supplier_name, inv.currency) == (
+        "INV-5001", "Acme Supplies Ltd", "USD",
+    )  # fmt: skip
+    assert (inv.subtotal, inv.tax, inv.total) == (D("1000.00"), D("150.00"), D("1200.00"))
+    assert inv.status == "needs_review" and inv.method == "rules+llm"
+    assert inv.model == "groq:model-groq" and inv.page_numbers == [1]
+    assert len(inv.line_items) == 1 and inv.line_items[0].amount == D("1000.00")
+    v05 = issues_of(db_session, inv)["V-05:total"]
+    assert (v05.severity, v05.expected, v05.actual) == ("error", "1,150.00", "1,200.00")
+    assert inv.raw_extraction["prompt_version"] == "extract-v1"
+    assert D(inv.raw_extraction["llm"]["total"]) == D("1200.00")
+    assert inv.raw_extraction["llm_status"] == "ok"
+    assert "Total Due" not in str(inv.raw_extraction)  # audit data holds values, not the text
+
+
+def test_two_invoice_pdf_is_split_and_extracted_per_invoice(db_session, fake_llm, tmp_path):
+    fake_llm.script(
+        llm_json(invoice_number="INV-6001", supplier_name="Acme Supplies Ltd", total=115),
+        llm_json(invoice_number="INV-6002", supplier_name="Initech LLC", total=23),
+    )
+    doc, _, _ = process(db_session, two_invoice_pdf(tmp_path / "two.pdf"))
+    first, second = invoices_of(db_session, doc)
+    assert (first.invoice_number, first.page_numbers, first.total) == (
+        "INV-6001", [1, 2], D("115.00"),
+    )  # fmt: skip
+    assert (second.invoice_number, second.page_numbers, second.total) == (
+        "INV-6002", [3], D("23.00"),
+    )  # fmt: skip
+    assert len(fake_llm.calls) == 2
+    assert "INV-6002" not in fake_llm.calls[0].user  # each call sees only its own pages
+
+
+def test_spreadsheet_with_synonym_headers_needs_no_llm_call(db_session, fake_llm, tmp_path):
+    doc, _, status = process(db_session, synonym_register_xlsx(tmp_path / "reg.xlsx"))
+    assert status == "completed" and fake_llm.calls == []
+    first, second = invoices_of(db_session, doc)
+    assert (first.invoice_number, first.supplier_name, first.total) == (
+        "INV-9001", "Delta Traders", D("230.00"),
+    )  # fmt: skip
+    assert (first.subtotal, first.tax, first.currency) == (D("200.00"), D("30.00"), "USD")
+    assert first.method == "rules" and first.model is None and first.status == "ready"
+    assert first.raw_extraction["llm_status"] == "skipped"
+    assert second.status == "needs_review" and "V-05:total" in issues_of(db_session, second)
+
+
+def test_spreadsheet_template_with_labels_only_yields_all_null_fields(
+    db_session, fake_llm, tmp_path
+):
+    invented = llm_json(
+        invoice_number="INV-0001", invoice_date="2026-01-01", supplier_name="Phantom Ltd",
+        customer_name="Ghost Inc", currency="USD", subtotal=400, tax=100, total=500,
+        line_items=[{"description": "Widget", "quantity": 1, "unit_price": 500, "amount": 500}],
+    )  # fmt: skip
+    fake_llm.script(invented)
+    doc, _, status = process(db_session, template_xlsx(tmp_path / "form.xlsx"))
+    assert status == "completed"
+    (inv,) = invoices_of(db_session, doc)  # one row, never an invented invoice
+    for name in ("invoice_number", "invoice_date", "supplier_name", "customer_name", "currency",
+                 "subtotal", "tax", "total"):  # fmt: skip
+        assert getattr(inv, name) is None, name
+    assert inv.line_items == [] and set(inv.confidence.values()) == {0.0}
+    assert inv.raw_extraction["llm"]["total"] == "500"  # what the model said is kept for audit
+    assert "total" in inv.raw_extraction["nulled_by_grounding"]
+    assert inv.status == "needs_review"
+    assert {"V-01:invoice_number", "V-01:total"} <= set(issues_of(db_session, inv))
+
+
+def test_prompt_injection_cannot_force_the_total(db_session, fake_llm, tmp_path):
+    fake_llm.script(llm_json(invoice_number="INV-7001", supplier_name="Initech LLC", total=0))
+    doc, _, status = process(db_session, injection_pdf(tmp_path / "inj.pdf"))
+    assert status == "completed"
+    (inv,) = invoices_of(db_session, doc)
+    assert inv.total == D("1150.00")  # the printed value, not the injected 0
+    assert "Ignore previous instructions" not in fake_llm.calls[0].user
+    assert inv.raw_extraction["injection_lines_removed"] == 1
+    assert inv.status == "needs_review"
+    assert any(i.rule_id == "V-08" and "instructions" in i.message
+               for i in issues_of(db_session, inv).values())  # fmt: skip
+
+
+def test_after_the_final_retry_rule_results_are_kept_and_the_invoice_needs_review(
+    db_session, fake_llm, tmp_path
+):
+    fake_llm.script(RateLimited("429"))  # the only configured model is rate limited
+    doc, job, status = process(db_session, mismatch_pdf(tmp_path / "m.pdf"), final_attempt=True)
+    assert status == "completed"
+    session_doc = db_session.get(Document, doc.id)
+    assert session_doc.status == "completed" and session_doc.error is None
+    (inv,) = invoices_of(db_session, doc)
+    assert inv.invoice_number == "INV-5001" and inv.total == D("1200.00")  # rule results kept
+    assert inv.method == "rules" and inv.model is None
+    assert inv.raw_extraction["llm_status"] == "unavailable"
+    assert inv.status == "needs_review"
+    unavailable = [i for i in issues_of(db_session, inv).values() if "unavailable" in i.message]
+    assert len(unavailable) == 1 and unavailable[0].rule_id == "V-08"
+
+
+def test_all_models_exhausted_before_the_final_retry_raises_a_transient_error(
+    db_session, fake_llm, tmp_path
+):
+    fake_llm.script(RateLimited("429"))
+    doc, job = create_document(db_session, mismatch_pdf(tmp_path / "m.pdf"))
+    with pytest.raises(TransientError):
+        run_job(db_session, doc.id, job.id, final_attempt=False)
+
+
+def test_a_retry_after_a_transient_llm_failure_completes_without_duplicates(
+    db_session, fake_llm, tmp_path
+):
+    fake_llm.script(RateLimited("429"), MISMATCH_LLM)
+    doc, job = create_document(db_session, mismatch_pdf(tmp_path / "m.pdf"))
+    with pytest.raises(TransientError):
+        run_job(db_session, doc.id, job.id, final_attempt=False)
+    assert run_job(db_session, doc.id, job.id, final_attempt=False) == "completed"
+    assert len(invoices_of(db_session, doc)) == 1
+
+
+def test_one_failing_invoice_does_not_fail_the_document(
+    db_session, fake_llm, tmp_path, monkeypatch
+):
+    calls = {"n": 0}
+
+    def flaky(segment, get_llm, *, final_attempt):
+        calls["n"] += 1
+        if calls["n"] == 2:
+            raise RuntimeError("boom")
+        return extract_fields(segment, get_llm, final_attempt=final_attempt)
+
+    monkeypatch.setattr(stages, "extract_fields", flaky)
+    fake_llm.script(llm_json(invoice_number="INV-6001", supplier_name="Acme Supplies Ltd"))
+    doc, _, status = process(db_session, two_invoice_pdf(tmp_path / "two.pdf"))
+    assert status == "completed" and db_session.get(Document, doc.id).status == "completed"
+    first, second = invoices_of(db_session, doc)
+    assert first.invoice_number == "INV-6001"
+    assert second.invoice_number == "INV-6002"  # the rules still read it
+    assert second.raw_extraction["llm_status"] == "error" and second.status == "needs_review"
+
+
+def test_rerunning_the_job_rebuilds_invoices_instead_of_duplicating(db_session, fake_llm, tmp_path):
+    fake_llm.script(MISMATCH_LLM)
+    doc, job, _ = process(db_session, mismatch_pdf(tmp_path / "m.pdf"))
+    first_issues = len(issues_of(db_session, invoices_of(db_session, doc)[0]))
+    run_job(db_session, doc.id, job.id, final_attempt=False)
+    assert db_session.scalar(select(func.count()).select_from(Invoice)) == 1
+    (inv,) = invoices_of(db_session, doc)
+    assert len(issues_of(db_session, inv)) == first_issues
+    assert len(fake_llm.calls) == 1  # the second run came from the cache
+
+
+def test_same_file_uploaded_twice_flags_v07_on_the_later_one(db_session, fake_llm, tmp_path):
+    fake_llm.script(CLEAN_LLM, CLEAN_LLM)
+    path = clean_pdf(tmp_path / "a.pdf")
+    first_doc, _, _ = process(db_session, path)
+    second_doc, _, _ = process(db_session, path)
+    (first,), (second,) = invoices_of(db_session, first_doc), invoices_of(db_session, second_doc)
+    assert first.status == "ready" and issues_of(db_session, first) == {}
+    dup = issues_of(db_session, second)["V-07:None"]
+    assert (dup.severity, dup.related_invoice_id) == ("error", first.id)
+    assert second.status == "needs_review" and "exact file" in dup.message
+
+
+def test_reprocessing_a_document_that_others_point_at_does_not_break(
+    db_session, fake_llm, tmp_path
+):
+    fake_llm.script(CLEAN_LLM, CLEAN_LLM)
+    path = clean_pdf(tmp_path / "a.pdf")
+    first_doc, first_job, _ = process(db_session, path)
+    second_doc, _, _ = process(db_session, path)
+    run_job(db_session, first_doc.id, first_job.id, final_attempt=False)  # FK must not block this
+    db_session.expire_all()
+    (first,), (second,) = invoices_of(db_session, first_doc), invoices_of(db_session, second_doc)
+    assert issues_of(db_session, second) == {} and second.status == "ready"  # stale issue purged
+    assert issues_of(db_session, first)["V-07:None"].related_invoice_id == second.id
+
+
+def test_pdf_and_spreadsheet_copies_that_disagree_raise_v09_with_the_related_invoice(
+    db_session, fake_llm, tmp_path
+):
+    register_doc, _, _ = process(db_session, synonym_register_xlsx(tmp_path / "reg.xlsx"))
+    (register_inv, _) = invoices_of(db_session, register_doc)
+    page = invoice_page(
+        "INV-9001", "2026-08-03", "Delta Traders", "Globex Corp",
+        [("Goods", "1", "200.00", "200.00")], "200.00", "50.00", "250.00",
+    )  # fmt: skip
+    fake_llm.script(
+        llm_json(
+            invoice_number="INV-9001",
+            invoice_date="2026-08-03",
+            supplier_name="Delta Traders",
+            subtotal=200,
+            tax=50,
+            total=250,
+        )
+    )
+    pdf_doc, _, _ = process(db_session, write_pdf(tmp_path / "inv.pdf", [page]))
+    (pdf_inv,) = invoices_of(db_session, pdf_doc)
+    issues = issues_of(db_session, pdf_inv)
+    v09 = issues["V-09:total"]
+    assert (v09.severity, v09.expected, v09.actual) == ("error", "230.00", "250.00")
+    assert v09.related_invoice_id == register_inv.id and "reg.xlsx" in v09.message
+    assert "V-09:invoice_date" not in issues and "V-09:supplier_name" not in issues
+    assert "V-07:invoice_number" in issues  # same supplier + number is also a duplicate
+    assert pdf_inv.status == "needs_review"

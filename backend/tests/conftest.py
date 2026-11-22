@@ -7,6 +7,7 @@ the development data in `ledquill` is never truncated. Celery runs eagerly.
 import os
 import tempfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from sqlalchemy.engine import make_url
 
@@ -19,6 +20,7 @@ os.environ["STORAGE_BACKEND"] = "local"
 os.environ["STORAGE_LOCAL_DIR"] = tempfile.mkdtemp(prefix="ledquill-test-")
 
 import pytest  # noqa: E402
+import redis  # noqa: E402
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -27,7 +29,9 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from app.core.settings import get_settings  # noqa: E402
 from app.db.session import get_engine, new_session  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.workers import stages  # noqa: E402
 from app.workers.celery_app import celery_app  # noqa: E402
+from tests.fakes import FakeProvider, make_client  # noqa: E402
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -86,3 +90,38 @@ def settings():
 @pytest.fixture
 def fixtures_dir() -> Path:
     return FIXTURES
+
+
+LLM_TEST_REDIS_DB = 15  # never DB 0: that is the Celery broker
+
+
+@pytest.fixture
+def llm_redis(settings):
+    """Redis DB 15 for the limiter and cache, flushed before and after each test."""
+    url = urlsplit(settings.redis_url)._replace(path=f"/{LLM_TEST_REDIS_DB}").geturl()
+    client = redis.Redis.from_url(url)
+    assert client.connection_pool.connection_kwargs["db"] == LLM_TEST_REDIS_DB
+    client.flushdb()
+    yield client
+    client.flushdb()
+    client.close()
+
+
+@pytest.fixture(autouse=True)
+def fake_llm(monkeypatch, llm_redis) -> FakeProvider:
+    """No test reaches a real provider: the worker gets a client around this FakeProvider.
+    Unscripted, it answers with a valid JSON that found nothing."""
+    provider = FakeProvider()
+    client = make_client(llm_redis, provider)
+    monkeypatch.setattr(stages, "build_llm_client", lambda _settings: client)
+    provider.client = client
+    return provider
+
+
+def pytest_collection_modifyitems(config, items):
+    if os.environ.get("RUN_LIVE") == "1":
+        return
+    skip = pytest.mark.skip(reason="live LLM test: set RUN_LIVE=1 to run")
+    for item in items:
+        if "live" in item.keywords:
+            item.add_marker(skip)
