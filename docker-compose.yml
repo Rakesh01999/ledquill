@@ -6,6 +6,7 @@ x-backend: &backend
     - ./backend:/app
     - ./evaluation:/evaluation
     - uploads:/data/uploads
+    - models:/data/models
   depends_on:
     db:
       condition: service_healthy
@@ -49,3 +50,4 @@ services:
 volumes:
   pgdata:
   uploads:
+  models:

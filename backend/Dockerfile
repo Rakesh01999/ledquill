@@ -10,7 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --uid 1000 app \
-    && mkdir -p /app /data/uploads \
+    && mkdir -p /app /data/uploads /data/models \
     && chown -R app:app /app /data
 
 WORKDIR /app

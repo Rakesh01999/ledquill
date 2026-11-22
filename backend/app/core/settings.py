@@ -3,7 +3,8 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from limits import parse
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,6 +18,13 @@ class Settings(BaseSettings):
     ledquill_max_upload_mb: int = Field(25, gt=0)
     ledquill_max_files_per_request: int = Field(20, gt=0)
     ledquill_cors_origins: str = "http://localhost:3000"
+    # per API key, slowapi syntax ("10/minute", "100/hour")
+    ledquill_rate_limit_upload: str = "10/minute"
+    ledquill_rate_limit_search: str = "30/minute"
+    # False on a memory-limited deploy: no model is loaded, search is keyword only
+    ledquill_semantic_enabled: bool = True
+    # a queued/processing document with no progress for this long may be reprocessed or deleted
+    ledquill_stale_job_minutes: int = Field(15, gt=0)
     # decompression-bomb guards (PermanentError when exceeded)
     ledquill_max_pdf_pages: int = Field(2000, gt=0)
     ledquill_max_tiff_frames: int = Field(200, gt=0)
@@ -48,6 +56,13 @@ class Settings(BaseSettings):
     llm_call_timeout_seconds: float = Field(30.0, gt=0)
     llm_cache_ttl_seconds: int = Field(7 * 24 * 3600, gt=0)
     embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_cache_dir: str = "/data/models"  # downloaded model files; a volume keeps them
+
+    @field_validator("ledquill_rate_limit_upload", "ledquill_rate_limit_search")
+    @classmethod
+    def _valid_rate_limit(cls, value: str) -> str:
+        parse(value)  # raises ValueError at startup instead of on the first request
+        return value
 
     @property
     def max_upload_bytes(self) -> int:
