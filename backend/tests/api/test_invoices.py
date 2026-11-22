@@ -44,9 +44,8 @@ def test_unknown_document_or_invoice_is_404_problem_json(client):
     assert client.get(f"{INVOICES}/{uuid.uuid4()}", headers=API_HEADERS).status_code == 404
 
 
-def test_bad_ids_and_a_missing_document_id_are_422(client):
+def test_bad_ids_are_422(client):
     assert client.get(f"{INVOICES}/not-a-uuid", headers=API_HEADERS).status_code == 422
-    assert client.get(INVOICES, headers=API_HEADERS).status_code == 422
     assert client.get(INVOICES, params={"document_id": "x"}, headers=API_HEADERS).status_code == 422
 
 

@@ -17,6 +17,8 @@ _TEST_URL = make_url(os.environ.get("DATABASE_URL", _DEFAULT_URL)).set(database=
 os.environ["DATABASE_URL"] = _TEST_URL.render_as_string(hide_password=False)
 os.environ["LEDQUILL_API_KEY"] = "test-key"
 os.environ["STORAGE_BACKEND"] = "local"
+os.environ["LEDQUILL_RATE_LIMIT_UPLOAD"] = "10000/minute"  # tests upload constantly
+os.environ["LEDQUILL_RATE_LIMIT_SEARCH"] = "10000/minute"
 os.environ["STORAGE_LOCAL_DIR"] = tempfile.mkdtemp(prefix="ledquill-test-")
 
 import pytest  # noqa: E402
@@ -26,12 +28,14 @@ from alembic.config import Config  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import create_engine, text  # noqa: E402
 
+from app.core.ratelimit import limiter  # noqa: E402
 from app.core.settings import get_settings  # noqa: E402
 from app.db.session import get_engine, new_session  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.pipeline import embed  # noqa: E402
 from app.workers import stages  # noqa: E402
 from app.workers.celery_app import celery_app  # noqa: E402
-from tests.fakes import FakeProvider, make_client  # noqa: E402
+from tests.fakes import FakeProvider, StubEmbedder, make_client  # noqa: E402
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -67,6 +71,22 @@ def db_session():
     session = new_session()
     yield session
     session.close()
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    limiter.reset()
+    yield
+    limiter.reset()
+
+
+@pytest.fixture(autouse=True)
+def stub_embedder(monkeypatch):
+    """The real model is never loaded or downloaded: get_embedder() builds a StubEmbedder."""
+    monkeypatch.setattr(embed, "FastEmbedder", StubEmbedder)
+    embed.get_embedder.cache_clear()
+    yield
+    embed.get_embedder.cache_clear()
 
 
 @pytest.fixture

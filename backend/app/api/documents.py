@@ -1,21 +1,25 @@
-"""POST /documents (upload) and GET /documents/{id} (status)."""
+"""Documents: upload, list, status, processing events and reprocess."""
 
 import hashlib
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
+from datetime import date
+from typing import Literal
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Query, Request, Response, UploadFile
 from kombu.exceptions import KombuError
-from sqlalchemy import select
+from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError, TransientError, problem
 from app.core.files import sanitize_filename, storage_key
 from app.core.logging import get_logger
+from app.core.pagination import PageParams, page_params
+from app.core.ratelimit import limiter, upload_limit
 from app.core.security import require_api_key
 from app.core.settings import Settings, get_settings
-from app.db.models import Document, Job
+from app.db.models import Document, Invoice, Job, ProcessingEvent
 from app.db.session import get_session
 from app.pipeline.detect import (
     HEAD_BYTES,
@@ -23,7 +27,22 @@ from app.pipeline.detect import (
     UnsupportedFileError,
     detect,
 )
-from app.schemas.documents import AcceptedFile, DocumentOut, RejectedFile, UploadResponse
+from app.schemas.documents import (
+    AcceptedFile,
+    DocumentList,
+    DocumentOut,
+    EventList,
+    RejectedFile,
+    ReprocessResponse,
+    UploadResponse,
+)
+from app.services.documents import (
+    delete_document,
+    document_out,
+    latest_jobs,
+    reprocess_document,
+)
+from app.services.invoices import InvoiceFilters, invoice_conditions
 from app.storage import Storage, get_storage
 from app.workers.tasks import process_document
 
@@ -100,7 +119,10 @@ def _reject(filename: str, exc: Exception, settings: Settings) -> RejectedFile:
 
 
 @router.post("", status_code=202, response_model=UploadResponse)
+@limiter.limit(upload_limit)
 def upload_documents(
+    request: Request,
+    response: Response,
     files: list[UploadFile] = File(default=[]),
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
@@ -163,26 +185,93 @@ def upload_documents(
     return UploadResponse(accepted=accepted, rejected=rejected)
 
 
+@router.get("", response_model=DocumentList)
+def list_documents(
+    status: Literal["queued", "processing", "completed", "failed"] | None = None,
+    file_type: Literal["pdf", "image", "xlsx", "xls", "csv"] | None = None,
+    supplier: str | None = Query(None, min_length=1, max_length=200),
+    currency: str | None = Query(None, pattern=r"^[A-Za-z]{3}$"),
+    date_from: date | None = None,
+    date_to: date | None = None,
+    page: PageParams = Depends(page_params),
+    session: Session = Depends(get_session),
+):
+    """Newest first. supplier, currency and the date range match documents holding at least one
+    invoice that satisfies all of them."""
+    if date_from and date_to and date_from > date_to:
+        raise AppError(422, "date_from must not be after date_to.")
+    where = []
+    if status:
+        where.append(Document.status == status)
+    if file_type:
+        where.append(Document.file_type == file_type)
+    by_invoice = invoice_conditions(
+        InvoiceFilters(supplier=supplier, currency=currency, date_from=date_from, date_to=date_to)
+    )
+    if by_invoice:
+        where.append(exists().where(Invoice.document_id == Document.id, *by_invoice))
+    total = session.scalar(select(func.count()).select_from(Document).where(*where)) or 0
+    docs = session.scalars(
+        select(Document)
+        .where(*where)
+        .order_by(Document.created_at.desc(), Document.id)
+        .limit(page.limit)
+        .offset(page.offset)
+    ).all()
+    jobs = latest_jobs(session, [d.id for d in docs])
+    return DocumentList(
+        items=[document_out(d, jobs.get(d.id)) for d in docs],
+        total=total,
+        limit=page.limit,
+        offset=page.offset,
+    )
+
+
 @router.get("/{document_id}", response_model=DocumentOut)
 def get_document(document_id: uuid.UUID, session: Session = Depends(get_session)):
     doc = session.get(Document, document_id)
     if doc is None:
         raise AppError(404, "Document not found.")
-    job = session.scalars(
-        select(Job).where(Job.document_id == doc.id).order_by(Job.started_at.desc().nullsfirst())
-    ).first()
-    return DocumentOut(
-        id=doc.id,
-        filename=doc.filename,
-        file_type=doc.file_type,
-        mime_type=doc.mime_type,
-        size_bytes=doc.size_bytes,
-        page_count=doc.page_count,
-        status=doc.status,
-        progress=doc.progress,
-        error=doc.error,
-        job_id=job.id if job else None,
-        current_stage=job.current_stage if job else None,
-        created_at=doc.created_at,
-        updated_at=doc.updated_at,
-    )
+    return document_out(doc, latest_jobs(session, [doc.id]).get(doc.id))
+
+
+@router.get("/{document_id}/events", response_model=EventList)
+def document_events(
+    document_id: uuid.UUID,
+    page: PageParams = Depends(page_params),
+    session: Session = Depends(get_session),
+):
+    """Processing history with stage timings, oldest first (FR-17, NFR-06)."""
+    if session.get(Document, document_id) is None:
+        raise AppError(404, "Document not found.")
+    where = ProcessingEvent.document_id == document_id
+    total = session.scalar(select(func.count()).select_from(ProcessingEvent).where(where)) or 0
+    events = session.scalars(
+        select(ProcessingEvent)
+        .where(where)
+        .order_by(ProcessingEvent.created_at, ProcessingEvent.id)
+        .limit(page.limit)
+        .offset(page.offset)
+    ).all()
+    return EventList(items=events, total=total, limit=page.limit, offset=page.offset)
+
+
+@router.post("/{document_id}/reprocess", status_code=202, response_model=ReprocessResponse)
+def reprocess(
+    document_id: uuid.UUID,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+):
+    job = reprocess_document(session, document_id, settings)
+    return ReprocessResponse(document_id=document_id, job_id=job.id, status="queued")
+
+
+@router.delete("/{document_id}", status_code=204)
+def delete(
+    document_id: uuid.UUID,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+    storage: Storage = Depends(get_storage),
+):
+    delete_document(session, document_id, storage, settings)
+    return Response(status_code=204)

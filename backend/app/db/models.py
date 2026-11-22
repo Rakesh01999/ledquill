@@ -177,8 +177,15 @@ class Invoice(Base):
         foreign_keys="ValidationIssue.invoice_id",
     )
     corrections: Mapped[list["Correction"]] = relationship(
-        back_populates="invoice", passive_deletes=True
+        back_populates="invoice",
+        passive_deletes=True,
+        order_by="Correction.created_at, Correction.field",
     )
+
+    @property
+    def corrected_fields(self) -> list[str]:
+        """Fields a reviewer changed, in first-corrected order (the UI shows "verified")."""
+        return list(dict.fromkeys(c.field for c in self.corrections))
 
 
 class LineItem(Base):

@@ -2,10 +2,12 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.errors import RateLimitExceeded
 
-from app.api import documents, health, invoices
+from app.api import documents, health, invoices, jobs, search, stats
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
+from app.core.ratelimit import limiter, rate_limited
 from app.core.settings import get_settings
 
 
@@ -41,8 +43,13 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     register_error_handlers(app)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limited)
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(documents.router, prefix="/api/v1")
     app.include_router(invoices.router, prefix="/api/v1")
+    app.include_router(jobs.router, prefix="/api/v1")
+    app.include_router(search.router, prefix="/api/v1")
+    app.include_router(stats.router, prefix="/api/v1")
     _use_binary_format_for_files(app)
     return app

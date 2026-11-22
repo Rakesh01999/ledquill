@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Document, Invoice, LineItem, ValidationIssue
 from app.pipeline.fields import FieldsOutcome
+from app.pipeline.index import build_search_text
 from app.pipeline.split import Segment
 from app.pipeline.validate import (
     Candidate,
@@ -104,6 +105,15 @@ def save_invoice(
                 amount=_money(item.amount),
             )
         )
+    invoice.search_text = build_search_text(
+        invoice_number=invoice.invoice_number,
+        supplier_name=invoice.supplier_name,
+        customer_name=invoice.customer_name,
+        currency=invoice.currency,
+        invoice_date=invoice.invoice_date,
+        total=invoice.total,
+        descriptions=[i.description for i in r.line_items],
+    )
     session.flush()
     return invoice
 
