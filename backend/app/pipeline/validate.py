@@ -401,7 +401,7 @@ def cross_check_issues(
         if (
             inv.total is not None
             and c.total is not None
-            and not within_tolerance(inv.total, c.total)
+            and abs(inv.total - c.total) > _CENT  # two sources must agree to the cent
         ):
             issues.append(
                 Issue(

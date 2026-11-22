@@ -244,6 +244,14 @@ def test_total_within_tolerance_is_not_a_mismatch():
     assert cross(invoice(), candidate(total=D("1150.01"))) == []
 
 
+def test_cross_source_totals_must_agree_to_the_cent_not_within_the_arithmetic_tolerance():
+    big = D("1071985.00")  # 0.5% of this is about 5,360: the V-04/V-05 tolerance would hide 250
+    issues = cross(invoice(total=big), candidate(total=big - D("250.00")))
+    assert [(i.rule_id, i.field) for i in issues] == [("V-09", "total")]
+    assert cross(invoice(total=big), candidate(total=big - D("0.01"))) == []
+    assert cross(invoice(total=big), candidate(total=big - D("0.02")))  # two cents differs
+
+
 def test_same_number_from_an_unrelated_supplier_is_not_cross_checked():
     assert cross(invoice(), candidate(supplier_norm="zzz holdings", total=D("5.00"))) == []
 

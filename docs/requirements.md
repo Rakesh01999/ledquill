@@ -138,7 +138,7 @@ Rules: dates in ISO 8601, amounts as decimals, currency as ISO 4217 code. A valu
 | V-06 Date | parses, not in the future, not before 2000 | Warning |
 | V-07 Duplicate | same supplier + invoice number, or same file hash, already stored | Error |
 | V-08 Confidence | any required field below 0.7 confidence | Warning |
-| V-09 Cross-check | the same invoice in another source differs on total, date or supplier | Error |
+| V-09 Cross-check | the same invoice in another source differs on total (by more than one cent), date or supplier | Error |
 
 Any Error, or two or more Warnings, sets `needs_review = true`. Each failure is stored with rule ID, field, expected value and actual value so the UI can explain it.
 
