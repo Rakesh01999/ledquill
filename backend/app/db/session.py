@@ -14,6 +14,11 @@ def get_engine() -> Engine:
     return create_engine(get_settings().database_url, pool_pre_ping=True)
 
 
+def new_session() -> Session:
+    """A standalone session for worker tasks; the caller closes it."""
+    return sessionmaker(bind=get_engine(), expire_on_commit=False)()
+
+
 def get_session() -> Iterator[Session]:
     """FastAPI dependency: one session per request."""
     with sessionmaker(bind=get_engine(), expire_on_commit=False)() as session:

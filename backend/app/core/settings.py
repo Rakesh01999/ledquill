@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     ledquill_max_upload_mb: int = Field(25, gt=0)
     ledquill_max_files_per_request: int = Field(20, gt=0)
     ledquill_cors_origins: str = "http://localhost:3000"
+    # decompression-bomb guards (PermanentError when exceeded)
+    ledquill_max_pdf_pages: int = Field(2000, gt=0)
+    ledquill_max_tiff_frames: int = Field(200, gt=0)
+    ledquill_max_image_pixels: int = Field(50_000_000, gt=0)
 
     # data
     database_url: str = "postgresql+psycopg://ledquill:ledquill@db:5432/ledquill"
@@ -35,6 +39,10 @@ class Settings(BaseSettings):
         "groq:openai/gpt-oss-20b,gemini:gemini-3.8-flash"
     )
     embedding_model: str = "BAAI/bge-small-en-v1.5"
+
+    @property
+    def max_upload_bytes(self) -> int:
+        return self.ledquill_max_upload_mb * 1024 * 1024
 
     @property
     def cors_origins(self) -> list[str]:
