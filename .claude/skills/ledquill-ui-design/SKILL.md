@@ -24,13 +24,38 @@ Typography
   title, 24 dashboard figure. No text above 24 except one KPI figure.
 - Weight carries hierarchy, not size: 600 for titles and labels that matter.
 
-Colour (light; dark mode mirrors with the same roles)
-- `--ink` #16202E (text), `--ink-muted` #5B6676, `--line` #E3E6EA,
-  `--surface` #FFFFFF, `--canvas` #F6F7F9.
-- `--accent` #1F4E79 (ledger blue) for primary actions and focus. One accent only.
-- Status (meaning only, never decoration): ready #1E7A4F, needs review #B26A00,
-  failed #B42318, approved #1F4E79, processing #5B6676.
-- Status tints for backgrounds at ~10% opacity of the same hue.
+Colour — Care Guide brand palette (from the Care Guide banner and lighthouse
+logo). Exact values; do not invent new hues.
+
+| Role | Light | Dark | Use |
+| --- | --- | --- | --- |
+| `--primary` (Care Guide Navy) | #26389F | #4459D1 (buttons) | Primary buttons (Approve, Save), focus ring, selection, Approved status |
+| `--link` | #26389F | #A3B1FF | Links |
+| `--accent-mark` (Beacon Orange) | #EF7A2E | #EF7A2E | Logo mark and Review queue count badge ONLY |
+| `--badge-text` | #14182B | #14182B | Text on the orange badge |
+| `--canvas` | #F6F7F9 | #0B0E1A | Page background |
+| `--surface` | #FFFFFF | #12162A | Panels, tables, inputs |
+| `--line` | #E2E5EB | #252B47 | Borders and dividers |
+| `--ink` | #14182B | #E7E9F2 | Body text |
+
+Status (always text + colour, never colour alone):
+
+| Status | Light | Use |
+| --- | --- | --- |
+| Ready / Completed | #1C7340 | chip text and icon |
+| Needs review | #8A5200 | chip text |
+| Low/medium confidence dot | #BF7A00 | field dot (non-text, needs >= 3:1) |
+| Failed | #B42318 | chip text and icon |
+| Approved | `--primary` | chip text and icon |
+| Processing / Queued | #4A5264 | chip text |
+
+Rules:
+- Never put orange text on white (2.8:1 fails AA). Orange is a fill, not a text colour.
+- Never use the lighthouse yellow: it collides with the Needs review amber.
+- Status tints for chip backgrounds: the same hue at ~10% opacity.
+- Dark-mode status colours: derive lighter tints of the same hues and verify
+  >= 4.5:1 on `--surface` #12162A before use.
+- Mockups in `docs/design/` (mockups PDF and `design-system/`) are the visual reference; match them.
 
 Shape and space
 - Radius 6px (inputs, buttons), 8px (panels). No pill buttons, no 16px+ radii.
@@ -95,7 +120,7 @@ invoice", "Reprocess"). No exclamation marks, no emoji, no marketing words
 
 ## Accessibility and responsiveness
 
-- WCAG AA contrast; visible focus ring (2px `--accent`); full keyboard use.
+- WCAG AA contrast; visible focus ring (2px `--primary`); full keyboard use.
 - Semantic HTML (table for tabular data, labels on every input, buttons for
   actions, links for navigation); ARIA only where HTML cannot express it.
 - Check at 375, 768, 1280 and 1536px; no horizontal page scroll — wide tables

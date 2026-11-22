@@ -34,3 +34,6 @@ Thumbs.db
 
 # Local assessment files that must not be committed
 *.docx
+
+# Design asset archives
+*.zip
