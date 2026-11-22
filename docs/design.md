@@ -326,7 +326,7 @@ LEDQUILL_API_URL=http://api:8000
 
 The app code is identical in both; only `.env` changes. That is the point of ADR-002.
 
-Deploy notes: on Render and Vercel, enter each environment value on its own, with no inline comments (no `# ...` after the value). Docker's `--env-file` and the hosting dashboards keep the comment as part of the value, which fails settings validation (for example `LEDQUILL_ENV`). Only `docker compose` strips inline comments from `.env`. The live demo runs with `LEDQUILL_SEMANTIC_ENABLED=false`, so search is keyword-only there, and it is subject to rate limits and demo hosting limits.
+Deploy notes: on Render and Vercel, enter each environment value on its own, with no inline comments (no `# ...` after the value). Docker's `--env-file` keeps the comment as part of the value, which fails settings validation (for example `LEDQUILL_ENV`); enter dashboard values without comments to be safe. Only `docker compose` strips inline comments from `.env`. The live demo runs with `LEDQUILL_SEMANTIC_ENABLED=false`, so search is keyword-only there, and it is subject to rate limits and demo hosting limits.
 
 ## 6. Implementation plan
 
