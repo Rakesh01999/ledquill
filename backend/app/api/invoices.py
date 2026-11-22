@@ -6,13 +6,13 @@ from decimal import Decimal
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import case, exists, func, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.core.pagination import PageParams, page_params
 from app.core.security import require_api_key
-from app.db.models import Document, Invoice
+from app.db.models import Document, Invoice, ValidationIssue
 from app.db.session import get_session
 from app.pipeline.embed import Embedder, get_embedder
 from app.schemas.invoices import InvoiceCorrection, InvoiceList, InvoiceOut
@@ -48,16 +48,33 @@ def invoice_filters(
     )
 
 
+def _severity_rank():
+    def has(*conditions):
+        return exists().where(ValidationIssue.invoice_id == Invoice.id, *conditions)
+
+    return case(
+        (has(ValidationIssue.severity == "error"), 0),
+        (has(ValidationIssue.severity == "warning", ValidationIssue.rule_id != "V-08"), 1),
+        (has(ValidationIssue.rule_id == "V-08"), 2),
+        else_=3,
+    )
+
+
 @router.get("", response_model=InvoiceList)
 def list_invoices(
     document_id: uuid.UUID | None = None,
+    sort: Literal["newest", "severity"] = "newest",
     filters: InvoiceFilters = Depends(invoice_filters),
     page: PageParams = Depends(page_params),
     session: Session = Depends(get_session),
 ):
-    """Newest first; the invoices of one document come in document order."""
+    """Newest first; the invoices of one document come in document order. `sort=severity` is the
+    review-queue order: open errors, then other warnings, then low-confidence only (V-08), then
+    invoices with no issue; oldest first within each group."""
     where = invoice_conditions(filters)
     order = (Invoice.created_at.desc(), Invoice.id)
+    if sort == "severity":
+        order = (_severity_rank(), Invoice.created_at, Invoice.id)
     if document_id is not None:
         if session.get(Document, document_id) is None:
             raise AppError(404, "Document not found.")

@@ -7,19 +7,19 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Literal
 
-from fastapi import APIRouter, Depends, File, Query, Request, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Path, Query, Request, Response, UploadFile
 from kombu.exceptions import KombuError
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
-from app.core.errors import AppError, TransientError, problem
+from app.core.errors import AppError, PermanentError, TransientError, problem
 from app.core.files import sanitize_filename, storage_key
 from app.core.logging import get_logger
 from app.core.pagination import PageParams, page_params
 from app.core.ratelimit import limiter, upload_limit
 from app.core.security import require_api_key
 from app.core.settings import Settings, get_settings
-from app.db.models import Document, Invoice, Job, ProcessingEvent
+from app.db.models import Document, Invoice, Job, Page, ProcessingEvent
 from app.db.session import get_session
 from app.pipeline.detect import (
     HEAD_BYTES,
@@ -27,17 +27,21 @@ from app.pipeline.detect import (
     UnsupportedFileError,
     detect,
 )
+from app.pipeline.render import can_render, render_page_png
 from app.schemas.documents import (
     AcceptedFile,
     DocumentList,
     DocumentOut,
     EventList,
+    PageList,
+    PageOut,
     RejectedFile,
     ReprocessResponse,
     UploadResponse,
 )
 from app.services.documents import (
     delete_document,
+    document_counts,
     document_out,
     latest_jobs,
     reprocess_document,
@@ -218,9 +222,11 @@ def list_documents(
         .limit(page.limit)
         .offset(page.offset)
     ).all()
-    jobs = latest_jobs(session, [d.id for d in docs])
+    ids = [d.id for d in docs]
+    jobs = latest_jobs(session, ids)
+    counts = document_counts(session, ids)
     return DocumentList(
-        items=[document_out(d, jobs.get(d.id)) for d in docs],
+        items=[document_out(d, jobs.get(d.id), counts[d.id]) for d in docs],
         total=total,
         limit=page.limit,
         offset=page.offset,
@@ -232,7 +238,9 @@ def get_document(document_id: uuid.UUID, session: Session = Depends(get_session)
     doc = session.get(Document, document_id)
     if doc is None:
         raise AppError(404, "Document not found.")
-    return document_out(doc, latest_jobs(session, [doc.id]).get(doc.id))
+    return document_out(
+        doc, latest_jobs(session, [doc.id]).get(doc.id), document_counts(session, [doc.id])[doc.id]
+    )
 
 
 @router.get("/{document_id}/events", response_model=EventList)
@@ -254,6 +262,66 @@ def document_events(
         .offset(page.offset)
     ).all()
     return EventList(items=events, total=total, limit=page.limit, offset=page.offset)
+
+
+@router.get("/{document_id}/pages", response_model=PageList)
+def document_pages(document_id: uuid.UUID, session: Session = Depends(get_session)):
+    """Extracted text of every page (sheet index for spreadsheets), in page order."""
+    doc = session.get(Document, document_id)
+    if doc is None:
+        raise AppError(404, "Document not found.")
+    pages = session.scalars(
+        select(Page).where(Page.document_id == document_id).order_by(Page.page_no)
+    ).all()
+    has_image = can_render(doc.mime_type)
+    return PageList(
+        items=[
+            PageOut(
+                page_no=p.page_no,
+                method=p.method,
+                text=p.text,
+                ocr_confidence=p.ocr_confidence,
+                has_image=has_image,
+            )
+            for p in pages
+        ],
+        total=len(pages),
+    )
+
+
+@router.get(
+    "/{document_id}/pages/{page_no}/image",
+    response_class=Response,
+    responses={200: {"content": {"image/png": {}}}},
+)
+def document_page_image(
+    document_id: uuid.UUID,
+    page_no: int = Path(ge=1),
+    session: Session = Depends(get_session),
+    storage: Storage = Depends(get_storage),
+):
+    """The page rendered as PNG (PDF and image files only). Authenticated like every route; the
+    stored file itself is never served."""
+    doc = session.get(Document, document_id)
+    if doc is None:
+        raise AppError(404, "Document not found.")
+    if not can_render(doc.mime_type):
+        raise AppError(404, "This file type has no page image.")
+    exists_ = session.scalar(
+        select(func.count())
+        .select_from(Page)
+        .where(Page.document_id == document_id, Page.page_no == page_no)
+    )
+    if not exists_:
+        raise AppError(404, "Page not found.")
+    try:
+        with storage.local_path(doc.storage_key) as path:
+            png = render_page_png(path, doc.mime_type, page_no)
+    except PermanentError as exc:
+        raise AppError(404, str(exc)) from exc
+    return Response(
+        content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=300"}
+    )
 
 
 @router.post("/{document_id}/reprocess", status_code=202, response_model=ReprocessResponse)

@@ -36,6 +36,8 @@ class DocumentOut(BaseModel):
     error: str | None
     job_id: uuid.UUID | None
     current_stage: str | None
+    invoice_count: int
+    issue_count: int  # validation issues across the document's invoices
     created_at: datetime
     updated_at: datetime
 
@@ -45,6 +47,19 @@ class DocumentList(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class PageOut(BaseModel):
+    page_no: int  # sheet index for spreadsheets
+    method: str  # text|ocr|sheet
+    text: str | None
+    ocr_confidence: float | None
+    has_image: bool  # GET .../pages/{page_no}/image works (PDF and image files)
+
+
+class PageList(BaseModel):
+    items: list[PageOut]
+    total: int
 
 
 class ReprocessResponse(BaseModel):

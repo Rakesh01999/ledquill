@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import AppError, TransientError
 from app.core.logging import get_logger
 from app.core.settings import Settings
-from app.db.models import Correction, Document, Invoice, Job
+from app.db.models import Correction, Document, Invoice, Job, ValidationIssue
 from app.schemas.documents import DocumentOut
 from app.storage import Storage
 from app.workers.invoices import delete_document_invoices
@@ -34,7 +34,32 @@ def latest_jobs(session: Session, document_ids: Iterable[uuid.UUID]) -> dict[uui
     return jobs
 
 
-def document_out(doc: Document, job: Job | None) -> DocumentOut:
+def document_counts(
+    session: Session, document_ids: Iterable[uuid.UUID]
+) -> dict[uuid.UUID, tuple[int, int]]:
+    """(invoice_count, issue_count) per document; documents without invoices are absent."""
+    ids = list(document_ids)
+    invoices = {
+        doc_id: n
+        for doc_id, n in session.execute(
+            select(Invoice.document_id, func.count())
+            .where(Invoice.document_id.in_(ids))
+            .group_by(Invoice.document_id)
+        )
+    }
+    issues = {
+        doc_id: n
+        for doc_id, n in session.execute(
+            select(Invoice.document_id, func.count(ValidationIssue.id))
+            .join(ValidationIssue, ValidationIssue.invoice_id == Invoice.id)
+            .where(Invoice.document_id.in_(ids))
+            .group_by(Invoice.document_id)
+        )
+    }
+    return {i: (invoices.get(i, 0), issues.get(i, 0)) for i in ids}
+
+
+def document_out(doc: Document, job: Job | None, counts: tuple[int, int] = (0, 0)) -> DocumentOut:
     return DocumentOut(
         id=doc.id,
         filename=doc.filename,
@@ -47,6 +72,8 @@ def document_out(doc: Document, job: Job | None) -> DocumentOut:
         error=doc.error,
         job_id=job.id if job else None,
         current_stage=job.current_stage if job else None,
+        invoice_count=counts[0],
+        issue_count=counts[1],
         created_at=doc.created_at,
         updated_at=doc.updated_at,
     )
