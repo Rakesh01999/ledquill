@@ -21,14 +21,14 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P0 — Scaffold
 
-- [ ] Repository layout as in `CLAUDE.md`
-- [ ] Pydantic settings from environment, `.env.example`
-- [ ] FastAPI app factory, `/api/v1/health` (DB + Redis)
-- [ ] Celery app with ping task
-- [ ] SQLAlchemy models and Alembic migration for the full schema
-- [ ] `docker-compose.yml`: db (pgvector), redis, api, worker
-- [ ] Dockerfile with Tesseract
-- [ ] Ruff and pytest configuration
+- [x] Repository layout as in `CLAUDE.md`
+- [x] Pydantic settings from environment, `.env.example`
+- [x] FastAPI app factory, `/api/v1/health` (DB + Redis)
+- [x] Celery app with ping task
+- [x] SQLAlchemy models and Alembic migration for the full schema
+- [x] `docker-compose.yml`: db (pgvector), redis, api, worker
+- [x] Dockerfile with Tesseract
+- [x] Ruff and pytest configuration
 - [ ] GitHub Actions CI (ruff + pytest with Postgres)
 - [ ] **Gate:** `docker compose up` works, health is green, CI passes
 
@@ -103,6 +103,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [ ] Backend on Render (API + worker)
 - [ ] Frontend on Vercel
 - [ ] Deployment guide (`docs/deployment.md`)
+- [ ] Split dev dependencies out of the production image (requirements-dev.txt)
 - [ ] **Gate:** live link processes one PDF end to end
 
 ## P8 — Submission package

@@ -196,11 +196,11 @@ Base path `/api/v1`. JSON everywhere except upload. FastAPI generates the full O
 | POST | `/invoices/{id}/approve` | Mark approved | Review |
 | GET | `/search` | `q` + `mode` = `keyword`, `semantic` or `hybrid` (default); returns ranked invoices with score | Search |
 | GET | `/stats` | Counts by status, success and failure rates, average time per stage | Dashboard |
-| GET | `/health` | Database, Redis and worker reachability | Ops |
+| GET | `/health` | Database and Redis reachability (200 ok, 503 degraded) | Ops |
 
 Rules that apply to every endpoint:
 
-- **Auth:** header `X-API-Key`, compared in constant time. The browser never holds the key: Next.js server routes call the API and add it.
+- **Auth:** header `X-API-Key`, compared in constant time. The browser never holds the key: Next.js server routes call the API and add it. `/health` is public so orchestrators can probe it; it returns no sensitive data.
 - **Errors:** RFC 7807 problem JSON (`type`, `title`, `status`, `detail`), consistent codes: 400 bad input, 401 no key, 404 not found, 409 conflict, 413 file too large, 415 unsupported type, 422 validation, 429 rate limited.
 - **Uploads:** max 25 MB per file and 20 files per request (configurable); type checked by content, not extension; filenames sanitized; stored under a generated key.
 - **Pagination:** `limit` (max 100) and `offset`, response includes `total`.
