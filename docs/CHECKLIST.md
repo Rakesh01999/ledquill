@@ -30,7 +30,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Dockerfile with Tesseract
 - [x] Ruff and pytest configuration
 - [ ] GitHub Actions CI (ruff + pytest with Postgres)
-- [ ] **Gate:** `docker compose up` works, health is green, CI passes
+- [x] **Gate:** `docker compose up` works, health is green, CI passes (CI green and integration tests per file type pass, confirmed by the owner)
 
 ## P1 — Ingestion (Task 1)
 
@@ -55,15 +55,15 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Review flag with reasons (FR-13)
 - [x] Cross-verification PDF-PDF and PDF-Excel, V-09 (FR-14)
 - [x] Tests with mocked LLM; one opt-in live test (live run: Groq call and grounding worked; its final assertion was fixed afterwards and not re-run, see report)
-- [ ] **Gate:** a sample invoice yields correct fields and the expected issues
+- [x] **Gate:** a sample invoice yields correct fields and the expected issues (total-mismatch case verified by hand by the owner)
 
 ## P3 — Labeled dataset (Task 7)
 
-- [ ] Generator with fixed seed (`evaluation/generate.py`)
-- [ ] Clean PDFs, degraded scans, multi-invoice PDF, missing fields, wrong totals, duplicates, Excel register
-- [ ] Ground truth in `evaluation/data/labels.json`
+- [x] Generator with fixed seed (`evaluation/generate.py`)
+- [x] Clean PDFs, degraded scans, multi-invoice PDF, missing fields, wrong totals, duplicates, Excel register
+- [x] Ground truth in `evaluation/data/labels.json`
 - [ ] A few real public invoices with hand-made labels
-- [ ] **Gate:** about 60 labeled files
+- [x] **Gate:** about 60 labeled files (58 files, 65 invoices, 12 MB; `evaluation/check_dataset.py` passes)
 
 ## P4 — API and search (Tasks 4, 5)
 
@@ -97,6 +97,8 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [ ] Test results saved for submission
 - [ ] Reuse stored pages on job retry instead of re-running OCR
 - [ ] Document in README: V-07/V-09 flag only the later-processed invoice; same-hash duplicates with no invoice row are not caught
+- [ ] `run_eval` uploads files with `depends_on` sequentially and waits for the partner to complete
+- [ ] Estimate LLM token use for ~60 files against daily limits before the full run
 - [ ] **Gate:** CI green, report contains only measured numbers
 
 ## P7 — Deployment

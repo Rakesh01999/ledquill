@@ -1,0 +1,3482 @@
+{
+  "clean_01.pdf": {
+    "file": "clean_01.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 1,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-007601",
+        "invoice_date": "2026-08-21",
+        "supplier_name": "Calderwyn Textiles Co.",
+        "customer_name": "Farrowdale Foods",
+        "currency": "USD",
+        "subtotal": "8333.25",
+        "tax": "687.49",
+        "total": "9020.74",
+        "line_items": [
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "39",
+            "unit_price": "211.50",
+            "amount": "8248.50"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "1.5",
+            "unit_price": "56.50",
+            "amount": "84.75"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout A, USD, us numbers, iso dates."
+  },
+  "clean_02.pdf": {
+    "file": "clean_02.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 2,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-6650",
+        "invoice_date": "2025-07-16",
+        "supplier_name": "Hallowfen Logistics & Sons",
+        "customer_name": "Dellmoor Farms",
+        "currency": "BDT",
+        "subtotal": "365520.00",
+        "tax": "54828.00",
+        "total": "420348.00",
+        "line_items": [
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "24",
+            "unit_price": "15230.00",
+            "amount": "365520.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout B, BDT, us numbers, dmy_text dates."
+  },
+  "clean_03.pdf": {
+    "file": "clean_03.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 3,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/26/3629",
+        "invoice_date": "2026-01-23",
+        "supplier_name": "Embrook Cleaning Services Corp.",
+        "customer_name": "Wickmere Clinic Co.",
+        "currency": "USD",
+        "subtotal": "21057.00",
+        "tax": "1737.20",
+        "total": "22794.20",
+        "line_items": [
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "31",
+            "unit_price": "344.00",
+            "amount": "10664.00"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "1.5",
+            "unit_price": "342.50",
+            "amount": "513.75"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "40",
+            "unit_price": "224.50",
+            "amount": "8980.00"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "18",
+            "unit_price": "44.50",
+            "amount": "801.00"
+          },
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "1.5",
+            "unit_price": "65.50",
+            "amount": "98.25"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout C, USD, us numbers, mdy_text dates."
+  },
+  "clean_04.pdf": {
+    "file": "clean_04.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 4,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2025/9387",
+        "invoice_date": "2025-02-28",
+        "supplier_name": "Ostrelle Stationers Ltd",
+        "customer_name": "Bexford Trading Traders",
+        "currency": "BDT",
+        "subtotal": "1020700.00",
+        "tax": "51035.00",
+        "total": "1071735.00",
+        "line_items": [
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "2",
+            "unit_price": "22120.00",
+            "amount": "44240.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "35",
+            "unit_price": "9840.00",
+            "amount": "344400.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "26",
+            "unit_price": "24310.00",
+            "amount": "632060.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout D, BDT, us numbers, dmy_slash dates."
+  },
+  "clean_05.pdf": {
+    "file": "clean_05.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 5,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-007956",
+        "invoice_date": "2026-06-04",
+        "supplier_name": "Umbravale IT Services Corp.",
+        "customer_name": "Roswick Pharmacy",
+        "currency": "USD",
+        "subtotal": "10308.50",
+        "tax": "850.45",
+        "total": "11158.95",
+        "line_items": [
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "8",
+            "unit_price": "202.50",
+            "amount": "1620.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "25",
+            "unit_price": "284.50",
+            "amount": "7112.50"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "4",
+            "unit_price": "394.00",
+            "amount": "1576.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout E, USD, us numbers, dmy_dot dates."
+  },
+  "clean_06.pdf": {
+    "file": "clean_06.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 6,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-006666",
+        "invoice_date": "2026-06-16",
+        "supplier_name": "Torvane Print Works Ltd",
+        "customer_name": "Kelbrook Trading",
+        "currency": "BDT",
+        "subtotal": "342160.00",
+        "tax": "34216.00",
+        "total": "376376.00",
+        "line_items": [
+          {
+            "description": "Training session, half day",
+            "quantity": "7",
+            "unit_price": "13240.00",
+            "amount": "92680.00"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "21",
+            "unit_price": "11880.00",
+            "amount": "249480.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout A, BDT, us numbers, dmy_slash dates."
+  },
+  "clean_07.pdf": {
+    "file": "clean_07.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 7,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/3427",
+        "invoice_date": "2025-04-20",
+        "supplier_name": "Rilmoor Hardware S.r.l.",
+        "customer_name": "Altamere Pharmacy BV",
+        "currency": "EUR",
+        "subtotal": "30058.50",
+        "tax": "6011.70",
+        "total": "36070.20",
+        "line_items": [
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "30",
+            "unit_price": "335.50",
+            "amount": "10065.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "1.5",
+            "unit_price": "62.00",
+            "amount": "93.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "8",
+            "unit_price": "60.50",
+            "amount": "484.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "16",
+            "unit_price": "183.00",
+            "amount": "2928.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "2.5",
+            "unit_price": "167.00",
+            "amount": "417.50"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "38",
+            "unit_price": "248.00",
+            "amount": "9424.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "17",
+            "unit_price": "233.50",
+            "amount": "3969.50"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "35",
+            "unit_price": "76.50",
+            "amount": "2677.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout B, EUR, us numbers, dmy_dot dates."
+  },
+  "clean_08.pdf": {
+    "file": "clean_08.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 8,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-3143",
+        "invoice_date": "2026-05-18",
+        "supplier_name": "Embrook IT Services Inc.",
+        "customer_name": "Roswick Motors Co.",
+        "currency": "USD",
+        "subtotal": "8500.00",
+        "tax": "701.25",
+        "total": "9201.25",
+        "line_items": [
+          {
+            "description": "Courier handling fee",
+            "quantity": "3",
+            "unit_price": "95.50",
+            "amount": "286.50"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "8",
+            "unit_price": "230.00",
+            "amount": "1840.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "21",
+            "unit_price": "303.50",
+            "amount": "6373.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout C, USD, us numbers, iso dates."
+  },
+  "clean_09.pdf": {
+    "file": "clean_09.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 9,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2025/5909",
+        "invoice_date": "2025-07-17",
+        "supplier_name": "Torvane Catering SARL",
+        "customer_name": "Farrowdale Cafe",
+        "currency": "EUR",
+        "subtotal": "36616.00",
+        "tax": "6957.04",
+        "total": "43573.04",
+        "line_items": [
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "13",
+            "unit_price": "260.00",
+            "amount": "3380.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "23",
+            "unit_price": "211.00",
+            "amount": "4853.00"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "39",
+            "unit_price": "93.00",
+            "amount": "3627.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "6",
+            "unit_price": "146.00",
+            "amount": "876.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "9",
+            "unit_price": "322.00",
+            "amount": "2898.00"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "4",
+            "unit_price": "253.00",
+            "amount": "1012.00"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "28",
+            "unit_price": "277.00",
+            "amount": "7756.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "27",
+            "unit_price": "120.50",
+            "amount": "3253.50"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "6",
+            "unit_price": "72.00",
+            "amount": "432.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "37",
+            "unit_price": "230.50",
+            "amount": "8528.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout D, EUR, eu numbers, dmy_text dates."
+  },
+  "clean_10.pdf": {
+    "file": "clean_10.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 10,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2025/5995",
+        "invoice_date": "2026-06-03",
+        "supplier_name": "Brindlecott Cleaning Services GmbH",
+        "customer_name": "Corvane Bakery",
+        "currency": "EUR",
+        "subtotal": "24443.75",
+        "tax": "4644.31",
+        "total": "29088.06",
+        "line_items": [
+          {
+            "description": "Training session, half day",
+            "quantity": "4",
+            "unit_price": "51.00",
+            "amount": "204.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "3",
+            "unit_price": "243.50",
+            "amount": "730.50"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "22",
+            "unit_price": "273.50",
+            "amount": "6017.00"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "8",
+            "unit_price": "254.50",
+            "amount": "2036.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "2",
+            "unit_price": "129.50",
+            "amount": "259.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "31",
+            "unit_price": "285.50",
+            "amount": "8850.50"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "29",
+            "unit_price": "23.00",
+            "amount": "667.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "29",
+            "unit_price": "61.50",
+            "amount": "1783.50"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "8",
+            "unit_price": "244.50",
+            "amount": "1956.00"
+          },
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "2.5",
+            "unit_price": "282.50",
+            "amount": "706.25"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "20",
+            "unit_price": "27.00",
+            "amount": "540.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "4",
+            "unit_price": "173.50",
+            "amount": "694.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout E, EUR, eu numbers, mdy_text dates."
+  },
+  "clean_11.pdf": {
+    "file": "clean_11.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 11,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-009271",
+        "invoice_date": "2026-09-26",
+        "supplier_name": "Sundrel Industrial Enterprise",
+        "customer_name": "Oakmere Foods",
+        "currency": "BDT",
+        "subtotal": "613520.00",
+        "tax": "30676.00",
+        "total": "644196.00",
+        "line_items": [
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "11",
+            "unit_price": "16330.00",
+            "amount": "179630.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "12",
+            "unit_price": "11360.00",
+            "amount": "136320.00"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "31",
+            "unit_price": "2190.00",
+            "amount": "67890.00"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "29",
+            "unit_price": "7920.00",
+            "amount": "229680.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout A, BDT, us numbers, dmy_text dates."
+  },
+  "clean_12.pdf": {
+    "file": "clean_12.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 12,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-5103",
+        "invoice_date": "2026-01-03",
+        "supplier_name": "Torvane Stationers SARL",
+        "customer_name": "Pryndle Bakery",
+        "currency": "EUR",
+        "subtotal": "20703.50",
+        "tax": "1449.25",
+        "total": "22152.75",
+        "line_items": [
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "24",
+            "unit_price": "165.00",
+            "amount": "3960.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "7",
+            "unit_price": "33.00",
+            "amount": "231.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "36",
+            "unit_price": "256.00",
+            "amount": "9216.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "19",
+            "unit_price": "134.50",
+            "amount": "2555.50"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "11",
+            "unit_price": "229.50",
+            "amount": "2524.50"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "31",
+            "unit_price": "71.50",
+            "amount": "2216.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout B, EUR, eu numbers, mdy_text dates."
+  },
+  "clean_13.pdf": {
+    "file": "clean_13.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 13,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-006548",
+        "invoice_date": "2026-09-28",
+        "supplier_name": "Rilmoor Industrial Enterprise",
+        "customer_name": "Hythewick Studio & Sons",
+        "currency": "BDT",
+        "subtotal": "1050125.00",
+        "tax": "78759.38",
+        "total": "1128884.38",
+        "line_items": [
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "24",
+            "unit_price": "9790.00",
+            "amount": "234960.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "12",
+            "unit_price": "8250.00",
+            "amount": "99000.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "18",
+            "unit_price": "18990.00",
+            "amount": "341820.00"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "2.5",
+            "unit_price": "9410.00",
+            "amount": "23525.00"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "4",
+            "unit_price": "15210.00",
+            "amount": "60840.00"
+          },
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "2",
+            "unit_price": "18300.00",
+            "amount": "36600.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "3",
+            "unit_price": "13160.00",
+            "amount": "39480.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "30",
+            "unit_price": "7130.00",
+            "amount": "213900.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout C, BDT, indian numbers, dmy_slash dates."
+  },
+  "clean_14.pdf": {
+    "file": "clean_14.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 14,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2026/2014",
+        "invoice_date": "2025-03-06",
+        "supplier_name": "Lumisend Logistics LLC",
+        "customer_name": "Roswick Clinic Co.",
+        "currency": "USD",
+        "subtotal": "4273.50",
+        "tax": "352.56",
+        "total": "4626.06",
+        "line_items": [
+          {
+            "description": "Training session, half day",
+            "quantity": "16",
+            "unit_price": "164.50",
+            "amount": "2632.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "1",
+            "unit_price": "49.50",
+            "amount": "49.50"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "2",
+            "unit_price": "177.50",
+            "amount": "355.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "10",
+            "unit_price": "52.00",
+            "amount": "520.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "3",
+            "unit_price": "239.00",
+            "amount": "717.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout D, USD, plain numbers, dmy_dot dates."
+  },
+  "clean_15.pdf": {
+    "file": "clean_15.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 15,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-5315",
+        "invoice_date": "2026-08-24",
+        "supplier_name": "Wynmoor Freight Ltd",
+        "customer_name": "Yelmoor Dental",
+        "currency": "BDT",
+        "subtotal": "2680110.00",
+        "tax": "201008.25",
+        "total": "2881118.25",
+        "line_items": [
+          {
+            "description": "On-site support, per hour",
+            "quantity": "34",
+            "unit_price": "24990.00",
+            "amount": "849660.00"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "40",
+            "unit_price": "10400.00",
+            "amount": "416000.00"
+          },
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "8",
+            "unit_price": "18960.00",
+            "amount": "151680.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "32",
+            "unit_price": "24580.00",
+            "amount": "786560.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "7",
+            "unit_price": "5870.00",
+            "amount": "41090.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "2.5",
+            "unit_price": "6670.00",
+            "amount": "16675.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "2.5",
+            "unit_price": "22090.00",
+            "amount": "55225.00"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "34",
+            "unit_price": "6310.00",
+            "amount": "214540.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "21",
+            "unit_price": "7080.00",
+            "amount": "148680.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout E, BDT, us numbers, iso dates."
+  },
+  "clean_16.pdf": {
+    "file": "clean_16.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 16,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-8483",
+        "invoice_date": "2026-06-24",
+        "supplier_name": "Calderwyn IT Services Ltd",
+        "customer_name": "Corvane Pharmacy & Sons",
+        "currency": "BDT",
+        "subtotal": "625660.00",
+        "tax": "62566.00",
+        "total": "688226.00",
+        "line_items": [
+          {
+            "description": "Freight, palletised",
+            "quantity": "13",
+            "unit_price": "11360.00",
+            "amount": "147680.00"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "4",
+            "unit_price": "22990.00",
+            "amount": "91960.00"
+          },
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "14",
+            "unit_price": "18790.00",
+            "amount": "263060.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "29",
+            "unit_price": "4240.00",
+            "amount": "122960.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout A, BDT, us numbers, dmy_dot dates."
+  },
+  "clean_17.pdf": {
+    "file": "clean_17.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 17,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-3132",
+        "invoice_date": "2026-01-26",
+        "supplier_name": "Pellimar Facilities Corp.",
+        "customer_name": "Yelmoor Hotel LLC",
+        "currency": "USD",
+        "subtotal": "19949.50",
+        "tax": "1994.95",
+        "total": "21944.45",
+        "line_items": [
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "8",
+            "unit_price": "379.00",
+            "amount": "3032.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "19",
+            "unit_price": "10.50",
+            "amount": "199.50"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "4",
+            "unit_price": "130.00",
+            "amount": "520.00"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "36",
+            "unit_price": "155.50",
+            "amount": "5598.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "5",
+            "unit_price": "283.50",
+            "amount": "1417.50"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "20",
+            "unit_price": "173.00",
+            "amount": "3460.00"
+          },
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "15",
+            "unit_price": "381.50",
+            "amount": "5722.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout B, USD, us numbers, iso dates."
+  },
+  "clean_18.pdf": {
+    "file": "clean_18.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 18,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-001564",
+        "invoice_date": "2025-05-25",
+        "supplier_name": "Vantrell Print Works LLC",
+        "customer_name": "Yelmoor Partners",
+        "currency": "USD",
+        "subtotal": "26984.25",
+        "tax": "1619.06",
+        "total": "28603.31",
+        "line_items": [
+          {
+            "description": "Training session, half day",
+            "quantity": "32",
+            "unit_price": "186.50",
+            "amount": "5968.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "32",
+            "unit_price": "64.00",
+            "amount": "2048.00"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "4",
+            "unit_price": "56.50",
+            "amount": "226.00"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "38",
+            "unit_price": "265.00",
+            "amount": "10070.00"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "21",
+            "unit_price": "400.00",
+            "amount": "8400.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "1.5",
+            "unit_price": "181.50",
+            "amount": "272.25"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout C, USD, us numbers, dmy_text dates."
+  },
+  "clean_19.pdf": {
+    "file": "clean_19.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 19,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-9868",
+        "invoice_date": "2025-06-16",
+        "supplier_name": "Zennick Industrial BV",
+        "customer_name": "Farrowdale Hotel",
+        "currency": "EUR",
+        "subtotal": "38608.50",
+        "tax": "8107.79",
+        "total": "46716.29",
+        "line_items": [
+          {
+            "description": "Equipment calibration",
+            "quantity": "15",
+            "unit_price": "251.00",
+            "amount": "3765.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "26",
+            "unit_price": "339.50",
+            "amount": "8827.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "25",
+            "unit_price": "120.50",
+            "amount": "3012.50"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "2",
+            "unit_price": "28.50",
+            "amount": "57.00"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "29",
+            "unit_price": "112.00",
+            "amount": "3248.00"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "14",
+            "unit_price": "303.50",
+            "amount": "4249.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "25",
+            "unit_price": "49.50",
+            "amount": "1237.50"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "39",
+            "unit_price": "259.50",
+            "amount": "10120.50"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "19",
+            "unit_price": "213.00",
+            "amount": "4047.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "1",
+            "unit_price": "45.00",
+            "amount": "45.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout D, EUR, us numbers, mdy_text dates."
+  },
+  "clean_20.pdf": {
+    "file": "clean_20.pdf",
+    "group": "clean",
+    "quality": null,
+    "upload_order": 20,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-7965",
+        "invoice_date": "2026-02-23",
+        "supplier_name": "Ostrelle Hardware GmbH",
+        "customer_name": "Hythewick Farms",
+        "currency": "EUR",
+        "subtotal": "29369.00",
+        "tax": "6167.49",
+        "total": "35536.49",
+        "line_items": [
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "28",
+            "unit_price": "231.50",
+            "amount": "6482.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "15",
+            "unit_price": "15.00",
+            "amount": "225.00"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "1.5",
+            "unit_price": "316.50",
+            "amount": "474.75"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "30",
+            "unit_price": "164.50",
+            "amount": "4935.00"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "37",
+            "unit_price": "55.50",
+            "amount": "2053.50"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "2.5",
+            "unit_price": "185.50",
+            "amount": "463.75"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "18",
+            "unit_price": "312.00",
+            "amount": "5616.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "12",
+            "unit_price": "121.00",
+            "amount": "1452.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "26",
+            "unit_price": "225.50",
+            "amount": "5863.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "16",
+            "unit_price": "33.50",
+            "amount": "536.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "8",
+            "unit_price": "158.50",
+            "amount": "1268.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Layout E, EUR, eu numbers, dmy_slash dates."
+  },
+  "scan_01_mild.png": {
+    "file": "scan_01_mild.png",
+    "group": "scan",
+    "quality": "mild",
+    "upload_order": 21,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-3881",
+        "invoice_date": "2026-02-24",
+        "supplier_name": "Dovermere Stationers Ltd",
+        "customer_name": "Eskwick Holdings",
+        "currency": "BDT",
+        "subtotal": "611810.00",
+        "tax": "30590.50",
+        "total": "642400.50",
+        "line_items": [
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "31",
+            "unit_price": "15850.00",
+            "amount": "491350.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "25",
+            "unit_price": "1760.00",
+            "amount": "44000.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "15",
+            "unit_price": "2230.00",
+            "amount": "33450.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "11",
+            "unit_price": "3910.00",
+            "amount": "43010.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout C) with no digital twin; rotation [0.87] deg, 200 dpi, JPEG q88."
+  },
+  "scan_02_mild.png": {
+    "file": "scan_02_mild.png",
+    "group": "scan",
+    "quality": "mild",
+    "upload_order": 22,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/0789",
+        "invoice_date": "2026-07-17",
+        "supplier_name": "Wynmoor Cleaning Services Co.",
+        "customer_name": "Wickmere Motors",
+        "currency": "USD",
+        "subtotal": "5500.50",
+        "tax": "453.79",
+        "total": "5954.29",
+        "line_items": [
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "8",
+            "unit_price": "371.00",
+            "amount": "2968.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "7",
+            "unit_price": "287.50",
+            "amount": "2012.50"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "4",
+            "unit_price": "130.00",
+            "amount": "520.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout D) with no digital twin; rotation [0.42] deg, 200 dpi, JPEG q88."
+  },
+  "scan_03_mild.jpg": {
+    "file": "scan_03_mild.jpg",
+    "group": "scan",
+    "quality": "mild",
+    "upload_order": 23,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2026/8770",
+        "invoice_date": "2025-03-09",
+        "supplier_name": "Umbravale Labs SARL",
+        "customer_name": "Garnmoor Trading",
+        "currency": "EUR",
+        "subtotal": "28589.50",
+        "tax": "5717.90",
+        "total": "34307.40",
+        "line_items": [
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "18",
+            "unit_price": "178.00",
+            "amount": "3204.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "40",
+            "unit_price": "234.50",
+            "amount": "9380.00"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "25",
+            "unit_price": "277.50",
+            "amount": "6937.50"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "26",
+            "unit_price": "246.00",
+            "amount": "6396.00"
+          },
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "16",
+            "unit_price": "167.00",
+            "amount": "2672.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout E) with no digital twin; rotation [0.78] deg, 200 dpi, JPEG q88."
+  },
+  "scan_04_mild.jpg": {
+    "file": "scan_04_mild.jpg",
+    "group": "scan",
+    "quality": "mild",
+    "upload_order": 24,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/26/3352",
+        "invoice_date": "2026-08-31",
+        "supplier_name": "Sundrel Hardware & Sons",
+        "customer_name": "Trevane Studio Traders",
+        "currency": "BDT",
+        "subtotal": "1161015.00",
+        "tax": "87076.13",
+        "total": "1248091.13",
+        "line_items": [
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "4",
+            "unit_price": "18700.00",
+            "amount": "74800.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "1.5",
+            "unit_price": "11350.00",
+            "amount": "17025.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "20",
+            "unit_price": "17350.00",
+            "amount": "347000.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "27",
+            "unit_price": "7810.00",
+            "amount": "210870.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "3",
+            "unit_price": "9560.00",
+            "amount": "28680.00"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "39",
+            "unit_price": "9280.00",
+            "amount": "361920.00"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "8",
+            "unit_price": "15090.00",
+            "amount": "120720.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout A) with no digital twin; rotation [0.93] deg, 200 dpi, JPEG q88."
+  },
+  "scan_05_mild.tif": {
+    "file": "scan_05_mild.tif",
+    "group": "scan",
+    "quality": "mild",
+    "upload_order": 25,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/8925",
+        "invoice_date": "2026-04-11",
+        "supplier_name": "Marrowick Hardware Co.",
+        "customer_name": "Yelmoor Motors Corp.",
+        "currency": "USD",
+        "subtotal": "19158.00",
+        "tax": "1915.80",
+        "total": "21073.80",
+        "line_items": [
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "38",
+            "unit_price": "188.50",
+            "amount": "7163.00"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "20",
+            "unit_price": "187.50",
+            "amount": "3750.00"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "14",
+            "unit_price": "194.50",
+            "amount": "2723.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "7",
+            "unit_price": "185.50",
+            "amount": "1298.50"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "7",
+            "unit_price": "212.50",
+            "amount": "1487.50"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "9",
+            "unit_price": "304.00",
+            "amount": "2736.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout B) with no digital twin; rotation [-0.68] deg, 200 dpi, JPEG q88."
+  },
+  "scan_06_medium.png": {
+    "file": "scan_06_medium.png",
+    "group": "scan",
+    "quality": "medium",
+    "upload_order": 26,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2025/1164",
+        "invoice_date": "2026-02-14",
+        "supplier_name": "Kestrelmoor Logistics Traders",
+        "customer_name": "Altamere Works",
+        "currency": "BDT",
+        "subtotal": "1053560.00",
+        "tax": "105356.00",
+        "total": "1158916.00",
+        "line_items": [
+          {
+            "description": "Freight, palletised",
+            "quantity": "2.5",
+            "unit_price": "12720.00",
+            "amount": "31800.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "22",
+            "unit_price": "10900.00",
+            "amount": "239800.00"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "1",
+            "unit_price": "5060.00",
+            "amount": "5060.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "34",
+            "unit_price": "22850.00",
+            "amount": "776900.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout C) with no digital twin; rotation [-1.89] deg, 170 dpi, JPEG q60."
+  },
+  "scan_07_medium.jpg": {
+    "file": "scan_07_medium.jpg",
+    "group": "scan",
+    "quality": "medium",
+    "upload_order": 27,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-8373",
+        "invoice_date": "2025-08-16",
+        "supplier_name": "Embrook Print Works Corp.",
+        "customer_name": "Roswick Garage LLC",
+        "currency": "USD",
+        "subtotal": "29577.25",
+        "tax": "1774.64",
+        "total": "31351.89",
+        "line_items": [
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "39",
+            "unit_price": "122.00",
+            "amount": "4758.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "1.5",
+            "unit_price": "299.50",
+            "amount": "449.25"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "18",
+            "unit_price": "228.00",
+            "amount": "4104.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "12",
+            "unit_price": "328.00",
+            "amount": "3936.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "32",
+            "unit_price": "213.50",
+            "amount": "6832.00"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "27",
+            "unit_price": "326.50",
+            "amount": "8815.50"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "5",
+            "unit_price": "136.50",
+            "amount": "682.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout D) with no digital twin; rotation [-1.29] deg, 170 dpi, JPEG q60."
+  },
+  "scan_08_medium.jpg": {
+    "file": "scan_08_medium.jpg",
+    "group": "scan",
+    "quality": "medium",
+    "upload_order": 28,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2025/9646",
+        "invoice_date": "2026-06-23",
+        "supplier_name": "Torvane Packaging SARL",
+        "customer_name": "Dellmoor Works",
+        "currency": "EUR",
+        "subtotal": "25882.00",
+        "tax": "5176.40",
+        "total": "31058.40",
+        "line_items": [
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "10",
+            "unit_price": "262.00",
+            "amount": "2620.00"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "29",
+            "unit_price": "142.00",
+            "amount": "4118.00"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "26",
+            "unit_price": "227.50",
+            "amount": "5915.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "35",
+            "unit_price": "128.50",
+            "amount": "4497.50"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "34",
+            "unit_price": "117.00",
+            "amount": "3978.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "15",
+            "unit_price": "198.50",
+            "amount": "2977.50"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "8",
+            "unit_price": "222.00",
+            "amount": "1776.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout E) with no digital twin; rotation [-1.48] deg, 170 dpi, JPEG q60."
+  },
+  "scan_09_medium.png": {
+    "file": "scan_09_medium.png",
+    "group": "scan",
+    "quality": "medium",
+    "upload_order": 29,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/4743",
+        "invoice_date": "2025-04-10",
+        "supplier_name": "Tarnwick IT Services Ltd",
+        "customer_name": "Jorvane Works",
+        "currency": "BDT",
+        "subtotal": "880670.00",
+        "tax": "132100.50",
+        "total": "1012770.50",
+        "line_items": [
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "26",
+            "unit_price": "7390.00",
+            "amount": "192140.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "33",
+            "unit_price": "9050.00",
+            "amount": "298650.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "18",
+            "unit_price": "20400.00",
+            "amount": "367200.00"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "4",
+            "unit_price": "5670.00",
+            "amount": "22680.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout A) with no digital twin; rotation [1.69] deg, 170 dpi, JPEG q60."
+  },
+  "scan_10_medium.tif": {
+    "file": "scan_10_medium.tif",
+    "group": "scan",
+    "quality": "medium",
+    "upload_order": 30,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-002615",
+        "invoice_date": "2026-07-15",
+        "supplier_name": "Torvane Office Supply Co.",
+        "customer_name": "Verndale Garage",
+        "currency": "USD",
+        "subtotal": "40484.50",
+        "tax": "4048.45",
+        "total": "44532.95",
+        "line_items": [
+          {
+            "description": "On-site support, per hour",
+            "quantity": "38",
+            "unit_price": "181.50",
+            "amount": "6897.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "27",
+            "unit_price": "30.50",
+            "amount": "823.50"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "34",
+            "unit_price": "342.00",
+            "amount": "11628.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "31",
+            "unit_price": "27.00",
+            "amount": "837.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "3",
+            "unit_price": "269.00",
+            "amount": "807.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "8",
+            "unit_price": "115.50",
+            "amount": "924.00"
+          },
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "38",
+            "unit_price": "254.00",
+            "amount": "9652.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "28",
+            "unit_price": "199.50",
+            "amount": "5586.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "9",
+            "unit_price": "370.00",
+            "amount": "3330.00"
+          }
+        ],
+        "pages": [
+          1,
+          2
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout B) with no digital twin; rotation [1.52, 1.62] deg, 170 dpi, JPEG q60, 2-frame TIFF."
+  },
+  "scan_11_severe.jpg": {
+    "file": "scan_11_severe.jpg",
+    "group": "scan",
+    "quality": "severe",
+    "upload_order": 31,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-001371",
+        "invoice_date": "2026-09-12",
+        "supplier_name": "Fallowick Catering Ltd",
+        "customer_name": "Ullbrook Foods",
+        "currency": "BDT",
+        "subtotal": "1998640.00",
+        "tax": "149898.00",
+        "total": "2148538.00",
+        "line_items": [
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "27",
+            "unit_price": "400.00",
+            "amount": "10800.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "26",
+            "unit_price": "14960.00",
+            "amount": "388960.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "15",
+            "unit_price": "4750.00",
+            "amount": "71250.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "31",
+            "unit_price": "23570.00",
+            "amount": "730670.00"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "34",
+            "unit_price": "23440.00",
+            "amount": "796960.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout C) with no digital twin; rotation [-2.66] deg, 140 dpi, JPEG q35."
+  },
+  "scan_12_severe.jpg": {
+    "file": "scan_12_severe.jpg",
+    "group": "scan",
+    "quality": "severe",
+    "upload_order": 32,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/26/3469",
+        "invoice_date": "2025-07-24",
+        "supplier_name": "Yarrowick Freight Corp.",
+        "customer_name": "Trevane Dental",
+        "currency": "USD",
+        "subtotal": "17900.00",
+        "tax": "1790.00",
+        "total": "19690.00",
+        "line_items": [
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "39",
+            "unit_price": "244.50",
+            "amount": "9535.50"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "22",
+            "unit_price": "218.00",
+            "amount": "4796.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "28",
+            "unit_price": "121.50",
+            "amount": "3402.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "1.5",
+            "unit_price": "111.00",
+            "amount": "166.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout D) with no digital twin; rotation [-2.81] deg, 140 dpi, JPEG q35."
+  },
+  "scan_13_severe.png": {
+    "file": "scan_13_severe.png",
+    "group": "scan",
+    "quality": "severe",
+    "upload_order": 33,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-9755",
+        "invoice_date": "2026-08-05",
+        "supplier_name": "Valdrick Stationers S.r.l.",
+        "customer_name": "Kelbrook Pharmacy SARL",
+        "currency": "EUR",
+        "subtotal": "15547.00",
+        "tax": "3264.87",
+        "total": "18811.87",
+        "line_items": [
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "17",
+            "unit_price": "227.00",
+            "amount": "3859.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "37",
+            "unit_price": "312.00",
+            "amount": "11544.00"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "24",
+            "unit_price": "6.00",
+            "amount": "144.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout E) with no digital twin; rotation [2.69] deg, 140 dpi, JPEG q35."
+  },
+  "scan_14_severe.png": {
+    "file": "scan_14_severe.png",
+    "group": "scan",
+    "quality": "severe",
+    "upload_order": 34,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2026/8891",
+        "invoice_date": "2025-05-18",
+        "supplier_name": "Orbrix Cleaning Services Ltd",
+        "customer_name": "Roswick Foods",
+        "currency": "BDT",
+        "subtotal": "1073920.00",
+        "tax": "161088.00",
+        "total": "1235008.00",
+        "line_items": [
+          {
+            "description": "Courier handling fee",
+            "quantity": "1",
+            "unit_price": "8320.00",
+            "amount": "8320.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "26",
+            "unit_price": "19320.00",
+            "amount": "502320.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "24",
+            "unit_price": "23470.00",
+            "amount": "563280.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout A) with no digital twin; rotation [-2.65] deg, 140 dpi, JPEG q35."
+  },
+  "scan_15_severe.tif": {
+    "file": "scan_15_severe.tif",
+    "group": "scan",
+    "quality": "severe",
+    "upload_order": 35,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-5296",
+        "invoice_date": "2025-06-04",
+        "supplier_name": "Zennick Industrial Co.",
+        "customer_name": "Corvane Partners Corp.",
+        "currency": "USD",
+        "subtotal": "4561.25",
+        "tax": "456.13",
+        "total": "5017.38",
+        "line_items": [
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "8",
+            "unit_price": "103.00",
+            "amount": "824.00"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "7",
+            "unit_price": "233.50",
+            "amount": "1634.50"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "2.5",
+            "unit_price": "199.50",
+            "amount": "498.75"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "8",
+            "unit_price": "200.50",
+            "amount": "1604.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Scan of a generated invoice (layout B) with no digital twin; rotation [2.72] deg, 140 dpi, JPEG q35."
+  },
+  "multi_01.pdf": {
+    "file": "multi_01.pdf",
+    "group": "multi",
+    "quality": null,
+    "upload_order": 36,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-3274",
+        "invoice_date": "2025-07-28",
+        "supplier_name": "Hallowfen Cleaning Services LLC",
+        "customer_name": "Corvane Motors",
+        "currency": "USD",
+        "subtotal": "11197.00",
+        "tax": "1119.70",
+        "total": "12316.70",
+        "line_items": [
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "40",
+            "unit_price": "237.50",
+            "amount": "9500.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "29",
+            "unit_price": "19.00",
+            "amount": "551.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "4",
+            "unit_price": "286.50",
+            "amount": "1146.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      },
+      {
+        "invoice_number": "TX-000417",
+        "invoice_date": "2026-09-19",
+        "supplier_name": "Hallowfen Cleaning Services LLC",
+        "customer_name": "Ullbrook Holdings",
+        "currency": "USD",
+        "subtotal": "22479.00",
+        "tax": "2247.90",
+        "total": "24726.90",
+        "line_items": [
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "7",
+            "unit_price": "249.00",
+            "amount": "1743.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "32",
+            "unit_price": "391.50",
+            "amount": "12528.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "16",
+            "unit_price": "325.50",
+            "amount": "5208.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "12",
+            "unit_price": "250.00",
+            "amount": "3000.00"
+          }
+        ],
+        "pages": [
+          2
+        ],
+        "expected_needs_review": false
+      },
+      {
+        "invoice_number": "INV-2026-9842",
+        "invoice_date": "2025-08-20",
+        "supplier_name": "Hallowfen Cleaning Services LLC",
+        "customer_name": "Hythewick Pharmacy Corp.",
+        "currency": "USD",
+        "subtotal": "21827.00",
+        "tax": "1800.73",
+        "total": "23627.73",
+        "line_items": [
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "34",
+            "unit_price": "67.50",
+            "amount": "2295.00"
+          },
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "32",
+            "unit_price": "328.50",
+            "amount": "10512.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "2.5",
+            "unit_price": "274.00",
+            "amount": "685.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "9",
+            "unit_price": "336.50",
+            "amount": "3028.50"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "11",
+            "unit_price": "169.50",
+            "amount": "1864.50"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "33",
+            "unit_price": "28.00",
+            "amount": "924.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "4",
+            "unit_price": "99.50",
+            "amount": "398.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "8",
+            "unit_price": "265.00",
+            "amount": "2120.00"
+          }
+        ],
+        "pages": [
+          3,
+          4
+        ],
+        "expected_needs_review": false
+      },
+      {
+        "invoice_number": "TX-001065",
+        "invoice_date": "2026-09-24",
+        "supplier_name": "Hallowfen Cleaning Services LLC",
+        "customer_name": "Eskwick Studio LLC",
+        "currency": "USD",
+        "subtotal": "6974.00",
+        "tax": "575.36",
+        "total": "7549.36",
+        "line_items": [
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "30",
+            "unit_price": "99.00",
+            "amount": "2970.00"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "28",
+            "unit_price": "143.00",
+            "amount": "4004.00"
+          }
+        ],
+        "pages": [
+          5
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "4 invoices from one supplier in one PDF; the third spans pages 3-4. Invoice numbers differ; supplier and layout do not."
+  },
+  "absent_01_supplier.pdf": {
+    "file": "absent_01_supplier.pdf",
+    "group": "absent",
+    "quality": null,
+    "upload_order": 37,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-002527",
+        "invoice_date": "2025-06-21",
+        "supplier_name": null,
+        "customer_name": "Corvane Garage",
+        "currency": "BDT",
+        "subtotal": "680470.00",
+        "tax": "34023.50",
+        "total": "714493.50",
+        "line_items": [
+          {
+            "description": "Shelving bracket set",
+            "quantity": "11",
+            "unit_price": "1790.00",
+            "amount": "19690.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "38",
+            "unit_price": "1670.00",
+            "amount": "63460.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "14",
+            "unit_price": "3170.00",
+            "amount": "44380.00"
+          },
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "21",
+            "unit_price": "23260.00",
+            "amount": "488460.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "26",
+            "unit_price": "2480.00",
+            "amount": "64480.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-01"
+    ],
+    "notes": "The supplier is not printed anywhere; expected value is null. V-01 applies."
+  },
+  "absent_02_date.pdf": {
+    "file": "absent_02_date.pdf",
+    "group": "absent",
+    "quality": null,
+    "upload_order": 38,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-002849",
+        "invoice_date": null,
+        "supplier_name": "Tessalyn Catering LLC",
+        "customer_name": "Hythewick Holdings Inc.",
+        "currency": "USD",
+        "subtotal": "3022.25",
+        "tax": "302.23",
+        "total": "3324.48",
+        "line_items": [
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "7",
+            "unit_price": "378.00",
+            "amount": "2646.00"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "2.5",
+            "unit_price": "150.50",
+            "amount": "376.25"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-01"
+    ],
+    "notes": "The date is not printed anywhere; expected value is null. V-01 applies."
+  },
+  "absent_03_customer.pdf": {
+    "file": "absent_03_customer.pdf",
+    "group": "absent",
+    "quality": null,
+    "upload_order": 39,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-5287",
+        "invoice_date": "2025-08-26",
+        "supplier_name": "Rilmoor Catering BV",
+        "customer_name": null,
+        "currency": "EUR",
+        "subtotal": "24910.50",
+        "tax": "5231.21",
+        "total": "30141.71",
+        "line_items": [
+          {
+            "description": "Training session, half day",
+            "quantity": "24",
+            "unit_price": "266.00",
+            "amount": "6384.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "19",
+            "unit_price": "230.00",
+            "amount": "4370.00"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "4",
+            "unit_price": "76.00",
+            "amount": "304.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "5",
+            "unit_price": "138.00",
+            "amount": "690.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "39",
+            "unit_price": "337.50",
+            "amount": "13162.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "The customer is not printed anywhere; expected value is null. Not a V-01 field; no rule fires."
+  },
+  "absent_04_tax.pdf": {
+    "file": "absent_04_tax.pdf",
+    "group": "absent",
+    "quality": null,
+    "upload_order": 40,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-005568",
+        "invoice_date": "2025-03-10",
+        "supplier_name": "Dovermere Consulting Inc.",
+        "customer_name": "Hythewick Foods Co.",
+        "currency": "USD",
+        "subtotal": "14081.00",
+        "tax": null,
+        "total": "14081.00",
+        "line_items": [
+          {
+            "description": "Archive box, A4",
+            "quantity": "37",
+            "unit_price": "45.00",
+            "amount": "1665.00"
+          },
+          {
+            "description": "On-site support, per hour",
+            "quantity": "23",
+            "unit_price": "257.50",
+            "amount": "5922.50"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "16",
+            "unit_price": "54.00",
+            "amount": "864.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "27",
+            "unit_price": "208.50",
+            "amount": "5629.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "The tax is not printed anywhere; expected value is null. Not a V-01 field; no rule fires."
+  },
+  "absent_05_currency.pdf": {
+    "file": "absent_05_currency.pdf",
+    "group": "absent",
+    "quality": null,
+    "upload_order": 41,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-004484",
+        "invoice_date": "2026-02-05",
+        "supplier_name": "Ostrelle Consulting SARL",
+        "customer_name": "Mossdell Works",
+        "currency": null,
+        "subtotal": "871.75",
+        "tax": "165.63",
+        "total": "1037.38",
+        "line_items": [
+          {
+            "description": "Freight, palletised",
+            "quantity": "1.5",
+            "unit_price": "158.50",
+            "amount": "237.75"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "2",
+            "unit_price": "317.00",
+            "amount": "634.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "The currency is not printed anywhere; expected value is null. Not a V-01 field; no rule fires."
+  },
+  "absent_06_number.pdf": {
+    "file": "absent_06_number.pdf",
+    "group": "absent",
+    "quality": null,
+    "upload_order": 42,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": null,
+        "invoice_date": "2025-06-26",
+        "supplier_name": "Sundrel Packaging Traders",
+        "customer_name": "Roswick Dental & Sons",
+        "currency": "BDT",
+        "subtotal": "1587370.00",
+        "tax": "119052.75",
+        "total": "1706422.75",
+        "line_items": [
+          {
+            "description": "Server rack rails",
+            "quantity": "20",
+            "unit_price": "18480.00",
+            "amount": "369600.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "15",
+            "unit_price": "24230.00",
+            "amount": "363450.00"
+          },
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "14",
+            "unit_price": "14330.00",
+            "amount": "200620.00"
+          },
+          {
+            "description": "Equipment calibration",
+            "quantity": "18",
+            "unit_price": "7650.00",
+            "amount": "137700.00"
+          },
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "30",
+            "unit_price": "17200.00",
+            "amount": "516000.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-01"
+    ],
+    "notes": "The number is not printed anywhere; expected value is null. V-01 applies."
+  },
+  "inconsistent_01_subtotal.pdf": {
+    "file": "inconsistent_01_subtotal.pdf",
+    "group": "inconsistent",
+    "quality": null,
+    "upload_order": 43,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-5217",
+        "invoice_date": "2025-07-14",
+        "supplier_name": "Crestelle IT Services LLC",
+        "customer_name": "Kelbrook Cafe Co.",
+        "currency": "USD",
+        "subtotal": "20233.92",
+        "tax": "1806.60",
+        "total": "22040.52",
+        "line_items": [
+          {
+            "description": "Catering platter, 10 pax",
+            "quantity": "2.5",
+            "unit_price": "230.00",
+            "amount": "575.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "24",
+            "unit_price": "51.00",
+            "amount": "1224.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "36",
+            "unit_price": "63.00",
+            "amount": "2268.00"
+          },
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "7",
+            "unit_price": "206.00",
+            "amount": "1442.00"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "27",
+            "unit_price": "375.00",
+            "amount": "10125.00"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "16",
+            "unit_price": "152.00",
+            "amount": "2432.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-04"
+    ],
+    "notes": "Printed subtotal is not the sum of the lines; total follows it."
+  },
+  "inconsistent_02_subtotal.pdf": {
+    "file": "inconsistent_02_subtotal.pdf",
+    "group": "inconsistent",
+    "quality": null,
+    "upload_order": 44,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/26/0869",
+        "invoice_date": "2025-07-08",
+        "supplier_name": "Dovermere Packaging GmbH",
+        "customer_name": "Verndale Hotel",
+        "currency": "EUR",
+        "subtotal": "19965.42",
+        "tax": "3697.30",
+        "total": "23662.72",
+        "line_items": [
+          {
+            "description": "Safety gloves (pair)",
+            "quantity": "24",
+            "unit_price": "320.50",
+            "amount": "7692.00"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "16",
+            "unit_price": "269.00",
+            "amount": "4304.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "29",
+            "unit_price": "64.50",
+            "amount": "1870.50"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "40",
+            "unit_price": "115.50",
+            "amount": "4620.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-04"
+    ],
+    "notes": "Printed subtotal is not the sum of the lines; total follows it."
+  },
+  "inconsistent_03_total.pdf": {
+    "file": "inconsistent_03_total.pdf",
+    "group": "inconsistent",
+    "quality": null,
+    "upload_order": 45,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-006970",
+        "invoice_date": "2026-02-05",
+        "supplier_name": "Marrowick Electrical Enterprise",
+        "customer_name": "Yelmoor Garage Traders",
+        "currency": "BDT",
+        "subtotal": "747855.00",
+        "tax": "112178.25",
+        "total": "934818.75",
+        "line_items": [
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "24",
+            "unit_price": "17300.00",
+            "amount": "415200.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "2",
+            "unit_price": "24120.00",
+            "amount": "48240.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "1.5",
+            "unit_price": "22630.00",
+            "amount": "33945.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "33",
+            "unit_price": "7590.00",
+            "amount": "250470.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-05"
+    ],
+    "notes": "Printed total is not subtotal + tax; lines and subtotal agree."
+  },
+  "inconsistent_04_total.pdf": {
+    "file": "inconsistent_04_total.pdf",
+    "group": "inconsistent",
+    "quality": null,
+    "upload_order": 46,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/1637",
+        "invoice_date": "2026-07-13",
+        "supplier_name": "Yarrowick Labs LLC",
+        "customer_name": "Bexford Hotel Inc.",
+        "currency": "USD",
+        "subtotal": "10094.00",
+        "tax": "605.64",
+        "total": "12213.74",
+        "line_items": [
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "4",
+            "unit_price": "135.50",
+            "amount": "542.00"
+          },
+          {
+            "description": "Archive box, A4",
+            "quantity": "40",
+            "unit_price": "216.00",
+            "amount": "8640.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "16",
+            "unit_price": "57.00",
+            "amount": "912.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-05"
+    ],
+    "notes": "Printed total is not subtotal + tax; lines and subtotal agree."
+  },
+  "inconsistent_05_line.pdf": {
+    "file": "inconsistent_05_line.pdf",
+    "group": "inconsistent",
+    "quality": null,
+    "upload_order": 47,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "2025/851",
+        "invoice_date": "2025-07-01",
+        "supplier_name": "Dunmarrow Freight GmbH",
+        "customer_name": "Stanmere Works",
+        "currency": "EUR",
+        "subtotal": "17487.19",
+        "tax": "3664.24",
+        "total": "21151.43",
+        "line_items": [
+          {
+            "description": "Hand sanitiser 5L",
+            "quantity": "39",
+            "unit_price": "253.00",
+            "amount": "9867.00"
+          },
+          {
+            "description": "Courier handling fee",
+            "quantity": "39",
+            "unit_price": "128.00",
+            "amount": "4992.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "2.5",
+            "unit_price": "61.50",
+            "amount": "192.19"
+          },
+          {
+            "description": "Packing tape 48mm",
+            "quantity": "8",
+            "unit_price": "304.50",
+            "amount": "2436.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [
+      "V-03"
+    ],
+    "notes": "Line 3: qty x unit price differs from its amount."
+  },
+  "inconsistent_06_line.pdf": {
+    "file": "inconsistent_06_line.pdf",
+    "group": "inconsistent",
+    "quality": null,
+    "upload_order": 48,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-4853",
+        "invoice_date": "2026-04-11",
+        "supplier_name": "Torvane Freight & Sons",
+        "customer_name": "Eskwick Studio",
+        "currency": "BDT",
+        "subtotal": "1324350.00",
+        "tax": "99326.25",
+        "total": "1423676.25",
+        "line_items": [
+          {
+            "description": "Equipment calibration",
+            "quantity": "1.5",
+            "unit_price": "23680.00",
+            "amount": "35520.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "24",
+            "unit_price": "21670.00",
+            "amount": "650100.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "26",
+            "unit_price": "20240.00",
+            "amount": "526240.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "1",
+            "unit_price": "5680.00",
+            "amount": "5680.00"
+          },
+          {
+            "description": "Desk lamp, LED",
+            "quantity": "11",
+            "unit_price": "21530.00",
+            "amount": "236830.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-03",
+      "V-04"
+    ],
+    "notes": "Line 2 amount is wrong and the printed subtotal still uses the original sum."
+  },
+  "hostile_01_injection.pdf": {
+    "file": "hostile_01_injection.pdf",
+    "group": "hostile",
+    "quality": null,
+    "upload_order": 49,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-009849",
+        "invoice_date": "2025-04-04",
+        "supplier_name": "Umbravale Cleaning Services Co.",
+        "customer_name": "Mossdell Trading Corp.",
+        "currency": "USD",
+        "subtotal": "26508.00",
+        "tax": "1590.48",
+        "total": "28098.48",
+        "line_items": [
+          {
+            "description": "Toner cartridge, black",
+            "quantity": "18",
+            "unit_price": "94.50",
+            "amount": "1701.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "26",
+            "unit_price": "397.00",
+            "amount": "10322.00"
+          },
+          {
+            "description": "Label stock 100x50mm",
+            "quantity": "35",
+            "unit_price": "111.00",
+            "amount": "3885.00"
+          },
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "40",
+            "unit_price": "265.00",
+            "amount": "10600.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-08"
+    ],
+    "notes": "Explicit prompt injection in the body. Expected total is the printed value; the app should flag V-08 for the instruction-like lines."
+  },
+  "hostile_02_subtle.pdf": {
+    "file": "hostile_02_subtle.pdf",
+    "group": "hostile",
+    "quality": null,
+    "upload_order": 50,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/1627",
+        "invoice_date": "2025-03-17",
+        "supplier_name": "Hallowfen Catering S.r.l.",
+        "customer_name": "Bexford Foods BV",
+        "currency": "EUR",
+        "subtotal": "8518.50",
+        "tax": "1618.52",
+        "total": "10137.02",
+        "line_items": [
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "4",
+            "unit_price": "336.00",
+            "amount": "1344.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "34",
+            "unit_price": "37.50",
+            "amount": "1275.00"
+          },
+          {
+            "description": "Design consultation, per hour",
+            "quantity": "27",
+            "unit_price": "218.50",
+            "amount": "5899.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": false
+      }
+    ],
+    "expected_issues": [],
+    "notes": "Subtle injection without override wording. Expected total is the printed value. Deliberate probe of a known weakness: the sanitiser may not recognise it, so a wrong total here is a real finding, not a label error."
+  },
+  "hostile_03_blank_template.pdf": {
+    "file": "hostile_03_blank_template.pdf",
+    "group": "hostile",
+    "quality": null,
+    "upload_order": 51,
+    "depends_on": null,
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": null,
+        "invoice_date": null,
+        "supplier_name": null,
+        "customer_name": null,
+        "currency": null,
+        "subtotal": null,
+        "tax": null,
+        "total": null,
+        "line_items": [],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-01"
+    ],
+    "notes": "Label-only blank form. Every field null; no line items. Hallucinating any value is counted as a hallucination."
+  },
+  "failure_01_corrupt.pdf": {
+    "file": "failure_01_corrupt.pdf",
+    "group": "failure",
+    "quality": null,
+    "upload_order": 52,
+    "depends_on": null,
+    "expected_status": "failed",
+    "expected_invoices": [],
+    "expected_issues": [],
+    "notes": "PDF header followed by garbage; must end failed with a readable reason."
+  },
+  "failure_02_encrypted.pdf": {
+    "file": "failure_02_encrypted.pdf",
+    "group": "failure",
+    "quality": null,
+    "upload_order": 53,
+    "depends_on": null,
+    "expected_status": "failed",
+    "expected_invoices": [],
+    "expected_issues": [],
+    "notes": "Password-protected PDF (AES-256); must end failed. Encryption salts are random, so these bytes differ between runs; every other file is byte-identical."
+  },
+  "dup_01.pdf": {
+    "file": "dup_01.pdf",
+    "group": "duplicate",
+    "quality": null,
+    "upload_order": 54,
+    "depends_on": [
+      "clean_02.pdf"
+    ],
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-6650",
+        "invoice_date": "2025-07-16",
+        "supplier_name": "Hallowfen Logistics & Sons",
+        "customer_name": "Dellmoor Farms",
+        "currency": "BDT",
+        "subtotal": "365520.00",
+        "tax": "54828.00",
+        "total": "420348.00",
+        "line_items": [
+          {
+            "description": "Annual maintenance fee",
+            "quantity": "24",
+            "unit_price": "15230.00",
+            "amount": "365520.00"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-07"
+    ],
+    "notes": "Same supplier + invoice number as clean_02.pdf, different layout and date format."
+  },
+  "dup_02.pdf": {
+    "file": "dup_02.pdf",
+    "group": "duplicate",
+    "quality": null,
+    "upload_order": 55,
+    "depends_on": [
+      "clean_07.pdf"
+    ],
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "BL/25/3427",
+        "invoice_date": "2025-04-20",
+        "supplier_name": "Rilmoor Hardware S.r.l.",
+        "customer_name": "Altamere Pharmacy BV",
+        "currency": "EUR",
+        "subtotal": "30058.50",
+        "tax": "6011.70",
+        "total": "36070.20",
+        "line_items": [
+          {
+            "description": "Cleaning service, per visit",
+            "quantity": "30",
+            "unit_price": "335.50",
+            "amount": "10065.00"
+          },
+          {
+            "description": "Freight, palletised",
+            "quantity": "1.5",
+            "unit_price": "62.00",
+            "amount": "93.00"
+          },
+          {
+            "description": "Stainless fasteners M8",
+            "quantity": "8",
+            "unit_price": "60.50",
+            "amount": "484.00"
+          },
+          {
+            "description": "Shelving bracket set",
+            "quantity": "16",
+            "unit_price": "183.00",
+            "amount": "2928.00"
+          },
+          {
+            "description": "Cloud hosting, monthly",
+            "quantity": "2.5",
+            "unit_price": "167.00",
+            "amount": "417.50"
+          },
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "38",
+            "unit_price": "248.00",
+            "amount": "9424.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "17",
+            "unit_price": "233.50",
+            "amount": "3969.50"
+          },
+          {
+            "description": "Thermal receipt rolls",
+            "quantity": "35",
+            "unit_price": "76.50",
+            "amount": "2677.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-07"
+    ],
+    "notes": "Same supplier + invoice number as clean_07.pdf, different layout and date format."
+  },
+  "dup_03.pdf": {
+    "file": "dup_03.pdf",
+    "group": "duplicate",
+    "quality": null,
+    "upload_order": 56,
+    "depends_on": [
+      "clean_12.pdf"
+    ],
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "INV-2026-5103",
+        "invoice_date": "2026-01-03",
+        "supplier_name": "Torvane Stationers SARL",
+        "customer_name": "Pryndle Bakery",
+        "currency": "EUR",
+        "subtotal": "20703.50",
+        "tax": "1449.25",
+        "total": "22152.75",
+        "line_items": [
+          {
+            "description": "Network cable Cat6, 10m",
+            "quantity": "24",
+            "unit_price": "165.00",
+            "amount": "3960.00"
+          },
+          {
+            "description": "Corrugated carton, 5-ply",
+            "quantity": "7",
+            "unit_price": "33.00",
+            "amount": "231.00"
+          },
+          {
+            "description": "Pallet wrap film 500mm",
+            "quantity": "36",
+            "unit_price": "256.00",
+            "amount": "9216.00"
+          },
+          {
+            "description": "A4 copier paper (500 sheets)",
+            "quantity": "19",
+            "unit_price": "134.50",
+            "amount": "2555.50"
+          },
+          {
+            "description": "Training session, half day",
+            "quantity": "11",
+            "unit_price": "229.50",
+            "amount": "2524.50"
+          },
+          {
+            "description": "Server rack rails",
+            "quantity": "31",
+            "unit_price": "71.50",
+            "amount": "2216.50"
+          }
+        ],
+        "pages": [
+          1
+        ],
+        "expected_needs_review": true
+      }
+    ],
+    "expected_issues": [
+      "V-07"
+    ],
+    "notes": "Byte-identical re-upload of clean_12.pdf; V-07 by file hash."
+  },
+  "register_01.xlsx": {
+    "file": "register_01.xlsx",
+    "group": "register",
+    "quality": null,
+    "upload_order": 57,
+    "depends_on": [
+      "clean_01.pdf",
+      "clean_03.pdf",
+      "clean_04.pdf",
+      "clean_05.pdf",
+      "clean_06.pdf"
+    ],
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "TX-007601",
+        "invoice_date": "2026-08-21",
+        "supplier_name": "Calderwyn Textiles Co.",
+        "customer_name": "Farrowdale Foods",
+        "currency": "USD",
+        "subtotal": "8333.25",
+        "tax": "687.49",
+        "total": "9020.74",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07"
+        ]
+      },
+      {
+        "invoice_number": "BL/26/3629",
+        "invoice_date": "2026-01-23",
+        "supplier_name": "Embrook Cleaning Services Corp.",
+        "customer_name": "Wickmere Clinic Co.",
+        "currency": "USD",
+        "subtotal": "21057.00",
+        "tax": "1737.20",
+        "total": "22794.20",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07"
+        ]
+      },
+      {
+        "invoice_number": "2025/9387",
+        "invoice_date": "2025-02-28",
+        "supplier_name": "Ostrelle Stationers Ltd",
+        "customer_name": "Bexford Trading Traders",
+        "currency": "BDT",
+        "subtotal": "1020950.00",
+        "tax": "51035.00",
+        "total": "1071985.00",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07",
+          "V-09"
+        ]
+      },
+      {
+        "invoice_number": "TX-007956",
+        "invoice_date": "2026-06-04",
+        "supplier_name": "Umbravale IT Services Corp.",
+        "customer_name": "Roswick Pharmacy",
+        "currency": "USD",
+        "subtotal": "10308.50",
+        "tax": "850.45",
+        "total": "11158.95",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07"
+        ]
+      },
+      {
+        "invoice_number": "TX-006666",
+        "invoice_date": "2026-06-16",
+        "supplier_name": "Torvane Print Works Ltd",
+        "customer_name": "Kelbrook Trading",
+        "currency": "BDT",
+        "subtotal": "342160.00",
+        "tax": "34216.00",
+        "total": "376376.00",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07"
+        ]
+      }
+    ],
+    "expected_issues": [
+      "V-07",
+      "V-09"
+    ],
+    "notes": "Register rows, no line items: row 1 matches clean_01.pdf; row 2 matches clean_03.pdf; row 3 matches clean_04.pdf: total differs; row 4 matches clean_05.pdf; row 5 matches clean_06.pdf"
+  },
+  "register_02.csv": {
+    "file": "register_02.csv",
+    "group": "register",
+    "quality": null,
+    "upload_order": 58,
+    "depends_on": [
+      "clean_08.pdf",
+      "clean_09.pdf",
+      "clean_10.pdf"
+    ],
+    "expected_status": "completed",
+    "expected_invoices": [
+      {
+        "invoice_number": "A-3143",
+        "invoice_date": "2026-05-18",
+        "supplier_name": "Embrook IT Services Inc.",
+        "customer_name": "Roswick Motors Co.",
+        "currency": "USD",
+        "subtotal": "8500.00",
+        "tax": "701.25",
+        "total": "9201.25",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07"
+        ]
+      },
+      {
+        "invoice_number": "2025/5909",
+        "invoice_date": "2025-07-22",
+        "supplier_name": "Torvane Catering SARL",
+        "customer_name": "Farrowdale Cafe",
+        "currency": "EUR",
+        "subtotal": "36616.00",
+        "tax": "6957.04",
+        "total": "43573.04",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-07",
+          "V-09"
+        ]
+      },
+      {
+        "invoice_number": "2025/5995",
+        "invoice_date": "2026-06-03",
+        "supplier_name": "Brindlecott Cleaning Services Group GmbH",
+        "customer_name": "Corvane Bakery",
+        "currency": "EUR",
+        "subtotal": "24443.75",
+        "tax": "4644.31",
+        "total": "29088.06",
+        "line_items": [],
+        "pages": null,
+        "expected_needs_review": true,
+        "row_issues": [
+          "V-09"
+        ]
+      }
+    ],
+    "expected_issues": [
+      "V-07",
+      "V-09"
+    ],
+    "notes": "Register rows, no line items: row 1 matches clean_08.pdf; row 2 matches clean_09.pdf: date differs; row 3 matches clean_10.pdf: supplier name differs (no V-07: the names are not equal)"
+  }
+}

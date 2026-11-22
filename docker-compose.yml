@@ -4,6 +4,7 @@ x-backend: &backend
   env_file: .env
   volumes:
     - ./backend:/app
+    - ./evaluation:/evaluation
     - uploads:/data/uploads
   depends_on:
     db:
