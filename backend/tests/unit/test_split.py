@@ -95,3 +95,18 @@ def test_each_sheet_is_split_separately_and_keeps_its_sheet_number():
         PageText(2, "sheet", "\t".join(HEADER) + "\nB-2\t2026-02-01\tBeta\t20"),
     ]
     assert [s.page_numbers for s in split_document(both)] == [[1], [2]]
+
+
+def test_free_form_sheet_with_a_letterhead_row_is_one_invoice_not_one_per_row():
+    # regression: a letterhead row looked like a header and every later row became an invoice
+    segments = split_document(
+        sheet(
+            ["Company Name", "", "", "INVOICE"],
+            ["[City, ST  ZIP]", "", "DATE", "2025-04-12", "", "Invoice Template"],
+            ["DESCRIPTION", "TAXED", "AMOUNT"],
+            ["[Service Fee]", "", "230"],
+            ["TOTAL", "", "971.56"],
+        )  # fmt: skip
+    )
+    assert len(segments) == 1 and segments[0].table is None
+    assert "TOTAL" in segments[0].text

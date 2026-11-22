@@ -54,13 +54,20 @@ def split_pdf_pages(pages: Sequence[PageText]) -> list[Segment]:
     ]
 
 
+MIN_KNOWN_COLUMNS = 2  # known columns that make a header with blank cells a table
+
+
 def split_sheet(page: PageText) -> list[Segment]:
     rows = [line.split("\t") for line in page.text.split("\n")]
     header_at = detect_header_row(rows)
     if header_at is None or header_at + 1 >= len(rows):
         return [Segment([page.page_no], page.text)]  # no table: the whole sheet is one invoice
     preamble, header, data = rows[:header_at], rows[header_at], rows[header_at + 1 :]
-    number_col = map_columns(header).get("invoice_number")
+    columns = map_columns(header)
+    if len(columns) < MIN_KNOWN_COLUMNS and not all(c.strip() for c in header):
+        # a sparse letterhead or form row, not a table header: the whole sheet is one invoice
+        return [Segment([page.page_no], page.text)]
+    number_col = columns.get("invoice_number")
     groups: dict[str, list[list[str]]] = {}
     last: str | None = None
     for n, row in enumerate(data):
