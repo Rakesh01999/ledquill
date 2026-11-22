@@ -158,6 +158,11 @@ def test_llm_unavailable_and_injection_add_review_warnings():
     assert rules_of(issues) == ["V-08"] and "instructions" in issues[0].message
 
 
+def test_poor_scan_adds_one_review_warning_that_names_the_scan():
+    issues = check(invoice(), poor_scan=True)
+    assert rules_of(issues) == ["V-08"] and "scan" in issues[0].message
+
+
 # status
 def test_two_warnings_need_review_one_warning_alone_does_not():
     warn = Issue("V-06", "warning", "w")

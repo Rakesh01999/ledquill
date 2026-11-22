@@ -168,6 +168,7 @@ def validate_invoice(session: Session, invoice: Invoice, document: Document) -> 
         data,
         llm_unavailable=raw.get("llm_status") in ("unavailable", "error"),
         injection_lines=int(raw.get("injection_lines_removed") or 0),
+        poor_scan=raw.get("llm_status") == "poor_scan",
     )
     candidates = _candidates(session, invoice, document)
     issues += duplicate_issues(

@@ -134,7 +134,8 @@ def run_split(ctx: StageContext) -> dict:
         select(Page).where(Page.document_id == doc.id).order_by(Page.page_no)
     ).all()
     found = split_document([PageText(p.page_no, p.method, p.text or "") for p in pages])
-    ctx.segments = [seg for seg in found if has_invoice_signal(seg)]
+    # Only text-layer pages and spreadsheets may be dropped; an unreadable scan must stay visible.
+    ctx.segments = [seg for seg in found if seg.ocr or has_invoice_signal(seg)]
     skipped = len(found) - len(ctx.segments)
     ctx.notice = None if ctx.segments else NO_INVOICE_NOTICE
     delete_document_invoices(session, doc.id)  # idempotent re-run

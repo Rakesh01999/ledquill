@@ -143,6 +143,7 @@ def validate_fields(
     today: date | None = None,
     llm_unavailable: bool = False,
     injection_lines: int = 0,
+    poor_scan: bool = False,
 ) -> list[Issue]:
     """V-01 to V-06 and V-08 for one invoice."""
     today = today or date.today()
@@ -297,6 +298,18 @@ def validate_fields(
                 None,
                 "model-checked values",
                 "pattern-matched values only",
+            )
+        )
+    if poor_scan:
+        issues.append(
+            Issue(
+                "V-08",
+                "warning",
+                "The scan was too poor to read: almost no text was recognised. Please enter the "
+                "values from the original file, or upload a clearer scan.",
+                None,
+                "readable text",
+                "almost no text recognised",
             )
         )
     if injection_lines:

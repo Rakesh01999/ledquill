@@ -13,7 +13,7 @@ from app.llm.grounding import ground, reconcile
 from app.llm.injection import strip_injection
 from app.llm.prompts import PROMPT_VERSION
 from app.pipeline.rules import RuleResult, extract_hints, extract_table
-from app.pipeline.split import Segment
+from app.pipeline.split import Segment, has_invoice_signal
 from app.schemas.extraction import ExtractionResult
 
 
@@ -23,6 +23,13 @@ class FieldsOutcome:
     method: str  # rules | llm | rules+llm
     model: str | None
     raw: dict[str, Any] = field(default_factory=dict)  # stored as invoices.raw_extraction
+
+
+MIN_OCR_CHARS = 40  # fewer letters and digits than this is not a readable page
+
+
+def _alnum(text: str) -> int:
+    return sum(c.isalnum() for c in text)
 
 
 def _rules(segment: Segment, clean_text: str) -> RuleResult:
@@ -43,6 +50,8 @@ def extract_fields(
 ) -> FieldsOutcome:
     """Raises LLMUnavailable (a TransientError) when no model answered, unless this is the final
     attempt: then the rule results are kept and the outcome is marked "unavailable"."""
+    if segment.ocr and not has_invoice_signal(segment) and _alnum(segment.text) < MIN_OCR_CHARS:
+        return fallback_outcome(segment, "poor_scan")  # nothing readable to send to a model
     clean, removed = strip_injection(segment.text)
     rules = _rules(segment, clean)
     raw: dict[str, Any] = {

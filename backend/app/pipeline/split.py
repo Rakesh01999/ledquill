@@ -31,6 +31,7 @@ class Segment:
     page_numbers: list[int]
     text: str
     table: Table | None = None
+    ocr: bool = False  # built from OCR'd pages: never dropped for a missing invoice signal
 
 
 _DECIMAL_AMOUNT = re.compile(r"\d[\d,. ]*[.,]\d{2}\b")
@@ -65,7 +66,11 @@ def split_pdf_pages(pages: Sequence[PageText]) -> list[Segment]:
         if current_key is None:
             groups[-1] = (key, members)  # leading pages without a number adopt the first one
     return [
-        Segment([p.page_no for p in members], "\n\n".join(p.text for p in members))
+        Segment(
+            [p.page_no for p in members],
+            "\n\n".join(p.text for p in members),
+            ocr=any(p.method == "ocr" for p in members),
+        )
         for _, members in groups
     ]
 

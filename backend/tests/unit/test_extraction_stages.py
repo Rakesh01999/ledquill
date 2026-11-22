@@ -4,12 +4,14 @@ from decimal import Decimal as D
 
 import pytest
 from openpyxl import Workbook
+from PIL import Image
 from sqlalchemy import func, select
 
 from app.core.errors import TransientError
 from app.db.models import Document, Invoice, ProcessingEvent, ValidationIssue
 from app.llm.base import RateLimited
 from app.pipeline.fields import extract_fields
+from app.pipeline.split import Segment
 from app.workers import stages
 from app.workers.stages import run_job
 from tests.fakes import llm_json
@@ -295,3 +297,36 @@ def test_pdf_and_spreadsheet_copies_that_disagree_raise_v09_with_the_related_inv
     assert "V-09:invoice_date" not in issues and "V-09:supplier_name" not in issues
     assert "V-07:invoice_number" in issues  # same supplier + number is also a duplicate
     assert pdf_inv.status == "needs_review"
+
+
+NOISY_OCR = "Faitewick Catering tia rine Utlbronk Foods ne wo FASB Tae Be wT Sealer Reema ee pais"
+
+
+def test_noisy_ocr_text_without_an_invoice_signal_still_goes_to_the_model(fake_llm):
+    fake_llm.script(llm_json(supplier_name="Fairwick Catering"))
+    outcome = extract_fields(
+        Segment([1], NOISY_OCR, ocr=True), lambda: fake_llm.client, final_attempt=False
+    )
+    assert len(fake_llm.calls) == 1 and outcome.raw["llm_status"] != "poor_scan"
+
+
+def test_ocr_text_with_almost_nothing_readable_becomes_a_poor_scan_not_a_silent_drop(fake_llm):
+    outcome = extract_fields(
+        Segment([1], ": ; ; 4 Se SOI.", ocr=True), lambda: fake_llm.client, final_attempt=False
+    )
+    assert fake_llm.calls == [] and outcome.raw["llm_status"] == "poor_scan"
+    assert outcome.model is None and outcome.result.total is None
+
+
+def test_a_near_blank_scan_ends_as_a_needs_review_invoice_that_explains_the_scan(
+    db_session, fake_llm, tmp_path
+):
+    image = Image.new("L", (400, 300), 255)
+    path = tmp_path / "faint.png"
+    image.save(path)
+    doc, _, status = process(db_session, path)
+    assert status == "completed" and doc.error is None  # a scan is never a quiet "no invoice"
+    (inv,) = invoices_of(db_session, doc)
+    assert inv.status == "needs_review" and fake_llm.calls == []
+    issues = issues_of(db_session, inv).values()
+    assert any(i.rule_id == "V-08" and "scan" in i.message for i in issues)

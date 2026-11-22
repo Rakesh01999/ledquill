@@ -17,16 +17,20 @@ def document(client, document_id):
     return r.json()
 
 
-def test_blank_page_pdf_completes_with_a_no_invoice_message(client, fake_llm, tmp_path):
+def test_blank_page_pdf_is_scanned_so_it_becomes_a_review_invoice_not_a_quiet_drop(
+    client, fake_llm, tmp_path
+):
     blank = pymupdf.open()
     blank.new_page()
     path = tmp_path / "blank.pdf"
     blank.save(path)
     document_id = upload(client, "blank.pdf", path.read_bytes())
     doc = document(client, document_id)
-    assert doc["status"] == "completed" and doc["invoice_count"] == 0
-    assert doc["error"] == "No invoice was found in this document."
-    assert invoices_for(client, document_id) == [] and fake_llm.calls == []  # nothing invented
+    assert doc["status"] == "completed" and doc["invoice_count"] == 1 and doc["error"] is None
+    (inv,) = invoices_for(client, document_id)
+    assert inv["status"] == "needs_review" and fake_llm.calls == []  # nothing invented
+    assert all(inv[f] is None for f in ("invoice_number", "supplier_name", "total"))
+    assert any(i["rule_id"] == "V-08" and "scan" in i["message"] for i in inv["issues"])
 
 
 def test_every_model_rate_limited_keeps_the_rule_results_and_says_why(client, fake_llm, tmp_path):
