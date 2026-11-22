@@ -7,22 +7,27 @@ completed stages, so nothing else needs rebalancing by hand.
 import hashlib
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from time import perf_counter
 from uuid import UUID
 
-from sqlalchemy import delete
+import structlog
+from sqlalchemy import delete, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.core.errors import PermanentError, TransientError
 from app.core.logging import get_logger
 from app.core.settings import Settings, get_settings
-from app.db.models import Document, Job, Page, ProcessingEvent
+from app.db.models import Document, Invoice, Job, Page, ProcessingEvent
+from app.llm.client import ExtractionClient, build_llm_client
 from app.pipeline.detect import HEAD_BYTES, detect
 from app.pipeline.extract import Limits, extract
+from app.pipeline.fields import extract_fields, fallback_outcome
+from app.pipeline.split import PageText, Segment, split_document
 from app.storage import Storage, get_storage
+from app.workers.invoices import delete_document_invoices, save_invoice, validate_invoice
 
 PAGE_BATCH = 10  # commit pages and update progress every N pages
 _HASH_CHUNK = 1024 * 1024
@@ -38,6 +43,9 @@ class StageContext:
     storage: Storage
     span_start: float = 0.0  # percent of overall progress where the running stage begins
     span_size: float = 0.0  # percent of overall progress the running stage covers
+    final_attempt: bool = False  # no Celery retries left: degrade instead of raising
+    segments: list[Segment] = field(default_factory=list)  # set by split, read by fields
+    llm: ExtractionClient | None = None  # built on first use; unusable-provider state is per job
 
     def set_progress(self, fraction: float) -> None:
         """Report progress within the running stage (0..1) as overall document progress."""
@@ -114,9 +122,69 @@ def run_extract(ctx: StageContext) -> dict:
     return detail
 
 
+def run_split(ctx: StageContext) -> dict:
+    """Group the stored page text into invoice segments and clear the previous run's invoices."""
+    session, doc = ctx.session, ctx.document
+    pages = session.scalars(
+        select(Page).where(Page.document_id == doc.id).order_by(Page.page_no)
+    ).all()
+    ctx.segments = split_document([PageText(p.page_no, p.method, p.text or "") for p in pages])
+    delete_document_invoices(session, doc.id)  # idempotent re-run
+    session.commit()
+    return {"invoices": len(ctx.segments)}
+
+
+def run_fields(ctx: StageContext) -> dict:
+    """Rules, LLM and grounding per invoice. One failing invoice never fails the document."""
+    session, doc = ctx.session, ctx.document
+
+    def get_llm() -> ExtractionClient:
+        if ctx.llm is None:
+            ctx.llm = build_llm_client(ctx.settings)
+        return ctx.llm
+
+    methods: dict[str, int] = {}
+    total = len(ctx.segments)
+    for done, segment in enumerate(ctx.segments, start=1):
+        try:
+            outcome = extract_fields(segment, get_llm, final_attempt=ctx.final_attempt)
+        except TransientError:
+            raise
+        except Exception as exc:  # one bad invoice must not fail the whole document
+            log.error("invoice_extraction_failed", error_type=type(exc).__name__)
+            outcome = fallback_outcome(segment, "error")
+        save_invoice(session, doc, segment, outcome)
+        session.commit()  # keep finished invoices if a later one raises a transient error
+        methods[outcome.method] = methods.get(outcome.method, 0) + 1
+        ctx.set_progress(done / total)
+    return {"invoices": total, **{f"{k}_invoices": v for k, v in methods.items()}}
+
+
+def run_validate(ctx: StageContext) -> dict:
+    """V-01..V-09 for every invoice of the document. Never fails; it only records issues."""
+    session, doc = ctx.session, ctx.document
+    invoices = session.scalars(
+        select(Invoice).where(Invoice.document_id == doc.id).order_by(Invoice.created_at)
+    ).all()
+    issue_count = 0
+    for invoice in invoices:
+        issue_count += len(validate_invoice(session, invoice, doc))
+        session.commit()
+    ready = sum(1 for i in invoices if i.status == "ready")
+    return {
+        "invoices": len(invoices),
+        "ready": ready,
+        "needs_review": len(invoices) - ready,
+        "issues": issue_count,
+    }
+
+
 STAGES: list[Stage] = [
     Stage("detect", run_detect, weight=1),
-    Stage("extract", run_extract, weight=9),
+    Stage("extract", run_extract, weight=6),
+    Stage("split", run_split, weight=1),
+    Stage("fields", run_fields, weight=10),
+    Stage("validate", run_validate, weight=2),
 ]
 
 
@@ -163,7 +231,16 @@ def _fail(session: Session, doc: Document, job: Job, message: str) -> None:
     session.commit()
 
 
-def run_job(
+def run_job(session: Session, document_id: UUID, job_id: UUID, **kwargs) -> str:
+    """Run every stage in order (see `_run_job`), with document_id and job_id on every log line."""
+    structlog.contextvars.bind_contextvars(document_id=str(document_id), job_id=str(job_id))
+    try:
+        return _run_job(session, document_id, job_id, **kwargs)
+    finally:
+        structlog.contextvars.unbind_contextvars("document_id", "job_id")
+
+
+def _run_job(
     session: Session,
     document_id: UUID,
     job_id: UUID,
@@ -184,7 +261,14 @@ def run_job(
         return "missing"
     bound = log.bind(document_id=str(doc.id), job_id=str(job.id))
     stages = STAGES if stages is None else stages
-    ctx = StageContext(session, doc, job, settings or get_settings(), storage or get_storage())
+    ctx = StageContext(
+        session,
+        doc,
+        job,
+        settings or get_settings(),
+        storage or get_storage(),
+        final_attempt=final_attempt,
+    )
     job.status, job.attempts, job.error = "processing", job.attempts + 1, None
     job.started_at = job.started_at or datetime.now(UTC)
     doc.status, doc.error = "processing", None

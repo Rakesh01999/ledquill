@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import documents, health
+from app.api import documents, health, invoices
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.settings import get_settings
@@ -43,5 +43,6 @@ def create_app() -> FastAPI:
     register_error_handlers(app)
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(documents.router, prefix="/api/v1")
+    app.include_router(invoices.router, prefix="/api/v1")
     _use_binary_format_for_files(app)
     return app
