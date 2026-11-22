@@ -151,9 +151,18 @@
   a {
     color: var(--link);
   }
+  /*
+   * One focus ring everywhere: a 2px outline in the ring colour. The shadcn ring is a box-shadow
+   * and some components add their own outline, so both are overridden here and never stack.
+   * Elements inside clipping containers (segmented controls, tabs) opt in to an inset ring.
+   */
   :focus-visible {
-    outline: 2px solid var(--ring-color);
-    outline-offset: 2px;
+    outline: 2px solid var(--ring-color) !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+  }
+  [data-focus-inset]:focus-visible {
+    outline-offset: -2px !important;
   }
   ::selection {
     background: var(--primary-soft);

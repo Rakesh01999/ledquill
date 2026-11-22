@@ -17,7 +17,7 @@ const STATUS_SEGMENTS: { key: InvoiceListParams["status"] | "all"; label: string
 ];
 
 const field =
-  "h-8 rounded-md border border-line-strong bg-surface px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-3 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring";
+  "h-8 rounded-md border border-line-strong bg-surface px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-3";
 
 /** Change the URL only: replaceState while typing, so Back is not flooded with every keystroke. */
 function replaceUrl(params: InvoiceListParams) {
@@ -53,11 +53,12 @@ export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
             const count = s.key === "all" ? stats?.invoices.total : counts?.[s.key as string];
             return (
               <ShallowLink
+                data-focus-inset
                 key={s.key}
                 href={invoicesHref({ ...params, status, page: 1 })}
                 aria-current={active ? "true" : undefined}
                 className={cn(
-                  "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                  "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2",
                   i > 0 && "border-l border-line",
                   active && "bg-surface-2 font-semibold text-ink",
                 )}

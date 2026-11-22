@@ -126,7 +126,7 @@ export function FieldRow({
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? errorId : undefined}
               className={cn(
-                "h-8 w-full rounded-md border bg-surface px-2.5 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "h-8 w-full rounded-md border bg-surface px-2.5 text-[13px] text-ink outline-none",
                 def.kind === "money" && "text-right tabular-nums",
                 error ? "border-danger" : "border-line-strong",
               )}
@@ -155,7 +155,7 @@ export function FieldRow({
               onClick={start}
               aria-label={`Edit ${def.label}${shown ? `, current value ${shown}` : ", not found in document"}`}
               className={cn(
-                "group -mx-1.5 flex min-h-7 max-w-full items-center gap-1.5 rounded-md px-1.5 text-left text-[13px] font-medium outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring",
+                "group -mx-1.5 flex min-h-7 max-w-full items-center gap-1.5 rounded-md px-1.5 text-left text-[13px] font-medium outline-none hover:bg-surface-2",
                 def.kind === "money" && "tabular-nums",
               )}
             >
@@ -195,7 +195,7 @@ export function FieldRow({
                   <button
                     type="button"
                     onClick={onShowPage}
-                    className="rounded-md border border-line px-1.5 py-0.5 text-xs text-ink-2 outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-md border border-line px-1.5 py-0.5 text-xs text-ink-2 outline-none hover:bg-surface-2"
                   >
                     {pageLabel}
                     <span className="sr-only">. Show this page in the source panel</span>

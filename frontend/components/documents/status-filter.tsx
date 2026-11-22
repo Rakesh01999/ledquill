@@ -35,11 +35,12 @@ export function StatusFilter({ params }: { params: DocumentListParams }) {
           const active = (params.status ?? "all") === s.key;
           return (
             <ShallowLink
+              data-focus-inset
               key={s.key}
               href={listHref({ ...params, status: s.status, page: 1 })}
               aria-current={active ? "true" : undefined}
               className={cn(
-                "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2",
                 i > 0 && "border-l border-line",
                 active && "bg-surface-2 font-semibold text-ink",
               )}
@@ -55,11 +56,12 @@ export function StatusFilter({ params }: { params: DocumentListParams }) {
           const active = params.file_type === t.value;
           return (
             <ShallowLink
+              data-focus-inset
               key={t.label}
               href={listHref({ ...params, file_type: t.value, page: 1 })}
               aria-current={active ? "true" : undefined}
               className={cn(
-                "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2",
                 i > 0 && "border-l border-line",
                 active && "bg-surface-2 font-semibold text-ink",
               )}

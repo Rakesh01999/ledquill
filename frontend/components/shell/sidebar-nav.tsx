@@ -48,7 +48,6 @@ export function SidebarNav({ collapsed = false, onNavigate }: { collapsed?: bool
             title={collapsed ? item.label : undefined}
             className={cn(
               "relative flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13px] outline-none transition-colors",
-              "focus-visible:ring-2 focus-visible:ring-ring",
               collapsed && "justify-center px-0",
               active
                 ? "bg-primary-soft font-semibold text-link"

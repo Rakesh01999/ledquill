@@ -141,7 +141,7 @@ export function UploadSection() {
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="cursor-pointer rounded-sm font-semibold text-link underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+              className="cursor-pointer rounded-sm font-semibold text-link underline-offset-2 hover:underline"
             >
               browse files
             </button>
