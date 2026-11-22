@@ -1,3 +1,5 @@
+import { ruleTitle } from "@/lib/invoices";
+
 /** RFC 7807 problem details as the API returns them, turned into something the UI can show. */
 
 export type FieldError = { loc: (string | number)[]; msg: string; type: string };
@@ -62,7 +64,7 @@ export function describeError(error: unknown): ProblemMessage {
       return {
         title: error.blockingRules.length ? "Resolve the open errors first" : "Action not allowed now",
         message: error.detail || "The request conflicts with the current state.",
-        items: error.blockingRules,
+        items: error.blockingRules.map((id) => `${ruleTitle(id)} (${id})`),
       };
     case 422:
       return {

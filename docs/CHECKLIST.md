@@ -82,9 +82,9 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 - [x] App shell, design tokens, light and dark mode (C1: shell, tokens, proxy, typed client; screens follow)
 - [x] Documents: multi-upload with live per-file progress (FR-20) (C2: upload, list, polling, detail with page text and image, reprocess, delete; verified in Edge against the running stack)
-- [ ] Invoice review: source beside fields, confidence, issues, inline edit, approve (FR-20)
-- [ ] Review queue
-- [ ] Search with filters and mode toggle
+- [x] Invoice review: source beside fields, confidence, issues, inline edit, approve (FR-20) (C3: verified in Edge; line items are read-only)
+- [x] Review queue (C3: /invoices?sort=severity, count badge, queue Prev/Next)
+- [x] Search with filters (C3: hybrid search and keyword filters; mode toggle cut, hybrid only)
 - [ ] Dashboard
 - [ ] Loading, empty, error states on every view
 - [ ] Performance budget met (prd.md §8)

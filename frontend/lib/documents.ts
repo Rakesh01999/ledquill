@@ -83,3 +83,13 @@ export function formatWhen(iso: string, now = Date.now()): string {
   if (abs < 86_400) return rtf.format(Math.round(seconds / 3600), "hour");
   return new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
+
+/** Compact age for queues: "12 min", "5 h", "3 d". */
+export function formatAge(iso: string, now = Date.now()): string {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "—";
+  const minutes = Math.max(0, Math.round((now - t) / 60_000));
+  if (minutes < 60) return `${Math.max(1, minutes)} min`;
+  if (minutes < 1440) return `${Math.round(minutes / 60)} h`;
+  return `${Math.round(minutes / 1440)} d`;
+}

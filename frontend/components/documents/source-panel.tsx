@@ -76,21 +76,45 @@ function PageText({ page, isSheet }: { page: PageOut; isSheet: boolean }) {
   );
 }
 
-export function SourcePanel({ documentId, filename }: { documentId: string; filename: string }) {
+/**
+ * Page text and image of a document. `pageNumbers` limits it to the pages an invoice was found
+ * on. `page` and `onPageChange` make the page controlled, so a field's page chip can switch it.
+ */
+export function SourcePanel({
+  documentId,
+  filename,
+  pageNumbers,
+  page: controlledPage,
+  onPageChange,
+}: {
+  documentId: string;
+  filename: string;
+  pageNumbers?: number[] | null;
+  page?: number;
+  onPageChange?: (pageNo: number) => void;
+}) {
   const { data, isPending, error, refetch } = useQuery(pagesOptions(api, documentId));
-  const [index, setIndex] = useState(0);
+  const [ownIndex, setOwnIndex] = useState(0);
 
   if (isPending) {
     return <Skeleton className="h-[380px] w-full bg-skeleton" role="status" aria-label="Loading pages" />;
   }
   if (error) return <ErrorState error={error} onRetry={() => void refetch()} />;
-  if (data.items.length === 0) {
+  const pages =
+    pageNumbers && pageNumbers.length > 0 ? data.items.filter((p) => pageNumbers.includes(p.page_no)) : data.items;
+  if (pages.length === 0) {
     return <EmptyState title="No pages yet. Text appears here once the file has been read." />;
   }
 
-  const total = data.items.length;
-  const current = Math.min(index, total - 1);
-  const page = data.items[current];
+  const total = pages.length;
+  const controlledIndex = controlledPage === undefined ? -1 : pages.findIndex((p) => p.page_no === controlledPage);
+  const current = Math.min(controlledIndex >= 0 ? controlledIndex : ownIndex, total - 1);
+  const setIndex = (i: number) => {
+    setOwnIndex(i);
+    const target = pages[i];
+    if (target) onPageChange?.(target.page_no);
+  };
+  const page = pages[current];
   if (!page) return null;
   const isSheet = page.method === "sheet";
   const noun = isSheet ? "Sheet" : "Page";
