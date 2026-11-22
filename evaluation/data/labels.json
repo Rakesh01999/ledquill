@@ -1942,11 +1942,11 @@
         "pages": [
           1
         ],
-        "expected_needs_review": false
+        "expected_needs_review": true
       }
     ],
     "expected_issues": [],
-    "notes": "Scan of a generated invoice (layout C) with no digital twin; rotation [-2.66] deg, 140 dpi, JPEG q35."
+    "notes": "Scan of a generated invoice (layout C) with no digital twin; rotation [-2.66] deg, 140 dpi, JPEG q35. Policy: a severe scan is expected to need review, whatever the system outputs; the field labels still describe the printed document."
   },
   "scan_12_severe.jpg": {
     "file": "scan_12_severe.jpg",
@@ -1994,11 +1994,11 @@
         "pages": [
           1
         ],
-        "expected_needs_review": false
+        "expected_needs_review": true
       }
     ],
     "expected_issues": [],
-    "notes": "Scan of a generated invoice (layout D) with no digital twin; rotation [-2.81] deg, 140 dpi, JPEG q35."
+    "notes": "Scan of a generated invoice (layout D) with no digital twin; rotation [-2.81] deg, 140 dpi, JPEG q35. Policy: a severe scan is expected to need review, whatever the system outputs; the field labels still describe the printed document."
   },
   "scan_13_severe.png": {
     "file": "scan_13_severe.png",
@@ -2040,11 +2040,11 @@
         "pages": [
           1
         ],
-        "expected_needs_review": false
+        "expected_needs_review": true
       }
     ],
     "expected_issues": [],
-    "notes": "Scan of a generated invoice (layout E) with no digital twin; rotation [2.69] deg, 140 dpi, JPEG q35."
+    "notes": "Scan of a generated invoice (layout E) with no digital twin; rotation [2.69] deg, 140 dpi, JPEG q35. Policy: a severe scan is expected to need review, whatever the system outputs; the field labels still describe the printed document."
   },
   "scan_14_severe.png": {
     "file": "scan_14_severe.png",
@@ -2086,11 +2086,11 @@
         "pages": [
           1
         ],
-        "expected_needs_review": false
+        "expected_needs_review": true
       }
     ],
     "expected_issues": [],
-    "notes": "Scan of a generated invoice (layout A) with no digital twin; rotation [-2.65] deg, 140 dpi, JPEG q35."
+    "notes": "Scan of a generated invoice (layout A) with no digital twin; rotation [-2.65] deg, 140 dpi, JPEG q35. Policy: a severe scan is expected to need review, whatever the system outputs; the field labels still describe the printed document."
   },
   "scan_15_severe.tif": {
     "file": "scan_15_severe.tif",
@@ -2138,11 +2138,11 @@
         "pages": [
           1
         ],
-        "expected_needs_review": false
+        "expected_needs_review": true
       }
     ],
     "expected_issues": [],
-    "notes": "Scan of a generated invoice (layout B) with no digital twin; rotation [2.72] deg, 140 dpi, JPEG q35."
+    "notes": "Scan of a generated invoice (layout B) with no digital twin; rotation [2.72] deg, 140 dpi, JPEG q35. Policy: a severe scan is expected to need review, whatever the system outputs; the field labels still describe the printed document."
   },
   "multi_01.pdf": {
     "file": "multi_01.pdf",

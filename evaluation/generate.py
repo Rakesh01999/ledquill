@@ -1109,11 +1109,20 @@ def build(out: Path = DATA) -> list[Record]:
         ext = "tif" if fmt == "tiff" else fmt
         name = f"scan_{i + 1:02d}_{level}.{ext}"
         write_image(out / name, frames, fmt, level)
+        label = invoice_label(inv, spans[0], [])
+        policy = ""
+        if level == "severe":
+            # Rule, set before any run and independent of the system's output: an unreadable
+            # scan must end up in review. Field labels and expected_issues stay as printed.
+            label["expected_needs_review"] = True
+            policy = (" Policy: a severe scan is expected to need review, whatever the system"
+                      " outputs; the field labels still describe the printed document.")
         add(Record(
-            name, "scan", level, "completed", [invoice_label(inv, spans[0], [])], [],
+            name, "scan", level, "completed", [label], [],
             f"Scan of a generated invoice (layout {inv.style.layout}) with no digital twin; "
             f"rotation {angles} deg, {SCAN_LEVELS[level]['dpi']} dpi, JPEG q"
-            f"{SCAN_LEVELS[level]['jpeg']}" + (", 2-frame TIFF" if multiframe else "") + ".",
+            f"{SCAN_LEVELS[level]['jpeg']}" + (", 2-frame TIFF" if multiframe else "") + "."
+            + policy,
             printed=[printed(inv)],
         ))  # fmt: skip
     tmp.unlink()
