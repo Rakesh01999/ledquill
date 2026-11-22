@@ -1,6 +1,8 @@
 # Copy .env.example to .env before the first run.
 x-backend: &backend
-  build: ./backend
+  build:
+    context: ./backend
+    target: dev
   env_file: .env
   volumes:
     - ./backend:/app
