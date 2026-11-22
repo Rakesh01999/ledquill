@@ -109,10 +109,13 @@ def line_item_counts(expected: list[dict], actual: list[dict]) -> tuple[int, int
         if hit is not None:
             left.pop(hit)
             tp += 1
-    return tp, len(left), len(expected) - tp
+    # an actual item without an amount can never match: it is a miss (FN) but not an extra (FP)
+    return tp, sum(v is not None for v in left), len(expected) - tp
 
 
-def score_file(label: dict, actual: list[dict], doc_status: str, issues_seen: set[str]) -> dict:
+def score_file(
+    label: dict, actual: list[dict], doc_status: str, issues_seen: set[str], name: str = ""
+) -> dict:
     """Per-file counts. `fields[f]` = {tp, fp, fn, halluc}; everything is summed later."""
     expected = label["expected_invoices"]
     fields = {f: Counter() for f in FIELDS}
@@ -143,7 +146,15 @@ def score_file(label: dict, actual: list[dict], doc_status: str, issues_seen: se
                     fields[f]["fp"] += 1
                     fields[f]["halluc"] += 1
     want = set(label["expected_issues"])
+    defective = any(c["fp"] or c["fn"] for c in fields.values()) or bool(items["fp"] or items["fn"])
     return {
+        "file": name,
+        "routing": {
+            "applicable": bool(expected or actual),
+            "defective": defective,  # any wrong or missing field or line item
+            "flagged": any(a.get("status") == "needs_review" for a in actual),
+            "review_expected": any(e.get("expected_needs_review") for e in expected),
+        },
         "fields": {f: {k: int(v) for k, v in c.items() if v} for f, c in fields.items()},
         "line_items": dict(items),
         "review": dict(review),
@@ -159,6 +170,36 @@ def score_file(label: dict, actual: list[dict], doc_status: str, issues_seen: se
 
 def ratio(num: float, den: float) -> float | None:
     return None if not den else num / den
+
+
+def routing_summary(scored: list[dict]) -> dict:
+    """Does review flagging follow real extraction errors? Files with any wrong or missing value
+    should be flagged; fully correct files should not. Independent of what the labels expect."""
+    used = [s for s in scored if s.get("routing", {}).get("applicable")]
+    bad = [s for s in used if s["routing"]["defective"]]
+    good = [s for s in used if not s["routing"]["defective"]]
+    flagged_bad = [s for s in bad if s["routing"]["flagged"]]
+    # a correct file flagged because its label expects review (duplicates, inconsistent
+    # documents) is a justified flag, not a false alarm
+    flagged_good = [
+        s for s in good if s["routing"]["flagged"] and not s["routing"].get("review_expected")
+    ]
+    return {
+        "defective_files": len(bad),
+        "defective_flagged": len(flagged_bad),
+        "silently_ready": sorted(s.get("file", "?") for s in bad if not s["routing"]["flagged"]),
+        "correct_files": len(good),
+        "correct_flagged": len(flagged_good),
+        "correct_flagged_names": sorted(s.get("file", "?") for s in flagged_good),
+        "routing_accuracy": ratio(len(flagged_bad) + len(good) - len(flagged_good), len(used)),
+    }
+
+
+def merge_rows(base: list[dict], overlay: list[dict]) -> list[dict]:
+    """`overlay` rows replace `base` rows of the same file; everything else is kept in order."""
+    fresh = {r["file"]: r for r in overlay}
+    merged = [fresh.pop(r["file"], r) for r in base]
+    return merged + list(fresh.values())
 
 
 def aggregate(scored: list[dict]) -> dict:
@@ -192,6 +233,7 @@ def aggregate(scored: list[dict]) -> dict:
     done = len(scored)
     return {
         "files": done,
+        "routing": routing_summary(scored),
         "fields": per_field,
         "line_items": {
             **li,
@@ -251,6 +293,20 @@ def pct(x: float | None) -> str:
     return "n/a" if x is None else f"{100 * x:.1f}%"
 
 
+def routing_lines(r: dict | None) -> list[str]:
+    if not r or not (r["defective_files"] or r["correct_files"]):
+        return []
+    silent = ", ".join(r["silently_ready"]) or "none"
+    return [
+        f"- Review routing (does flagging follow real errors?): {pct(r['routing_accuracy'])}",
+        f"  - files with any extraction error flagged for review: {r['defective_flagged']} of "
+        f"{r['defective_files']}; silently ready: {silent}",
+        f"  - fully correct files flagged although the label expects no review: "
+        f"{r['correct_flagged']} of "
+        f"{r['correct_files']}",
+    ]
+
+
 def render_report(results: dict) -> str:
     lines = ["# LedQuill evaluation report", ""]
     meta = results["meta"]
@@ -263,7 +319,15 @@ def render_report(results: dict) -> str:
         "real API. `n/a` means the metric had no data. Synthetic and real files are reported "
         "separately and never blended.",
         "",
+        "Label policy: scan_11 to scan_15 (severe scans) are expected to need review, as a rule "
+        "that does not depend on the system's output. Their field labels still describe the "
+        "printed invoice, so unreadable values count as misses, not as passes.",
+        "",
     ]
+    if meta.get("rescored_at"):
+        rerun = ", ".join(meta.get("rerun_files") or []) or "none"
+        lines += [f"Rescored with the current scorer at {meta['rescored_at']}; files run again "
+                  f"afterwards: {rerun}.", ""]  # fmt: skip
     for kind in ("synthetic", "real"):
         sec = results[kind]
         lines += [f"## {kind.capitalize()} files", ""]
@@ -276,6 +340,7 @@ def render_report(results: dict) -> str:
             f"invoice count as expected: {pct(agg['invoice_count_match'])}",
             f"- needs_review accuracy (matched invoices): {pct(agg['needs_review_accuracy'])}",
             f"- Validation rule sets exactly right per file: {pct(agg['rule_set_exact_match'])}",
+            *routing_lines(agg.get("routing")),
             "",
             "| Field | Precision | Recall | TP | FP | FN | Hallucinated |",
             "|---|---|---|---|---|---|---|",
@@ -389,7 +454,7 @@ class Pacer:
 # ---------------------------------------------------------------- main
 
 
-def select(labels: dict, only: str | None, limit: int | None) -> list[str]:
+def select(labels: dict, only: str | None, limit: int | None, partners: bool = True) -> list[str]:
     names = sorted(labels, key=lambda n: labels[n]["upload_order"])
     if only:
         wanted = {w.strip() for w in only.split(",") if w.strip()}
@@ -397,7 +462,9 @@ def select(labels: dict, only: str | None, limit: int | None) -> list[str]:
     if limit is not None:
         names = names[:limit]
     chosen = set(names)
-    for n in list(names):  # a partner must exist for a depends_on file, so pull it in
+    for n in (
+        list(names) if partners else []
+    ):  # a partner must exist for a depends_on file, so pull it in
         for partner in labels[n].get("depends_on") or []:
             chosen.add(partner)
     return sorted(chosen, key=lambda n: labels[n]["upload_order"])
@@ -419,7 +486,7 @@ def run_file(client: Client, pacer: Pacer, name: str, label: dict, path: Path) -
         rejected = (body.get("rejected") or [{}])[0] if isinstance(body, dict) else {}
         status = "rejected"
         detail = rejected.get("reason") or str(body)[:200]
-        score = score_file(label, [], status, set())
+        score = score_file(label, [], status, set(), name)
         return {"file": name, "group": label["group"], "document_id": None, "error": detail,
                 "http_status": rejected.get("status", resp.status_code), "events": [],
                 "seconds": round(time.monotonic() - began, 1), "score": score}  # fmt: skip
@@ -433,7 +500,7 @@ def run_file(client: Client, pacer: Pacer, name: str, label: dict, path: Path) -
     pacer.record(tokens["prompt"] + tokens["completion"])
     return {"file": name, "group": label["group"], "document_id": document_id,
             "error": doc.get("error"), "events": events, "seconds": seconds,
-            "score": score_file(label, invoices, doc["status"], issues)}  # fmt: skip
+            "score": score_file(label, invoices, doc["status"], issues, name)}  # fmt: skip
 
 
 def build_results(rows: list[dict], total_files: int, subset: bool, started: str) -> dict:
@@ -474,6 +541,44 @@ def build_results(rows: list[dict], total_files: int, subset: bool, started: str
     }
 
 
+def rescore_run(client: Client, out_json: Path, out_md: Path, labels: dict, merge_from) -> int:
+    """No uploads and no LLM calls: optionally merge rows from another results file, then score
+    every stored document again from the API with the current scorer and labels."""
+    if not out_json.exists():
+        print(f"{out_json.name} does not exist; nothing to rescore.", file=sys.stderr)
+        return 2
+    previous = json.loads(out_json.read_text(encoding="utf-8"))
+    rows, rerun = previous["files"], []
+    if merge_from:
+        overlay = json.loads((HERE / merge_from).read_text(encoding="utf-8"))["files"]
+        rows, rerun = merge_rows(rows, overlay), [r["file"] for r in overlay]
+    rows = [r for r in rows if r["file"] in labels]
+    for row in rows:
+        name, document_id = row["file"], row.get("document_id")
+        if not document_id:  # rejected at upload: nothing stored to read back
+            row["score"] = score_file(labels[name], [], "rejected", set(), name)
+            continue
+        response = client.request("GET", f"{API}/documents/{document_id}")
+        if response.status_code != 200:
+            print(f"{name}: document {document_id} is gone (HTTP {response.status_code})")
+            return 2
+        status = response.json()["status"]
+        invoices = client.invoices(document_id) if status == "completed" else []
+        issues = {i["rule_id"] for inv in invoices for i in inv["issues"]}
+        row["score"] = score_file(labels[name], invoices, status, issues, name)
+    results = build_results(
+        rows, len(labels), len(rows) < len(labels), previous["meta"]["started_at"]
+    )
+    results["meta"].update(rescored_at=datetime.now(UTC).isoformat(timespec="seconds"),
+                           rerun_files=rerun)  # fmt: skip
+    out_json.write_text(json.dumps(results, indent=2, default=str), encoding="utf-8")
+    out_md.write_text(render_report(results), encoding="utf-8")
+    print(
+        f"Rescored {len(rows)} file(s) ({len(rerun)} merged); wrote {out_json.name}, {out_md.name}"
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("--base-url", default="http://localhost:8000")
@@ -482,6 +587,21 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--tag")
     ap.add_argument("--max-tokens", type=int, default=150_000)
+    ap.add_argument(
+        "--no-partners",
+        action="store_true",
+        help="do not pull in depends_on partners (they are already uploaded)",
+    )
+    ap.add_argument(
+        "--rescore",
+        action="store_true",
+        help="no uploads: re-read every stored document from the API and score again",
+    )
+    ap.add_argument(
+        "--merge-from",
+        metavar="FILE",
+        help="with --rescore: rows of this results file replace the same files",
+    )
     args = ap.parse_args(argv)
 
     key = os.environ.get("LEDQUILL_API_KEY", "")
@@ -494,7 +614,9 @@ def main(argv: list[str] | None = None) -> int:
     synthetic, real = load_labels()
     labels = {**synthetic, **real}
     kinds = {**dict.fromkeys(synthetic, "synthetic"), **dict.fromkeys(real, "real")}
-    names = select(labels, args.only, args.limit)
+    if args.rescore:
+        return rescore_run(Client(args.base_url, key), out_json, out_md, labels, args.merge_from)
+    names = select(labels, args.only, args.limit, partners=not args.no_partners)
     rows: list[dict] = []
     if args.resume and out_json.exists():
         previous = json.loads(out_json.read_text(encoding="utf-8"))["files"]
@@ -519,7 +641,7 @@ def main(argv: list[str] | None = None) -> int:
         if pacer.total >= args.max_tokens:
             print(f"Stopping: {pacer.total} tokens spent, --max-tokens is {args.max_tokens}.")
             break
-        for partner in labels[name].get("depends_on") or []:
+        for partner in [] if args.no_partners else labels[name].get("depends_on") or []:
             if finished.get(partner) != "completed":
                 print(f"  note: partner {partner} has not completed; {name} still uploaded")
         path = (DATA / "real" / name) if kinds[name] == "real" else (DATA / name)
