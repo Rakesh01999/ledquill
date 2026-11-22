@@ -139,9 +139,9 @@ def fake_llm(monkeypatch, llm_redis) -> FakeProvider:
 
 
 def pytest_collection_modifyitems(config, items):
-    if os.environ.get("RUN_LIVE") == "1":
+    if "1" in (os.environ.get("RUN_LIVE"), os.environ.get("RUN_LIVE_LLM")):
         return
-    skip = pytest.mark.skip(reason="live LLM test: set RUN_LIVE=1 to run")
+    skip = pytest.mark.skip(reason="live LLM test: set RUN_LIVE_LLM=1 (or RUN_LIVE=1) to run")
     for item in items:
         if "live" in item.keywords:
             item.add_marker(skip)

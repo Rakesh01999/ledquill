@@ -19,7 +19,7 @@ select = ["E", "F", "I", "B", "UP", "S", "SIM"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
-markers = ["live: calls a real LLM provider; runs only with RUN_LIVE=1"]
+markers = ["live: calls a real LLM provider; runs only with RUN_LIVE_LLM=1 or RUN_LIVE=1"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Query"]
