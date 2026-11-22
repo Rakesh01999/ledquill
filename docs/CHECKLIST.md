@@ -34,15 +34,15 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P1 — Ingestion (Task 1)
 
-- [ ] Storage interface: local and Supabase backends
-- [ ] `POST /documents`: multi-file upload, size/count limits, type by content, sha256, 202 response (FR-01, FR-02)
-- [ ] Digital PDF text extraction per page (FR-03)
-- [ ] OCR with preprocessing for scans and images, incl. multi-frame TIFF (FR-04)
-- [ ] XLSX, XLS and CSV parsing, all sheets (FR-05)
-- [ ] Corrupt and encrypted files fail with a clear reason (FR-06)
-- [ ] Processing events per stage with timings; progress updates
-- [ ] Fixtures and unit tests for each file type
-- [ ] **Gate:** every fixture produces page text; a corrupt file ends `failed` with a reason
+- [ ] Storage interface: local and Supabase backends — LocalStorage verified; SupabaseStorage written but untested
+- [x] `POST /documents`: multi-file upload, size/count limits, type by content, sha256, 202 response (FR-01, FR-02)
+- [x] Digital PDF text extraction per page (FR-03)
+- [x] OCR with preprocessing for scans and images, incl. multi-frame TIFF (FR-04)
+- [x] XLSX, XLS and CSV parsing, all sheets (FR-05)
+- [x] Corrupt and encrypted files fail with a clear reason (FR-06)
+- [x] Processing events per stage with timings; progress updates
+- [x] Fixtures and unit tests for each file type
+- [x] **Gate:** every fixture produces page text; a corrupt file ends `failed` with a reason
 
 ## P2 — Extraction and validation (Tasks 2, 3)
 
