@@ -107,8 +107,9 @@ cd frontend && npm run lint && npm run build
 - **Money:** `Decimal` in Python, `numeric` in SQL. Never float.
 - **Errors:** RFC 7807 problem JSON from one handler; no bare `except`.
   Pipeline errors are recorded on the job with a human-readable reason.
-- **Idempotency:** the same file (sha256) or the same task re-run must not
-  create duplicate rows.
+- **Idempotency:** re-running the same task (retry, reprocess, Celery re-delivery)
+  must not create duplicate rows; it replaces them. The same file uploaded twice
+  creates two documents, and the later invoice is flagged V-07/V-09 (FR-12).
 - **Migrations:** schema change = new Alembic revision; never edit an old one.
   Run migrations against the local Docker DB only, never Supabase without approval.
 - **Dependencies:** ask before adding one; prefer the standard library and
