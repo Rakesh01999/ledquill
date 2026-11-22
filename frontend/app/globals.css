@@ -1,0 +1,171 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens: the single source for colour. Values are the Care Guide palette from
+ * docs/design/design-system. Orange (--accent-mark) is a fill for the logo and the review
+ * count badge only, never a text colour.
+ */
+:root {
+  --canvas: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --line: #e2e5eb;
+  --line-strong: #cfd4dd;
+  --ink: #14182b;
+  --ink-2: #4e566a;
+  --ink-3: #646b80;
+  --primary: #26389f;
+  --primary-ink: #ffffff;
+  --primary-soft: #e9ecfa;
+  --link: #26389f;
+  --ring-color: #26389f;
+  --accent-mark: #ef7a2e;
+  --badge-text: #14182b;
+  --logo-bg: #1f2c7a;
+  --ok: #1c7340;
+  --ok-bg: #e4f3e9;
+  --warn: #8a5200;
+  --warn-bg: #fff1d6;
+  --warn-dot: #bf7a00;
+  --warn-field: #fff8e8;
+  --danger: #b42318;
+  --danger-bg: #fdecea;
+  --idle: #4a5264;
+  --idle-bg: #eef0f4;
+  --skeleton: #e9ebf0;
+  --radius: 0.375rem;
+}
+
+.dark {
+  --canvas: #0b0e1a;
+  --surface: #12162a;
+  --surface-2: #1a1f38;
+  --line: #252b47;
+  --line-strong: #353c5e;
+  --ink: #e7e9f2;
+  --ink-2: #a9afc6;
+  --ink-3: #9198b1;
+  --primary: #4459d1;
+  --primary-ink: #ffffff;
+  --primary-soft: #1e2650;
+  --link: #a3b1ff;
+  --ring-color: #8ca0ff;
+  --accent-mark: #ef7a2e;
+  --badge-text: #14182b;
+  --logo-bg: #1f2c7a;
+  --ok: #74d69e;
+  --ok-bg: #11301f;
+  --warn: #f5c26b;
+  --warn-bg: #33260c;
+  --warn-dot: #e9a52a;
+  --warn-field: #241c0d;
+  --danger: #ff9c91;
+  --danger-bg: #3a1714;
+  --idle: #b3b9cc;
+  --idle-bg: #22273f;
+  --skeleton: #1e2340;
+}
+
+@theme inline {
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* shadcn semantic names, mapped onto the tokens above */
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-ink);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--ink-2);
+  --color-accent: var(--primary-soft);
+  --color-accent-foreground: var(--link);
+  --color-destructive: var(--danger);
+  --color-border: var(--line);
+  --color-input: var(--line-strong);
+  --color-ring: var(--ring-color);
+
+  /* product names */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-link: var(--link);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent-mark: var(--accent-mark);
+  --color-badge-text: var(--badge-text);
+  --color-logo: var(--logo-bg);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-dot: var(--warn-dot);
+  --color-warn-field: var(--warn-field);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-idle: var(--idle);
+  --color-idle-bg: var(--idle-bg);
+  --color-skeleton: var(--skeleton);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+
+  /* type scale: 12 caption, 13 table, 14 body, 16 section, 20 page title, 24 KPI */
+  --text-caption: 12px;
+  --text-table: 13px;
+  --text-body: 14px;
+  --text-section: 16px;
+  --text-title: 20px;
+  --text-kpi: 24px;
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: var(--link);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring-color);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--primary-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -80,8 +80,8 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P5 — Frontend (Task 6)
 
-- [ ] App shell, design tokens, light and dark mode
-- [ ] Documents: multi-upload with live per-file progress (FR-20)
+- [x] App shell, design tokens, light and dark mode (C1: shell, tokens, proxy, typed client; screens follow)
+- [x] Documents: multi-upload with live per-file progress (FR-20) (C2: upload, list, polling, detail with page text and image, reprocess, delete; verified in Edge against the running stack)
 - [ ] Invoice review: source beside fields, confidence, issues, inline edit, approve (FR-20)
 - [ ] Review queue
 - [ ] Search with filters and mode toggle
