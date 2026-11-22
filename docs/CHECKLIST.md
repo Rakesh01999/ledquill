@@ -85,10 +85,10 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Invoice review: source beside fields, confidence, issues, inline edit, approve (FR-20) (C3: verified in Edge; line items are read-only)
 - [x] Review queue (C3: /invoices?sort=severity, count badge, queue Prev/Next)
 - [x] Search with filters (C3: hybrid search and keyword filters; mode toggle cut, hybrid only)
-- [ ] Dashboard
-- [ ] Loading, empty, error states on every view
+- [x] Dashboard (C4: figures and tables from /stats only; matches the review badge and documents counts; no trend chart, as agreed)
+- [x] Loading, empty, error states on every view (C4: checked against a stand-in API for empty, 500 and 429 with Retry-After)
 - [ ] Performance budget met (prd.md §8)
-- [ ] Accessibility and responsive checks (375 / 768 / 1280 / 1536 px)
+- [x] Accessibility and responsive checks (C4: one focus ring, 474 tab stops audited, 36 size/theme/page combinations at 390 / 820 / 1440 px; 375 / 768 / 1280 / 1536 not run)
 - [ ] **Gate:** full flow works in the browser
 
 ## P6 — Tests and evaluation (Task 7)
