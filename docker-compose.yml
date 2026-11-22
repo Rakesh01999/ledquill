@@ -1,0 +1,50 @@
+# Copy .env.example to .env before the first run.
+x-backend: &backend
+  build: ./backend
+  env_file: .env
+  volumes:
+    - ./backend:/app
+    - uploads:/data/uploads
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ledquill
+      POSTGRES_PASSWORD: ledquill
+      POSTGRES_DB: ledquill
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledquill -d ledquill"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    <<: *backend
+    command: >
+      uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+
+  worker:
+    <<: *backend
+    command: celery -A app.workers.celery_app worker --concurrency=2 --loglevel=info
+
+volumes:
+  pgdata:
+  uploads:
