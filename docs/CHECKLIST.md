@@ -34,7 +34,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P1 — Ingestion (Task 1)
 
-- [ ] Storage interface: local and Supabase backends — LocalStorage verified; SupabaseStorage written but untested
+- [x] Storage interface: local and Supabase backends — LocalStorage and SupabaseStorage both verified end to end (P7)
 - [x] `POST /documents`: multi-file upload, size/count limits, type by content, sha256, 202 response (FR-01, FR-02)
 - [x] Digital PDF text extraction per page (FR-03)
 - [x] OCR with preprocessing for scans and images, incl. multi-frame TIFF (FR-04)
@@ -108,12 +108,24 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 
 ## P7 — Deployment
 
-- [ ] Supabase schema migrated
-- [ ] Backend on Render (API + worker)
-- [ ] Frontend on Vercel
+- [x] Supabase schema migrated; SupabaseStorage verified end to end
+- [x] Production image (`prod` target) and `backend/start.sh` (API + one Celery worker in one container)
+- [x] Memory measured locally under 512 MB / 0.1 CPU: worst anon peak 375 MiB (prefork, 2-frame TIFF), no OOM; `--pool=solo` not needed (rule: anon under 430 MiB)
+- [x] Upstash: `?ssl_cert_reqs=required` is needed on the single `REDIS_URL` (documented in design.md section 5)
+- [x] Backend on Render (https://ledquill.onrender.com): `/api/v1/health` 200 with database and redis ok; clean_01.pdf, multi_01.pdf, scan_10_medium.tif, register_01.xlsx, scan_09_medium.png all `completed`; approve and delete verified
+- [x] Frontend on Vercel (tested at https://ledquill.vercel.app): proxy health 200; upload, approve, delete work; API key found in 0 of 15 client JS files; 4.2 MB upload accepted, 4.8 MB rejected by the platform (413); `NEXT_PUBLIC_MAX_UPLOAD_MB=4`; 413 maps to a "File too large" message (code change, lint and typecheck pass)
+- [x] Redis use measured on the live service: the Render service stays awake, with about 33 Redis commands per minute (about 48K per day, about 1.4M per month), above the Upstash 500K monthly allowance
+- [x] Demo Redis switched to a Render Key Value instance (free, in-memory, no command limit, same region Singapore, internal URL, no `ssl_cert_reqs`, volatile eviction policy). Verified after the switch: `/api/v1/health` 200 with redis ok, and clean_01.pdf `completed` through ledquill.vercel.app. Trade-offs: data is lost whenever the instance restarts (queued jobs lost; the 15-minute stale-job reprocess is the way out; LLM cache and rate counters reset). Upstash stays as a fallback and the `ssl_cert_reqs` finding still applies to it
+- [x] External uptime monitor pings `/api/v1/health` every 5 minutes to keep the Render service awake. Render grants 750 Free instance hours per workspace per month and an always-on service uses about 744 in a 31-day month, so no other free web service may run in this workspace
+- [x] Dropzone shows "up to 4 MB per upload (hosted demo)" and an oversized upload shows the "File too large" message in the browser (confirmed from screenshots of the live site)
 - [ ] Deployment guide (`docs/deployment.md`)
-- [ ] Split dev dependencies out of the production image (requirements-dev.txt)
-- [ ] **Gate:** live link processes one PDF end to end
+- [x] Split dev dependencies out of the production image (requirements-dev.txt)
+- [ ] Render memory graph: not read (not available on the Render plan in use)
+- [ ] Supabase bucket empty after test cleanup: pending, the API cannot list the bucket
+- [ ] Redis `llm:cache` keys written by Render: pending, not inspected
+- [ ] Cold start time on Render: not measured (an uptime monitor now keeps the service awake)
+- [ ] Live Gemini failover (see P6) and Celery retry end to end: not confirmed
+- [x] **Gate:** live link processes one PDF end to end (Render API and Vercel proxy, clean_01.pdf `completed`)
 
 ## P8 — Submission package
 

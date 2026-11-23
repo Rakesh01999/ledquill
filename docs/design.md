@@ -320,13 +320,19 @@ LEDQUILL_API_URL=http://api:8000
 | --- | --- | --- |
 | Services | `db` (pgvector/pgvector:pg16), `redis`, `api`, `worker`, `web` | Vercel (web), Render (api + worker in one container) |
 | Database | Local Postgres container | Supabase, Session pooler URL |
-| Redis | Local container | Upstash `rediss://` URL; Celery needs `ssl_cert_reqs=required` for TLS |
+| Redis | Local container | Render Key Value (free, in-memory, same region, internal URL, no TLS parameter). Fallback: Upstash `rediss://` with `?ssl_cert_reqs=required` appended to the single `REDIS_URL` |
 | Files | Docker volume | Supabase Storage bucket `documents` |
 | Worker | Own container, concurrency 2 | Started by `start.sh` beside uvicorn, concurrency 1 |
 
 The app code is identical in both; only `.env` changes. That is the point of ADR-002.
 
 Deploy notes: on Render and Vercel, enter each environment value on its own, with no inline comments (no `# ...` after the value). Docker's `--env-file` keeps the comment as part of the value, which fails settings validation (for example `LEDQUILL_ENV`); enter dashboard values without comments to be safe. Only `docker compose` strips inline comments from `.env`. The live demo runs with `LEDQUILL_SEMANTIC_ENABLED=false`, so search is keyword-only there, and it is subject to rate limits and demo hosting limits.
+
+Redis on the live demo is a Render Key Value instance (free, in-memory, no command limit, same region as the service, internal URL, volatile eviction policy). It replaced Upstash because the Render service stays awake and used about 33 Redis commands per minute (about 48K per day, about 1.4M per month), above the Upstash 500K monthly allowance. Trade-off: data is lost whenever the Key Value instance restarts. Queued jobs are lost (the 15-minute stale-job reprocess is the way out) and the LLM cache and rate counters reset.
+
+Upstash stays as a fallback. It needs `?ssl_cert_reqs=required` on `REDIS_URL`; Celery uses that one URL for broker and result backend, and without the parameter the worker exits at startup with a `ValueError`. No code change is needed. The Render Key Value internal URL needs no such parameter.
+
+Keep-awake: an external uptime monitor pings `/api/v1/health` every 5 minutes so the Render service does not sleep. Render grants 750 Free instance hours per workspace per month, and an always-on service uses about 744 in a 31-day month, so no other free web service may run in the same workspace. Cold start time was not measured.
 
 ## 6. Implementation plan
 
