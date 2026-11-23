@@ -81,6 +81,14 @@ export function describeError(error: unknown): ProblemMessage {
             : "Wait a moment and try again.",
         items: [],
       };
+    case 413:
+      return {
+        title: "File too large",
+        message:
+          error.detail ||
+          "This file is over the upload size limit of the hosted demo (about 4.5 MB per request). Try a smaller file.",
+        items: [],
+      };
     case 401:
       return {
         title: "The web app cannot sign in to the API",

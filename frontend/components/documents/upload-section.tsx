@@ -11,6 +11,11 @@ import { cn } from "@/lib/utils";
 
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.tif,.tiff,.xlsx,.xls,.csv";
 const FILES_PER_REQUEST = 20;
+// Public number, never a secret. Set only where the host caps the request body (hosted demo).
+const HOSTED_MAX_MB = (() => {
+  const n = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_MB);
+  return Number.isFinite(n) && n > 0 ? n : null;
+})();
 
 type Entry =
   | { id: number; name: string; state: "uploading" }
@@ -147,7 +152,11 @@ export function UploadSection() {
             </button>
           </div>
           <div className="text-ink-2">
-            PDF, JPG, PNG, TIFF, XLSX, XLS, CSV · up to 25 MB per file · 20 files per upload
+            PDF, JPG, PNG, TIFF, XLSX, XLS, CSV ·{" "}
+            {HOSTED_MAX_MB !== null
+              ? `up to ${HOSTED_MAX_MB} MB per upload (hosted demo)`
+              : "up to 25 MB per file"}{" "}
+            · 20 files per upload
           </div>
         </div>
         <div className="text-xs text-ink-3">Scans under 150 dpi may fail OCR</div>
