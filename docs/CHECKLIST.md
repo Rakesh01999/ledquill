@@ -118,7 +118,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Demo Redis switched to a Render Key Value instance (free, in-memory, no command limit, same region Singapore, internal URL, no `ssl_cert_reqs`, volatile eviction policy). Verified after the switch: `/api/v1/health` 200 with redis ok, and clean_01.pdf `completed` through ledquill.vercel.app. Trade-offs: data is lost whenever the instance restarts (queued jobs lost; the 15-minute stale-job reprocess is the way out; LLM cache and rate counters reset). Upstash stays as a fallback and the `ssl_cert_reqs` finding still applies to it
 - [x] External uptime monitor pings `/api/v1/health` every 5 minutes to keep the Render service awake. Render grants 750 Free instance hours per workspace per month and an always-on service uses about 744 in a 31-day month, so no other free web service may run in this workspace
 - [x] Dropzone shows "up to 4 MB per upload (hosted demo)" and an oversized upload shows the "File too large" message in the browser (confirmed from screenshots of the live site)
-- [ ] Deployment guide (`docs/deployment.md`)
+- ~~[ ] Deployment guide (`docs/deployment.md`)~~ folded into the README (Demo hosting section); no separate file
 - [x] Split dev dependencies out of the production image (requirements-dev.txt)
 - [ ] Render memory graph: not read (not available on the Render plan in use)
 - [ ] Supabase bucket empty after test cleanup: pending, the API cannot list the bucket
