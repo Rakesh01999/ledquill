@@ -121,8 +121,9 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - ~~[ ] Deployment guide (`docs/deployment.md`)~~ folded into the README (Demo hosting section); no separate file
 - [x] Split dev dependencies out of the production image (requirements-dev.txt)
 - [ ] Render memory graph: not read (not available on the Render plan in use)
-- [ ] Supabase bucket empty after test cleanup: pending, the API cannot list the bucket
+- [x] Supabase bucket empty after test cleanup: verified by hand on 2026-11-24, documents bucket object count 0 after deleting documents from the UI
 - [ ] Redis `llm:cache` keys written by Render: pending, not inspected
+- [x] Verified by hand on 2026-11-24: Render Key Value in use (`REDIS_URL` is the internal `redis://red-...` URL); a clean_01.pdf upload through ledquill.vercel.app completed on it; uptime monitor active (keyword monitor, GET, every 5 minutes, status Up); no out-of-memory or restart entries in the Render Events list
 - [ ] Cold start time on Render: not measured (an uptime monitor now keeps the service awake)
 - [ ] Live Gemini failover (see P6) and Celery retry end to end: not confirmed
 - [x] **Gate:** live link processes one PDF end to end (Render API and Vercel proxy, clean_01.pdf `completed`)

@@ -213,6 +213,8 @@ Deployment notes: the browser never holds the API key; Next.js server routes add
 - **Memory** was measured locally under the same limits (512 MB, 0.1 CPU): worst anonymous-memory
   peak 375 MiB, on a 2-frame TIFF, with no out-of-memory kill. The hosting plan shows no memory
   metrics, so it was not read on Render.
+- Supabase storage was checked after cleanup: deleting documents from the UI left 0 objects in the
+  documents bucket (checked 2026-11-24).
 
 ## Known limitations
 
@@ -223,8 +225,8 @@ Deployment notes: the browser never holds the API key; Next.js server routes add
 - Hybrid search only (no mode toggle in the UI).
 - The frontend performance budget in `docs/prd.md` section 8, Lighthouse, and a 1000-page PDF
   were not measured.
-- Supabase bucket cleanup after tests and the Redis `llm:cache` keys written on Render were not
-  checked.
+- The Redis `llm:cache` keys on the Render Key Value instance were not read directly, so cache hits
+  are not confirmed on the live service.
 - Status rule: a single V-02 or V-03 warning keeps an invoice "ready", and tax is not a required
   field. This is why `scan_08_medium.jpg`, `scan_09_medium.png` and `scan_10_medium.tif` are
   silently ready.
