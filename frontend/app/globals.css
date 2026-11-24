@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Design tokens: the single source for colour. Values are the Care Guide palette from
+ * Design tokens: the single source for colour. Values are the LedQuill palette from
  * docs/design/design-system. Orange (--accent-mark) is a fill for the logo and the review
  * count badge only, never a text colour.
  */

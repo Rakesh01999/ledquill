@@ -32,7 +32,7 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# Local assessment files that must not be committed
+# Local Word documents that must not be committed
 *.docx
 
 # Design asset archives

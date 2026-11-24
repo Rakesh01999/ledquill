@@ -1,4 +1,4 @@
-"""Generate the labeled evaluation dataset (Task 7 / P3).
+"""Generate the labeled evaluation dataset (P3).
 
 Deterministic (fixed seed), no network, no LLM. Every label is produced from the same
 `Inv` object that renders the document, so ground truth cannot drift from the file.

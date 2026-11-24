@@ -24,12 +24,12 @@ Typography
   title, 24 dashboard figure. No text above 24 except one KPI figure.
 - Weight carries hierarchy, not size: 600 for titles and labels that matter.
 
-Colour — Care Guide brand palette (from the Care Guide banner and lighthouse
+Colour — LedQuill palette (from the lighthouse
 logo). Exact values; do not invent new hues.
 
 | Role | Light | Dark | Use |
 | --- | --- | --- | --- |
-| `--primary` (Care Guide Navy) | #26389F | #4459D1 (buttons) | Primary buttons (Approve, Save), focus ring, selection, Approved status |
+| `--primary` (LedQuill Navy) | #26389F | #4459D1 (buttons) | Primary buttons (Approve, Save), focus ring, selection, Approved status |
 | `--link` | #26389F | #A3B1FF | Links |
 | `--accent-mark` (Beacon Orange) | #EF7A2E | #EF7A2E | Logo mark and Review queue count badge ONLY |
 | `--badge-text` | #14182B | #14182B | Text on the orange badge |

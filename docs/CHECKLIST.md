@@ -1,4 +1,4 @@
-# LedQuill — Delivery Checklist
+# LedQuill — Project Progress
 
 Single place to track progress. Updated at the end of every phase, committed with the work.
 
@@ -30,9 +30,9 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Dockerfile with Tesseract
 - [x] Ruff and pytest configuration
 - [ ] GitHub Actions CI (ruff + pytest with Postgres)
-- [x] **Gate:** `docker compose up` works, health is green, CI passes (CI green and integration tests per file type pass, confirmed by the owner)
+- [x] **Gate:** `docker compose up` works, health is green, CI passes (CI green and integration tests per file type pass, confirmed manually)
 
-## P1 — Ingestion (Task 1)
+## P1 — Ingestion
 
 - [x] Storage interface: local and Supabase backends — LocalStorage and SupabaseStorage both verified end to end (P7)
 - [x] `POST /documents`: multi-file upload, size/count limits, type by content, sha256, 202 response (FR-01, FR-02)
@@ -44,7 +44,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Fixtures and unit tests for each file type
 - [x] **Gate:** every fixture produces page text; a corrupt file ends `failed` with a reason
 
-## P2 — Extraction and validation (Tasks 2, 3)
+## P2 — Extraction and validation
 
 - [x] Multi-invoice PDF splitting (FR-07)
 - [x] Rules-based pre-extraction
@@ -55,9 +55,9 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Review flag with reasons (FR-13)
 - [x] Cross-verification PDF-PDF and PDF-Excel, V-09 (FR-14)
 - [x] Tests with mocked LLM; one opt-in live test (live run: Groq call and grounding worked; its final assertion was fixed afterwards and not re-run, see report)
-- [x] **Gate:** a sample invoice yields correct fields and the expected issues (total-mismatch case verified by hand by the owner)
+- [x] **Gate:** a sample invoice yields correct fields and the expected issues (total-mismatch case verified by hand)
 
-## P3 — Labeled dataset (Task 7)
+## P3 — Labeled dataset
 
 - [x] Generator with fixed seed (`evaluation/generate.py`)
 - [x] Clean PDFs, degraded scans, multi-invoice PDF, missing fields, wrong totals, duplicates, Excel register
@@ -65,7 +65,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [ ] A few real public invoices with hand-made labels
 - [x] **Gate:** about 60 labeled files (58 files, 65 invoices, 12 MB; `evaluation/check_dataset.py` passes)
 
-## P4 — API and search (Tasks 4, 5)
+## P4 — API and search
 
 - [x] Document list, detail, events; job status (FR-15)
 - [x] Invoice list with keyword filters (FR-18)
@@ -78,7 +78,7 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] API tests incl. 401, 404, 413, 415, 422
 - [x] **Gate:** every endpoint documented in `/docs`, API tests pass (462 passed, 1 skipped)
 
-## P5 — Frontend (Task 6)
+## P5 — Frontend
 
 - [x] App shell, design tokens, light and dark mode (C1: shell, tokens, proxy, typed client; screens follow)
 - [x] Documents: multi-upload with live per-file progress (FR-20) (C2: upload, list, polling, detail with page text and image, reprocess, delete; verified in Edge against the running stack)
@@ -91,12 +91,12 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Accessibility and responsive checks (C4: one focus ring, 474 tab stops audited, 36 size/theme/page combinations at 390 / 820 / 1440 px; 375 / 768 / 1280 / 1536 not run)
 - [ ] **Gate:** full flow works in the browser
 
-## P6 — Tests and evaluation (Task 7)
+## P6 — Tests and evaluation
 
 - [x] Failure scenario tests (corrupt, encrypted, empty, oversized, wrong type, LLM down, rate-limited, duplicate): existing and new tests pass (500 passed, 2 skipped); duplicate upload pinned in `test_duplicate_upload.py`
 - [x] Evaluation script through the real API (`evaluation/run_eval.py`) and labeled dataset (`evaluation/data`, 58 files): full run done, 58 of 58 files (see `evaluation/report.md`)
 - [x] `evaluation/results.json` and `evaluation/report.md` with measured accuracy, timing, success and failure rates
-- [x] Test results saved for submission: saved in evaluation/ (results.json, report.md)
+- [x] Test results saved in evaluation/ (results.json, report.md)
 - [ ] Reuse stored pages on job retry instead of re-running OCR: not implemented: retry deletes page rows and re-runs OCR (backend/app/workers/stages.py run_extract); listed as a known limitation
 - [ ] Document in README: V-07/V-09 flag only the later-processed invoice; same-hash duplicates with no invoice row are not caught (README is written in P8)
 - [x] `run_eval` uploads files with `depends_on` sequentially and waits for the partner to complete: sequential; each file waits for terminal status; a failed partner does not block the dependent file (a note is printed)
@@ -115,8 +115,8 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [x] Backend on Render (https://ledquill.onrender.com): `/api/v1/health` 200 with database and redis ok; clean_01.pdf, multi_01.pdf, scan_10_medium.tif, register_01.xlsx, scan_09_medium.png all `completed`; approve and delete verified
 - [x] Frontend on Vercel (tested at https://ledquill.vercel.app): proxy health 200; upload, approve, delete work; API key found in 0 of 15 client JS files; 4.2 MB upload accepted, 4.8 MB rejected by the platform (413); `NEXT_PUBLIC_MAX_UPLOAD_MB=4`; 413 maps to a "File too large" message (code change, lint and typecheck pass)
 - [x] Redis use measured on the live service: the Render service stays awake, with about 33 Redis commands per minute (about 48K per day, about 1.4M per month), above the Upstash 500K monthly allowance
-- [x] Demo Redis switched to a Render Key Value instance (free, in-memory, no command limit, same region Singapore, internal URL, no `ssl_cert_reqs`, volatile eviction policy). Verified after the switch: `/api/v1/health` 200 with redis ok, and clean_01.pdf `completed` through ledquill.vercel.app. Trade-offs: data is lost whenever the instance restarts (queued jobs lost; the 15-minute stale-job reprocess is the way out; LLM cache and rate counters reset). Upstash stays as a fallback and the `ssl_cert_reqs` finding still applies to it
-- [x] External uptime monitor pings `/api/v1/health` every 5 minutes to keep the Render service awake. Render grants 750 Free instance hours per workspace per month and an always-on service uses about 744 in a 31-day month, so no other free web service may run in this workspace
+- [x] Demo Redis switched to a Render Key Value instance (in-memory, no command limit, within the demo hosting limits, same region Singapore, internal URL, no `ssl_cert_reqs`, volatile eviction policy). Verified after the switch: `/api/v1/health` 200 with redis ok, and clean_01.pdf `completed` through ledquill.vercel.app. Trade-offs: data is lost whenever the instance restarts (queued jobs lost; the 15-minute stale-job reprocess is the way out; LLM cache and rate counters reset). Upstash stays as a fallback and the `ssl_cert_reqs` finding still applies to it
+- [x] External uptime monitor pings `/api/v1/health` every 5 minutes to keep the Render service awake. Render's demo hosting limit is 750 instance hours per workspace per month and an always-on service uses about 744 in a 31-day month, so no other web service may run in this workspace
 - [x] Dropzone shows "up to 4 MB per upload (hosted demo)" and an oversized upload shows the "File too large" message in the browser (confirmed from screenshots of the live site)
 - ~~[ ] Deployment guide (`docs/deployment.md`)~~ folded into the README (Demo hosting section); no separate file
 - [x] Split dev dependencies out of the production image (requirements-dev.txt)
@@ -128,16 +128,15 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [ ] Live Gemini failover (see P6) and Celery retry end to end: not confirmed
 - [x] **Gate:** live link processes one PDF end to end (Render API and Vercel proxy, clean_01.pdf `completed`)
 
-## P8 — Submission package
+## P8 — Release documentation
 
 - [ ] README with setup instructions
 - [ ] Architecture diagram and database schema in `docs/`
 - [ ] AI prompts (`docs/prompts.md`)
 - [ ] AI-assisted development disclosure (`docs/ai-disclosure.md`)
-- [ ] Walkthrough video recorded and linked
 - [ ] Tag `v1.0`
 
-## Assessment deliverables (from the task brief)
+## Release deliverables
 
 - [ ] 1. Git repository with source code
 - [ ] 2. README and setup instructions
@@ -146,13 +145,4 @@ Specs: [requirements.md](requirements.md) (FR/NFR ids) · [design.md](design.md)
 - [ ] 5. PDF, image, Excel and CSV processing pipelines
 - [ ] 6. Automated tests and test results
 - [ ] 7. Evaluation report with measured metrics
-- [ ] 8. Recorded walkthrough
-- [ ] 9. AI prompts and AI-assistance disclosure
-
-## Application package
-
-- [ ] Updated CV (education: institution, subject, year, result; experience: company, position, responsibilities, duration)
-- [ ] Portfolio link
-- [ ] Reference 1: department head or academic supervisor (official email)
-- [ ] Reference 2: former HR manager or HR representative (official email)
-- [ ] Reply All to the original email, apply@careguidebd.com included
+- [ ] 8. AI prompts and AI-assistance disclosure

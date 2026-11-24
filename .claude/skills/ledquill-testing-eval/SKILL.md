@@ -23,7 +23,7 @@ backend/tests/fixtures/    tiny files (< 200 KB each) committed to git
   `@pytest.mark.live`, skipped unless `RUN_LIVE=1`.
 - Celery runs eagerly in tests (`task_always_eager=True`).
 
-## What must be covered (Task 7)
+## What must be covered
 
 | Area | Must include |
 | --- | --- |

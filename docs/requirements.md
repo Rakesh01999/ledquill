@@ -2,15 +2,12 @@
 
 Nov 21, 2026 · @Rakesh Biswas
 
-We will build LedQuill, an invoice-focused document intelligence system, in two build days (Nov 21-22, 2026) and deploy plus submit on Nov 23. This document is SDLC phases 1 and 2: what we must build (Part A) and how we will build it (Part B). Design, test plan and deployment docs follow as separate documents.
+We will build LedQuill, an invoice-focused document intelligence system, as a working, honest MVP. This document is SDLC phases 1 and 2: what we must build (Part A) and how we will build it (Part B). Design, test plan and deployment docs follow as separate documents.
 
 | Item | Value |
 | --- | --- |
-| Project | AI-Powered Document Intelligence System (Care Guide AI Engineer assessment) |
+| Project | LedQuill — invoice document intelligence system |
 | Version | 1.0 (draft) |
-| Build window | Nov 21-22, 2026 |
-| Deploy and submit | Nov 23, 2026 (official deadline Nov 26) |
-| Submission | Reply All to the original email, keep apply@careguidebd.com |
 
 Guiding rule: a working, honest, well-documented MVP beats a half-finished "complete" system. Every scope decision below follows that rule.
 
@@ -40,7 +37,7 @@ Goals of the system:
 - Cross-verification: PDF vs PDF and PDF vs Excel, matched by invoice number
 - REST API, background jobs, PostgreSQL storage, keyword and semantic search
 - Next.js UI for upload, progress, review, correction, search
-- Automated tests, labeled evaluation set, measured report, walkthrough video
+- Automated tests, labeled evaluation set, measured report
 
 **Out of scope (stated in README as future work)**
 
@@ -57,36 +54,36 @@ Goals of the system:
 | Accounts / data-entry staff | Upload files, see extracted data, fix mistakes |
 | Finance reviewer | See flagged records and why they were flagged |
 | Developer / integrator | Call the API from other systems |
-| Assessment reviewer (Care Guide) | Run it easily, read the docs, see real metrics |
+| Evaluator / new team member | Run it easily, read the docs, see real metrics |
 
 ## 4. Functional requirements
 
-Priority uses MoSCoW: **M** = must have for submission, **S** = should have, **C** = could have if time allows.
+Priority uses MoSCoW: **M** = must have for release, **S** = should have, **C** = could have if time allows.
 
-| ID | Requirement | Task | Priority |
+| ID | Requirement | Priority |
 | --- | --- | --- | --- |
-| FR-01 | Upload one or many files (PDF, JPG, PNG, TIFF, XLSX, XLS, CSV) in one request | 1, 4 | M |
-| FR-02 | Detect real file type by content (magic bytes), reject unsupported or oversized files | 1 | M |
-| FR-03 | Extract text from digital PDFs page by page | 1 | M |
-| FR-04 | OCR scanned PDF pages and images, with preprocessing for poor quality (grayscale, deskew, denoise, threshold) | 1 | M |
-| FR-05 | Parse every sheet of XLSX/XLS and CSV into rows, handle messy headers | 1 | M |
-| FR-06 | Handle corrupted or password-protected files: mark job failed with a clear reason, never crash the worker | 1 | M |
-| FR-07 | Split a multi-page PDF into separate invoices (page-boundary detection) | 1, 2 | M |
-| FR-08 | Extract invoice\_number, invoice\_date, supplier\_name, customer\_name, subtotal, tax, total, currency, line\_items | 2 | M |
-| FR-09 | Return null plus low confidence for missing or unclear fields; never invent values | 2 | M |
-| FR-10 | Validate required fields, numeric format, date format, currency code | 3 | M |
-| FR-11 | Check math: sum(line items) = subtotal, subtotal + tax = total (with rounding tolerance) | 3 | M |
-| FR-12 | Detect duplicates (same supplier + invoice number, or same file hash) | 3 | M |
-| FR-13 | Set needs\_review = true with a list of reasons when any rule fails or confidence is low | 3 | M |
-| FR-14 | Cross-verify the same invoice across PDF-PDF and PDF-Excel sources and report field mismatches | 3 | S |
-| FR-15 | API: upload, job status, results, search, manual correction, reprocess failed job | 4 | M |
-| FR-16 | Run OCR and LLM work in background workers, never in the request | 4 | M |
-| FR-17 | Store metadata, raw text, structured results, validation errors, processing history | 5 | M |
-| FR-18 | Keyword filtering (supplier, date range, amount range, status, invoice number) | 5 | M |
-| FR-19 | Semantic search over document text using embeddings | 5 | M |
-| FR-20 | UI: multi-upload with progress, document list, detail view, error view, inline correction, search | 6 | M |
-| FR-21 | Keep an audit trail of manual corrections (old value, new value, time) | 4, 5 | S |
-| FR-22 | Export results as JSON or CSV | 4 | C |
+| FR-01 | Upload one or many files (PDF, JPG, PNG, TIFF, XLSX, XLS, CSV) in one request | M |
+| FR-02 | Detect real file type by content (magic bytes), reject unsupported or oversized files | M |
+| FR-03 | Extract text from digital PDFs page by page | M |
+| FR-04 | OCR scanned PDF pages and images, with preprocessing for poor quality (grayscale, deskew, denoise, threshold) | M |
+| FR-05 | Parse every sheet of XLSX/XLS and CSV into rows, handle messy headers | M |
+| FR-06 | Handle corrupted or password-protected files: mark job failed with a clear reason, never crash the worker | M |
+| FR-07 | Split a multi-page PDF into separate invoices (page-boundary detection) | M |
+| FR-08 | Extract invoice\_number, invoice\_date, supplier\_name, customer\_name, subtotal, tax, total, currency, line\_items | M |
+| FR-09 | Return null plus low confidence for missing or unclear fields; never invent values | M |
+| FR-10 | Validate required fields, numeric format, date format, currency code | M |
+| FR-11 | Check math: sum(line items) = subtotal, subtotal + tax = total (with rounding tolerance) | M |
+| FR-12 | Detect duplicates (same supplier + invoice number, or same file hash) | M |
+| FR-13 | Set needs\_review = true with a list of reasons when any rule fails or confidence is low | M |
+| FR-14 | Cross-verify the same invoice across PDF-PDF and PDF-Excel sources and report field mismatches | S |
+| FR-15 | API: upload, job status, results, search, manual correction, reprocess failed job | M |
+| FR-16 | Run OCR and LLM work in background workers, never in the request | M |
+| FR-17 | Store metadata, raw text, structured results, validation errors, processing history | M |
+| FR-18 | Keyword filtering (supplier, date range, amount range, status, invoice number) | M |
+| FR-19 | Semantic search over document text using embeddings | M |
+| FR-20 | UI: multi-upload with progress, document list, detail view, error view, inline correction, search | M |
+| FR-21 | Keep an audit trail of manual corrections (old value, new value, time) | S |
+| FR-22 | Export results as JSON or CSV | C |
 
 ## 5. Non-functional requirements
 
@@ -144,7 +141,7 @@ Any Error, or two or more Warnings, sets `needs_review = true`. Each failure is 
 
 ## 8. Assumptions and open questions
 
-No sample data came with the task, so we decide these ourselves and state them in the README.
+No sample data exists, so these are our own assumptions, stated in the README.
 
 - **A1.** Documents are mainly English invoices; currency may be BDT, USD, EUR or others.
 - **A2.** One large PDF can hold many invoices; one invoice can span several pages.
@@ -157,19 +154,17 @@ No sample data came with the task, so we decide these ourselves and state them i
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Two days is very tight | Unfinished features | Strict MoSCoW; vertical slice first (upload to result end to end), polish last |
 | OCR quality on bad scans | Wrong fields | Image preprocessing, confidence scores, review flag; report the real accuracy |
 | LLM hallucination | Invented values | Strict JSON schema, "null if not present" prompt, verify extracted numbers appear in source text |
 | LLM provider rate limits (200K tokens/day per model) | Large batches stall | Rules first, LLM only for invoice pages; rotate 3 Groq models then Gemini; cache by file hash; wait and retry on 429 (section 12.2) |
-| Deployment issues on Nov 23 | Late demo | Docker from hour one; deploy a smoke version on the evening of Nov 22 |
 | Demo hosting limits: 512 MB RAM, idle sleep after 15 min, no persistent disk | Crashes | API and worker in one container, concurrency 1, files in Supabase Storage; Cloudflare Tunnel from the laptop as fallback |
 
 ## 10. Acceptance criteria
 
-The submission is accepted by us when all of these are true:
+The release is accepted when all of these are true:
 
 - [ ] Every M requirement works in the deployed app
-- [ ] One sample of each file type processes end to end in the walkthrough video
+- [ ] One sample of each file type processes end to end in the live demo
 - [ ] A corrupted file fails gracefully and can be reprocessed
 - [ ] Tests pass in CI; the results are committed
 - [ ] The evaluation report shows measured field accuracy, processing time, success rate and failure rate
@@ -198,7 +193,7 @@ To handle more load we add worker containers; nothing else changes. A 1,000-page
 
 ## 12. Tech stack and why
 
-The task suggests NestJS, but every heavy step (PDF, OCR, pandas, LLM SDKs) lives in Python. One Python codebase for API and workers removes a whole service boundary, which matters most in a two-day build.
+Every heavy step (PDF, OCR, pandas, embeddings, LLM SDKs) lives in Python. One Python codebase for API and workers removes a service boundary and keeps the system simpler to build, test and operate.
 
 | Layer | Choice | Why (alternative considered) |
 | --- | --- | --- |
@@ -257,22 +252,10 @@ Design consequences:
 
 | ADR | Decision | Why | Trade-off |
 | --- | --- | --- | --- |
-| ADR-001 | Python (FastAPI + Celery) instead of the suggested NestJS | OCR, PDF, pandas, embeddings and LLM SDKs are Python; one language gives one schema (Pydantic), one test suite, one image | Not the suggested stack; mitigated because workers are queue-driven, so the API layer can be rewritten in NestJS later |
+| ADR-001 | Python (FastAPI + Celery) as the single backend language | OCR, PDF, pandas, embeddings and LLM SDKs are Python; one language gives one schema (Pydantic), one test suite, one image | Teams on a Node stack share no language with it; mitigated because workers are queue-driven, so the API layer can be replaced without touching the pipeline |
 | ADR-002 | Every external provider (LLM, database, queue, storage, hosting) behind an interface and env config | Portability: the same code runs locally and in the demo, and providers can be swapped without code changes | The demo host sleeps after 15 min idle (about 1 min wake-up) and runs the worker inside the API container |
 | ADR-003 | PostgreSQL for data, full-text search and vectors (pgvector) | One database instead of a separate vector DB; filters and similarity in one query | Very large vector sets would later need a dedicated vector store |
-| ADR-004 | Synthetic labeled dataset generated from known ground truth | No sample data was provided; ground truth is exact | Must add real public invoices too, so accuracy is not overstated |
-
-## 13. Timeline
-
-We build a thin end-to-end slice first, then widen it. Each day ends with a gate; if a gate is missed, we cut from the list in section 14 instead of moving the date.
-
-```mermaid
-flowchart LR
-  d1["Sat Nov 21 · Backbone and pipeline<br/>scaffold, ingestion, OCR, extraction, validation, dataset"] -->|Gate: file in, JSON out| d2["Sun Nov 22 · Product complete<br/>APIs, search, UI, tests, evaluation, smoke deploy"]
-  d2 -->|Gate: M items + metrics| d3["Mon Nov 23 · Deploy and submit<br/>production deploy, docs, video, Reply All"]
-```
-
-Run in parallel today: email both referees now (they need time to agree), and update the CV and portfolio in short breaks.
+| ADR-004 | Synthetic labeled dataset generated from known ground truth | No real labeled invoices are available; ground truth is exact | Must add real public invoices too, so accuracy is not overstated |
 
 ## 14. Scope cuts if we fall behind
 
@@ -310,7 +293,7 @@ ledquill/
 
 A feature is done when it works through the API and the UI, has at least one test (including a failure case), logs errors clearly, and is noted in the README.
 
-## 17. Deliverables checklist
+## 17. Release checklist
 
 - [ ] Git repository with source code
 - [ ] README and setup instructions
@@ -319,10 +302,7 @@ A feature is done when it works through the API and the UI, has at least one tes
 - [ ] PDF, image, Excel and CSV pipelines
 - [ ] Automated tests and test results
 - [ ] Evaluation report with measured metrics
-- [ ] Recorded walkthrough video
 - [ ] AI prompts and AI-assistance disclosure
-- [ ] Updated CV, portfolio, two official references
-- [ ] Reply All to the original email, apply@careguidebd.com included
 
 ## 18. Next SDLC documents
 

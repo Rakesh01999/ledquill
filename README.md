@@ -7,7 +7,7 @@ you review, correct, approve and search the results.
 - Demo web app: https://ledquill.vercel.app
 - API health check: https://ledquill.onrender.com/api/v1/health (the API root path returns 404 by design)
 
-Built as a job assessment (AI Engineer). Specs: [requirements](docs/requirements.md),
+Specifications: [requirements](docs/requirements.md),
 [design](docs/design.md), [product requirements](docs/prd.md). Progress: [checklist](docs/CHECKLIST.md).
 
 ## Features

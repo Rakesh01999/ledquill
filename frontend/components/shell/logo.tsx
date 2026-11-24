@@ -1,4 +1,4 @@
-/** Lighthouse mark from the Care Guide brand: two white bars and a shorter orange bar. The
+/** LedQuill lighthouse mark: two white bars and a shorter orange bar. The
  * orange is a fill here and in the review badge only, never text. */
 export function LogoMark({ className }: { className?: string }) {
   return (

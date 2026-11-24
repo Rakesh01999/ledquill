@@ -14,9 +14,7 @@ LedQuill is an AI document intelligence system for invoices: upload PDF, JPG,
 PNG, TIFF, XLSX, XLS or CSV -> extract text (OCR when needed) -> extract invoice
 fields with an LLM -> validate the numbers -> review, correct and search.
 
-- It is a job assessment (AI Engineer, Care Guide). Reviewers judge
-  correctness, architecture, code quality, honesty of metrics, and polish.
-- Deadline: build Nov 21-22, 2026, deploy and submit Nov 23.
+- Quality bar: correctness, architecture, code quality, honest metrics and polish.
 - External services are fixed: Groq, Gemini, Supabase, Upstash, Render, Vercel.
   Do not add another external service or SDK without approval.
 - Specs are the source of truth:

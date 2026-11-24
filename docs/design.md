@@ -180,24 +180,24 @@ Why this shape: `pages` keeps raw text so reprocessing can skip OCR; `raw_extrac
 
 ## 3. API specification
 
-Base path `/api/v1`. JSON everywhere except upload. FastAPI generates the full OpenAPI spec at `/docs`, which is the reference the reviewer can click through.
+Base path `/api/v1`. JSON everywhere except upload. FastAPI generates the full OpenAPI spec at `/docs`, which is the reference for integrators.
 
-| Method | Path | Purpose | Task |
-| --- | --- | --- | --- |
-| POST | `/documents` | Upload one or many files (multipart field `files`); returns 202 with document and job ids | Upload |
-| GET | `/documents` | List with filters `status`, `file_type`, `limit`, `offset` | Status |
-| GET | `/documents/{id}` | Metadata, status, progress, invoice ids | Status |
-| GET | `/documents/{id}/events` | Processing history with stage timings | History |
-| POST | `/documents/{id}/reprocess` | Re-queue a failed or finished document | Reprocess |
-| DELETE | `/documents/{id}` | Remove a document with its invoices, corrections, events, jobs and stored file (204) | Cleanup |
-| GET | `/jobs/{id}` | Job status, stage, attempts, error | Status |
-| GET | `/invoices` | Keyword filters: `supplier`, `invoice_number`, `date_from`, `date_to`, `min_total`, `max_total`, `currency`, `status`, `q` | Results, search |
-| GET | `/invoices/{id}` | Fields, confidence, line items, issues, corrections, source pages | Results |
-| PATCH | `/invoices/{id}` | Manual correction of fields or line items; logs a correction and re-validates | Corrections |
-| POST | `/invoices/{id}/approve` | Mark approved | Review |
-| GET | `/search` | `q` + `mode` = `keyword`, `semantic` or `hybrid` (default); returns ranked invoices with score | Search |
-| GET | `/stats` | Counts by status, success and failure rates, average time per stage | Dashboard |
-| GET | `/health` | Database and Redis reachability (200 ok, 503 degraded) | Ops |
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/documents` | Upload one or many files (multipart field `files`); returns 202 with document and job ids |
+| GET | `/documents` | List with filters `status`, `file_type`, `limit`, `offset` |
+| GET | `/documents/{id}` | Metadata, status, progress, invoice ids |
+| GET | `/documents/{id}/events` | Processing history with stage timings |
+| POST | `/documents/{id}/reprocess` | Re-queue a failed or finished document |
+| DELETE | `/documents/{id}` | Remove a document with its invoices, corrections, events, jobs and stored file (204) |
+| GET | `/jobs/{id}` | Job status, stage, attempts, error |
+| GET | `/invoices` | Keyword filters: `supplier`, `invoice_number`, `date_from`, `date_to`, `min_total`, `max_total`, `currency`, `status`, `q` |
+| GET | `/invoices/{id}` | Fields, confidence, line items, issues, corrections, source pages |
+| PATCH | `/invoices/{id}` | Manual correction of fields or line items; logs a correction and re-validates |
+| POST | `/invoices/{id}/approve` | Mark approved |
+| GET | `/search` | `q` + `mode` = `keyword`, `semantic` or `hybrid` (default); returns ranked invoices with score |
+| GET | `/stats` | Counts by status, success and failure rates, average time per stage |
+| GET | `/health` | Database and Redis reachability (200 ok, 503 degraded) |
 
 **As built (P4):**
 
@@ -228,7 +228,7 @@ Rules that apply to every endpoint:
 
 ## 4. Extraction prompt and anti-hallucination rules
 
-This prompt is a deliverable (`docs/prompts.md`) and lives in code as a versioned constant (`PROMPT_VERSION = "extract-v1"`), stored with every result so accuracy can be tied to a prompt version.
+This prompt is documented in `docs/prompts.md` and lives in code as a versioned constant (`PROMPT_VERSION = "extract-v1"`), stored with every result so accuracy can be tied to a prompt version.
 
 **System prompt**
 
@@ -338,17 +338,17 @@ Keep-awake: an external uptime monitor pings `/api/v1/health` every 5 minutes so
 
 The specs live in `docs/requirements.md` and `docs/design.md`. Claude Code reads only the sections a phase names, which saves tokens every session.
 
-| Phase | When | Builds | Done when |
-| --- | --- | --- | --- |
-| P0 Scaffold | Sat, now | Repo layout, Docker Compose, settings, health, Celery ping, migrations, CI | `docker compose up` works, `/api/v1/health` is green, CI passes |
-| P1 Ingestion | Sat afternoon | Upload, storage, detect, PDF text, OCR, spreadsheets, events, progress | Each fixture file produces `pages` rows; a corrupt file ends `failed` with a reason |
-| P2 Extraction | Sat evening | Split, regex rules, LLM providers, grounding, validation | A sample invoice produces correct fields and the right issues; tests use a mocked LLM |
-| P3 Dataset | Sat night | Synthetic labeled invoices, clean and degraded | About 60 files plus `labels.json` in `evaluation/data` |
-| P4 API + search | Sun morning | All endpoints, corrections, reprocess, embeddings, hybrid search, stats | Every endpoint visible in `/docs`, API tests pass |
-| P5 Frontend | Sun afternoon | Upload, documents, invoice review and edit, search, dashboard | Full flow works in the browser |
-| P6 Tests + eval | Sun evening | Failure tests, evaluation script, report | `evaluation/report.md` with measured numbers, CI green |
-| P7 Deploy | Sun night (smoke), Mon morning | Render, Vercel, Supabase, Upstash | Live link processes one PDF end to end |
-| P8 Ship | Mon | README, diagrams, prompts, AI disclosure, video, email | Deliverables checklist all ticked |
+| Phase | Builds | Done when |
+| --- | --- | --- |
+| P0 Scaffold | Repo layout, Docker Compose, settings, health, Celery ping, migrations, CI | `docker compose up` works, `/api/v1/health` is green, CI passes |
+| P1 Ingestion | Upload, storage, detect, PDF text, OCR, spreadsheets, events, progress | Each fixture file produces `pages` rows; a corrupt file ends `failed` with a reason |
+| P2 Extraction | Split, regex rules, LLM providers, grounding, validation | A sample invoice produces correct fields and the right issues; tests use a mocked LLM |
+| P3 Dataset | Synthetic labeled invoices, clean and degraded | About 60 files plus `labels.json` in `evaluation/data` |
+| P4 API + search | All endpoints, corrections, reprocess, embeddings, hybrid search, stats | Every endpoint visible in `/docs`, API tests pass |
+| P5 Frontend | Upload, documents, invoice review and edit, search, dashboard | Full flow works in the browser |
+| P6 Tests + eval | Failure tests, evaluation script, report | `evaluation/report.md` with measured numbers, CI green |
+| P7 Deploy | Render, Vercel, Supabase, Upstash | Live link processes one PDF end to end |
+| P8 Release docs | README, diagrams, prompts, AI disclosure | Release checklist all ticked |
 
 Rules for every session: one phase per session, start each with the phase prompt, end with tests passing and a commit, then open a fresh session.
 
@@ -450,7 +450,7 @@ Claude Code rules live in `CLAUDE.md` (repo root, loaded every session) and four
 Git workflow, kept simple:
 
 - Work on `main`, one commit per finished step, pushed often. Commit messages follow Conventional Commits: `feat(pipeline): add OCR fallback`, `test(api): cover 415`, `docs: add prompts`.
-- Tag the end of each day: `v0.1-day1`, `v0.2-day2`, `v1.0` at submission, so the reviewer can see real progress.
+- Tag the end of each day: `v0.1-day1`, `v0.2-day2`, `v1.0` at release.
 - Before every commit run `git status` and check that no `.env` file or key is staged.
 
-Not in this doc on purpose: the deployment guide (P7) and the submission pack (P8). We write those on Nov 22 once the app runs, so they describe what was actually built.
+Not in this doc on purpose: the deployment guide (P7) and the release documentation (P8). Those are written once the app runs, so they describe what was actually built.

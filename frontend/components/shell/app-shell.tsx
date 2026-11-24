@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <LogoMark />
           <div className="hidden lg:block">
             <div className="text-sm leading-tight font-semibold">LedQuill</div>
-            <div className="text-[11px] text-ink-3">Care Guide Ltd</div>
+            <div className="text-[11px] text-ink-3">© 2026 LedQuill</div>
           </div>
         </div>
         <div className="lg:hidden">
