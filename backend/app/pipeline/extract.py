@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.core.errors import PermanentError
+from app.core.text import clean_text
 from app.pipeline import ocr, pdf, sheets
 
 
@@ -15,6 +16,11 @@ class PageResult:
     method: str  # text | ocr | sheet
     text: str
     ocr_confidence: float | None = None
+
+    def __post_init__(self) -> None:
+        # The one place PDF text, OCR text and spreadsheet cells all pass through: whatever
+        # PostgreSQL cannot store is removed here, so nothing downstream has to think about it.
+        object.__setattr__(self, "text", clean_text(self.text))
 
 
 @dataclass(frozen=True)

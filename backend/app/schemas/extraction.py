@@ -12,6 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.core.text import clean_text
 from app.pipeline.numbers import parse_amount
 
 FIELDS = (
@@ -51,7 +52,7 @@ class LineItemData(BaseModel):
     @classmethod
     def _text(cls, value: Any) -> Any:
         if isinstance(value, str):
-            return value.strip() or None
+            return clean_text(value).strip() or None
         return value
 
 
@@ -95,7 +96,7 @@ class ExtractionResult(BaseModel):
     @classmethod
     def _text(cls, value: Any) -> Any:
         if isinstance(value, str):
-            return " ".join(value.split()) or None
+            return " ".join(clean_text(value).split()) or None
         return value
 
     @field_validator("currency", mode="before")

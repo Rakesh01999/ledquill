@@ -18,7 +18,7 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.errors import PermanentError, TransientError
-from app.core.logging import get_logger
+from app.core.logging import exception_fields, get_logger
 from app.core.settings import Settings, get_settings
 from app.db.models import Document, Invoice, Job, Page, ProcessingEvent
 from app.llm.client import ExtractionClient, build_llm_client
@@ -352,7 +352,12 @@ def _run_job(
         _fail(session, doc, job, "Processing failed after several attempts. Please reprocess.")
         return "failed"
     except Exception as exc:  # last line of defence: a bad file must never crash the worker
-        bound.error("job_unexpected_error", stage=job.current_stage, error_type=type(exc).__name__)
+        bound.error(
+            "job_unexpected_error",
+            stage=job.current_stage,
+            error_type=type(exc).__name__,
+            **exception_fields(exc),
+        )
         _fail(session, doc, job, "Unexpected error while processing this file.")
         return "failed"
 
