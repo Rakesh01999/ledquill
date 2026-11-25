@@ -374,6 +374,24 @@
         "title": "EventOut",
         "type": "object"
       },
+      "FacetValue": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "count"
+        ],
+        "title": "FacetValue",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -543,6 +561,31 @@
           }
         },
         "title": "InvoiceCorrection",
+        "type": "object"
+      },
+      "InvoiceFacets": {
+        "description": "Distinct supplier names and currency codes of the live invoices, with how many each has.",
+        "properties": {
+          "currencies": {
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            },
+            "title": "Currencies",
+            "type": "array"
+          },
+          "suppliers": {
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            },
+            "title": "Suppliers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "suppliers",
+          "currencies"
+        ],
+        "title": "InvoiceFacets",
         "type": "object"
       },
       "InvoiceList": {
@@ -2260,10 +2303,38 @@
               "default": "newest",
               "enum": [
                 "newest",
-                "severity"
+                "severity",
+                "number",
+                "supplier",
+                "date",
+                "total",
+                "status",
+                "issues"
               ],
               "title": "Sort",
               "type": "string"
+            }
+          },
+          {
+            "description": "Direction of a column sort; each column has a default.",
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Direction of a column sort; each column has a default.",
+              "title": "Order"
             }
           },
           {
@@ -2283,15 +2354,41 @@
             "schema": {
               "anyOf": [
                 {
-                  "maxLength": 200,
-                  "minLength": 1,
-                  "type": "string"
+                  "items": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": "array"
                 },
                 {
                   "type": "null"
                 }
               ],
               "title": "Supplier"
+            }
+          },
+          {
+            "description": "Exact supplier names, as listed by /invoices/facets. Any one matches.",
+            "in": "query",
+            "name": "supplier_exact",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exact supplier names, as listed by /invoices/facets. Any one matches.",
+              "title": "Supplier Exact"
             }
           },
           {
@@ -2391,8 +2488,11 @@
             "schema": {
               "anyOf": [
                 {
-                  "pattern": "^[A-Za-z]{3}$",
-                  "type": "string"
+                  "items": {
+                    "pattern": "^[A-Za-z]{3}$",
+                    "type": "string"
+                  },
+                  "type": "array"
                 },
                 {
                   "type": "null"
@@ -2408,12 +2508,15 @@
             "schema": {
               "anyOf": [
                 {
-                  "enum": [
-                    "needs_review",
-                    "ready",
-                    "approved"
-                  ],
-                  "type": "string"
+                  "items": {
+                    "enum": [
+                      "needs_review",
+                      "ready",
+                      "approved"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
                 },
                 {
                   "type": "null"
@@ -2504,6 +2607,98 @@
           }
         },
         "summary": "List Invoices",
+        "tags": [
+          "invoices"
+        ]
+      }
+    },
+    "/api/v1/invoices/facets": {
+      "get": {
+        "description": "Distinct suppliers (most invoices first, then A-Z) and currencies, for filter dropdowns.\n`q` narrows the suppliers by a case-insensitive substring; `limit` caps the suppliers.",
+        "operationId": "invoice_facets_api_v1_invoices_facets_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Narrow the suppliers.",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Narrow the suppliers.",
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceFacets"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Invoice Facets",
         "tags": [
           "invoices"
         ]

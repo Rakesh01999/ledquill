@@ -82,6 +82,18 @@ class InvoiceList(BaseModel):
     offset: int
 
 
+class FacetValue(BaseModel):
+    value: str
+    count: int
+
+
+class InvoiceFacets(BaseModel):
+    """Distinct supplier names and currency codes of the live invoices, with how many each has."""
+
+    suppliers: list[FacetValue]
+    currencies: list[FacetValue]
+
+
 # --- PATCH /invoices/{id} request ---------------------------------------------------------
 
 

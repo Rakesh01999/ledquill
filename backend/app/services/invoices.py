@@ -58,20 +58,32 @@ class InvoiceFilters:
     currency: str | None = None
     status: str | None = None
     q: str | None = None
+    # supplier, currency and status also take several values (any of them matches).
+    suppliers: tuple[str, ...] = ()
+    # Exact supplier names (as listed by /invoices/facets): no substring, no typo tolerance.
+    supplier_exact: tuple[str, ...] = ()
+    currencies: tuple[str, ...] = ()
+    statuses: tuple[str, ...] = ()
 
 
-def _escape_like(value: str) -> str:
+def escape_like(value: str) -> str:
     return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def invoice_conditions(f: InvoiceFilters) -> list[ColumnElement[bool]]:
     """WHERE clauses for the keyword filters (FR-18). Every value is bound, never interpolated."""
     out: list[ColumnElement[bool]] = []
-    if f.supplier:
+    names = tuple(dict.fromkeys(([f.supplier] if f.supplier else []) + list(f.suppliers)))
+    if names:
         out.append(
             or_(
-                Invoice.supplier_name.ilike(f"%{_escape_like(f.supplier)}%", escape="\\"),
-                Invoice.supplier_name.op("%")(f.supplier),  # pg_trgm: tolerant of typos
+                *(
+                    or_(
+                        Invoice.supplier_name.ilike(f"%{escape_like(n)}%", escape="\\"),
+                        Invoice.supplier_name.op("%")(n),  # pg_trgm: tolerant of typos
+                    )
+                    for n in names
+                )
             )
         )
     if f.invoice_number:
@@ -84,10 +96,16 @@ def invoice_conditions(f: InvoiceFilters) -> list[ColumnElement[bool]]:
         out.append(Invoice.total >= f.min_total)
     if f.max_total is not None:
         out.append(Invoice.total <= f.max_total)
-    if f.currency:
-        out.append(Invoice.currency == f.currency.upper())
-    if f.status:
-        out.append(Invoice.status == f.status)
+    if f.supplier_exact:
+        out.append(Invoice.supplier_name.in_(f.supplier_exact))
+    codes = tuple(
+        dict.fromkeys(c.upper() for c in ([f.currency] if f.currency else []) + list(f.currencies))
+    )
+    if codes:
+        out.append(Invoice.currency.in_(codes))
+    states = tuple(dict.fromkeys(([f.status] if f.status else []) + list(f.statuses)))
+    if states:
+        out.append(Invoice.status.in_(states))
     if f.q:
         out.append(Invoice.search_tsv.op("@@")(func.websearch_to_tsquery("english", f.q)))
     return out

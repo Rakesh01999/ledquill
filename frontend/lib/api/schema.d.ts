@@ -204,6 +204,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/invoices/facets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Invoice Facets
+         * @description Distinct suppliers (most invoices first, then A-Z) and currencies, for filter dropdowns.
+         *     `q` narrows the suppliers by a case-insensitive substring; `limit` caps the suppliers.
+         */
+        get: operations["invoice_facets_api_v1_invoices_facets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/invoices/{invoice_id}": {
         parameters: {
             query?: never;
@@ -476,6 +497,13 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** FacetValue */
+        FacetValue: {
+            /** Count */
+            count: number;
+            /** Value */
+            value: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -506,6 +534,16 @@ export interface components {
             tax?: (number | string) | null;
             /** Total */
             total?: (number | string) | null;
+        };
+        /**
+         * InvoiceFacets
+         * @description Distinct supplier names and currency codes of the live invoices, with how many each has.
+         */
+        InvoiceFacets: {
+            /** Currencies */
+            currencies: components["schemas"]["FacetValue"][];
+            /** Suppliers */
+            suppliers: components["schemas"]["FacetValue"][];
         };
         /** InvoiceList */
         InvoiceList: {
@@ -1139,16 +1177,20 @@ export interface operations {
         parameters: {
             query?: {
                 document_id?: string | null;
-                sort?: "newest" | "severity";
+                sort?: "newest" | "severity" | "number" | "supplier" | "date" | "total" | "status" | "issues";
+                /** @description Direction of a column sort; each column has a default. */
+                order?: ("asc" | "desc") | null;
                 archived?: boolean;
-                supplier?: string | null;
+                supplier?: string[] | null;
+                /** @description Exact supplier names, as listed by /invoices/facets. Any one matches. */
+                supplier_exact?: string[] | null;
                 invoice_number?: string | null;
                 date_from?: string | null;
                 date_to?: string | null;
                 min_total?: number | string | null;
                 max_total?: number | string | null;
-                currency?: string | null;
-                status?: ("needs_review" | "ready" | "approved") | null;
+                currency?: string[] | null;
+                status?: ("needs_review" | "ready" | "approved")[] | null;
                 q?: string | null;
                 limit?: number;
                 offset?: number;
@@ -1168,6 +1210,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InvoiceList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invoice_facets_api_v1_invoices_facets_get: {
+        parameters: {
+            query?: {
+                archived?: boolean;
+                /** @description Narrow the suppliers. */
+                q?: string | null;
+                limit?: number;
+            };
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceFacets"];
                 };
             };
             /** @description Validation Error */
