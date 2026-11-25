@@ -192,6 +192,18 @@ export const facetsOptions = (client: ApiClient, q = "") =>
     placeholderData: keepPreviousData,
   });
 
+/** The top-bar search: live documents, invoices and suppliers, and archived items apart. */
+export const globalSearchOptions = (client: ApiClient, q: string) =>
+  queryOptions({
+    queryKey: ["search", "global", q],
+    // `signal` cancels the request when the text changes or the palette closes.
+    queryFn: ({ signal }) =>
+      unwrap(client.GET("/api/v1/search/global", { signal, params: { query: { q, limit: 5 } } })),
+    staleTime: 15_000,
+    placeholderData: keepPreviousData,
+    retry: false,
+  });
+
 export const invoiceOptions = (client: ApiClient, id: string) =>
   queryOptions({
     queryKey: ["invoices", "detail", id],

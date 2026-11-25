@@ -340,6 +340,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/search/global": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Global
+         * @description The top-bar search: live documents (file name, id prefix), live invoices (number, supplier,
+         *     currency, amount, id prefix), suppliers, and archived documents and invoices in their own group,
+         *     so an archived match is never taken for a live one. `limit` applies to each group; `more` says
+         *     a group has further matches.
+         */
+        get: operations["search_global_api_v1_search_global_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/stats": {
         parameters: {
             query?: never;
@@ -410,6 +433,36 @@ export interface components {
             /** Total */
             total: string;
         };
+        /**
+         * ArchivedHit
+         * @description An archived document or invoice. Never mixed into the live groups.
+         */
+        ArchivedHit: {
+            /**
+             * Archived At
+             * Format: date-time
+             */
+            archived_at: string;
+            /** Detail */
+            detail: string | null;
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "document" | "invoice";
+            /** Title */
+            title: string;
+        };
         /** Body_upload_documents_api_v1_documents_post */
         Body_upload_documents_api_v1_documents_post: {
             /**
@@ -442,6 +495,25 @@ export interface components {
             currency: string;
             /** Total */
             total: string;
+        };
+        /** DocumentHit */
+        DocumentHit: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** File Type */
+            file_type: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Status */
+            status: string;
         };
         /** DocumentList */
         DocumentList: {
@@ -545,6 +617,43 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** GlobalGroup[ArchivedHit] */
+        GlobalGroup_ArchivedHit_: {
+            /** Items */
+            items: components["schemas"]["ArchivedHit"][];
+            /** More */
+            more: boolean;
+        };
+        /** GlobalGroup[DocumentHit] */
+        GlobalGroup_DocumentHit_: {
+            /** Items */
+            items: components["schemas"]["DocumentHit"][];
+            /** More */
+            more: boolean;
+        };
+        /** GlobalGroup[InvoiceHit] */
+        GlobalGroup_InvoiceHit_: {
+            /** Items */
+            items: components["schemas"]["InvoiceHit"][];
+            /** More */
+            more: boolean;
+        };
+        /** GlobalGroup[SupplierHit] */
+        GlobalGroup_SupplierHit_: {
+            /** Items */
+            items: components["schemas"]["SupplierHit"][];
+            /** More */
+            more: boolean;
+        };
+        /** GlobalSearch */
+        GlobalSearch: {
+            archived: components["schemas"]["GlobalGroup_ArchivedHit_"];
+            documents: components["schemas"]["GlobalGroup_DocumentHit_"];
+            invoices: components["schemas"]["GlobalGroup_InvoiceHit_"];
+            /** Q */
+            q: string;
+            suppliers: components["schemas"]["GlobalGroup_SupplierHit_"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -585,6 +694,31 @@ export interface components {
             currencies: components["schemas"]["FacetValue"][];
             /** Suppliers */
             suppliers: components["schemas"]["FacetValue"][];
+        };
+        /** InvoiceHit */
+        InvoiceHit: {
+            /** Currency */
+            currency: string | null;
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Invoice Date */
+            invoice_date: string | null;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Status */
+            status: string;
+            /** Supplier Name */
+            supplier_name: string | null;
+            /** Total */
+            total: string | null;
         };
         /** InvoiceList */
         InvoiceList: {
@@ -822,6 +956,13 @@ export interface components {
             needs_review: number;
             /** Success Rate */
             success_rate: number | null;
+        };
+        /** SupplierHit */
+        SupplierHit: {
+            /** Count */
+            count: number;
+            /** Supplier */
+            supplier: string;
         };
         /** SupplierTotal */
         SupplierTotal: {
@@ -1578,6 +1719,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_global_api_v1_search_global_get: {
+        parameters: {
+            query: {
+                q: string;
+                /** @description Per group. */
+                limit?: number;
+            };
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlobalSearch"];
                 };
             };
             /** @description Validation Error */

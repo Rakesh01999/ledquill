@@ -56,6 +56,12 @@ class Document(Base):
         Index("ix_documents_sha256", "sha256"),
         Index("ix_documents_status_created_at", "status", text("created_at DESC")),
         Index("ix_documents_archived_at", "archived_at"),
+        Index(
+            "ix_documents_filename_trgm",
+            "filename",
+            postgresql_using="gin",
+            postgresql_ops={"filename": "gin_trgm_ops"},
+        ),
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
@@ -136,6 +142,12 @@ class Invoice(Base):
             "supplier_name",
             postgresql_using="gin",
             postgresql_ops={"supplier_name": "gin_trgm_ops"},
+        ),
+        Index(
+            "ix_invoices_invoice_number_trgm",
+            "invoice_number",
+            postgresql_using="gin",
+            postgresql_ops={"invoice_number": "gin_trgm_ops"},
         ),
         Index(
             "ix_invoices_embedding_hnsw",

@@ -8,7 +8,8 @@ from app.core.security import require_api_key
 from app.db.session import get_session
 from app.pipeline.embed import Embedder, get_embedder
 from app.schemas.invoices import InvoiceOut
-from app.schemas.search import SearchHit, SearchMode, SearchResponse
+from app.schemas.search import GlobalSearch, SearchHit, SearchMode, SearchResponse
+from app.services.global_search import global_search
 from app.services.search import search_invoices
 
 router = APIRouter(tags=["search"], dependencies=[Depends(require_api_key)])
@@ -43,3 +44,19 @@ def search(
         mode_used=outcome.mode_used,
         fallback_reason=outcome.fallback_reason,
     )
+
+
+@router.get("/search/global", response_model=GlobalSearch)
+@limiter.limit(search_limit)
+def search_global(
+    request: Request,
+    response: Response,
+    q: str = Query(..., min_length=1, max_length=200, pattern=r"\S"),
+    limit: int = Query(5, ge=1, le=10, description="Per group."),
+    session: Session = Depends(get_session),
+):
+    """The top-bar search: live documents (file name, id prefix), live invoices (number, supplier,
+    currency, amount, id prefix), suppliers, and archived documents and invoices in their own group,
+    so an archived match is never taken for a live one. `limit` applies to each group; `more` says
+    a group has further matches."""
+    return global_search(session, q.strip(), limit)
