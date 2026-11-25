@@ -5,7 +5,11 @@
 
 const DECIMAL = /^(-?)(\d+)(?:\.(\d+))?$/;
 
-/** "1150" -> "1,150.00". Returns null when the value is not a plain decimal string. */
+/**
+ * "1150" -> "1,150.00", "99.0000" -> "99.00", "0.1250" -> "0.125". At least `minDecimals` places,
+ * and extra places only where they carry a digit: nothing is rounded. Returns null when the value
+ * is not a plain decimal string.
+ */
 export function formatDecimal(value: string | null | undefined, minDecimals = 2): string | null {
   if (value == null) return null;
   const m = DECIMAL.exec(value.trim());
@@ -14,7 +18,7 @@ export function formatDecimal(value: string | null | undefined, minDecimals = 2)
   const whole = m[2] ?? "0";
   const frac = m[3] ?? "";
   const grouped = whole.replace(/^0+(?=\d)/, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const decimals = frac.padEnd(minDecimals, "0");
+  const decimals = frac.replace(/0+$/, "").padEnd(minDecimals, "0");
   return `${sign}${grouped}${decimals ? `.${decimals}` : ""}`;
 }
 
