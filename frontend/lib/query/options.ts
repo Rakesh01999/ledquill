@@ -28,7 +28,14 @@ export const healthOptions = (client: ApiClient) =>
     retry: false,
   });
 
-export type DocumentListParams = { status?: DocumentStatus; file_type?: FileType; page: number; size: number };
+export type DocumentListParams = {
+  status?: DocumentStatus;
+  file_type?: FileType;
+  page: number;
+  size: number;
+  /** List only archived documents (the Archived page). Left out, archived ones are hidden. */
+  archived?: boolean;
+};
 
 export const documentsOptions = (client: ApiClient, params: DocumentListParams) =>
   queryOptions({
@@ -42,6 +49,7 @@ export const documentsOptions = (client: ApiClient, params: DocumentListParams) 
             query: {
               status: params.status,
               file_type: params.file_type,
+              archived: params.archived,
               limit: params.size,
               offset: (params.page - 1) * params.size,
             },
@@ -80,13 +88,14 @@ export const pagesOptions = (client: ApiClient, id: string) =>
     staleTime: 60_000,
   });
 
-export const documentInvoicesOptions = (client: ApiClient, id: string) =>
+/** The invoices of one file. `archived` lists the archived ones instead (an archived file's page). */
+export const documentInvoicesOptions = (client: ApiClient, id: string, archived = false) =>
   queryOptions({
-    queryKey: ["invoices", "by-document", id],
+    queryKey: ["invoices", "by-document", id, archived],
     queryFn: () =>
       unwrap(
         client.GET("/api/v1/invoices", {
-          params: { query: { document_id: id, limit: 100 } },
+          params: { query: { document_id: id, limit: 100, archived } },
         }),
       ),
     staleTime: 10_000,
@@ -107,9 +116,9 @@ export const queueOptions = (client: ApiClient) =>
     staleTime: 10_000,
   });
 
-export const invoicesOptions = (client: ApiClient, params: InvoiceListParams) =>
+export const invoicesOptions = (client: ApiClient, params: InvoiceListParams, archived = false) =>
   queryOptions({
-    queryKey: ["invoices", "list", params],
+    queryKey: ["invoices", "list", archived ? { ...params, archived } : params],
     queryFn: ({ signal }) =>
       unwrap(
         client.GET("/api/v1/invoices", {
@@ -124,6 +133,7 @@ export const invoicesOptions = (client: ApiClient, params: InvoiceListParams) =>
               date_to: params.date_to,
               min_total: params.min_total,
               max_total: params.max_total,
+              archived,
               limit: params.size,
               offset: (params.page - 1) * params.size,
             },

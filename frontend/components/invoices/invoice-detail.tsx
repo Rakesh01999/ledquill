@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
+import { Archive, ArchiveRestore, Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SourcePanel } from "@/components/documents/source-panel";
 import { PageHeader } from "@/components/shared/page-header";
+import { ArchivedNotice } from "@/components/shared/archived-notice";
 import { ProblemAlert } from "@/components/shared/problem-alert";
+import { useConfirmedActions } from "@/components/shared/use-confirmed-actions";
 import { StatusChip } from "@/components/shared/status-chip";
 import { ErrorState } from "@/components/shared/states";
 import { api } from "@/lib/api/client";
@@ -24,6 +26,7 @@ import {
   FIELD_LABELS,
   errorIssues,
   fieldValue,
+  invoiceLabel,
   type FieldName,
 } from "@/lib/invoices";
 import { documentInvoicesOptions, documentOptions, invoiceOptions, queueOptions } from "@/lib/query/options";
@@ -89,14 +92,23 @@ function revalidationMessage(label: string, before: InvoiceOut | undefined, afte
 export function InvoiceDetail({ id }: { id: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const inQueue = useSearchParams().get("queue") === "1";
+  const searchParams = useSearchParams();
+  const inQueue = searchParams.get("queue") === "1";
+  const fromDoc = searchParams.get("from") === "doc";
+  const actions = useConfirmedActions();
 
   const invoiceQuery = useQuery(invoiceOptions(api, id));
   const invoice = invoiceQuery.data;
   const documentId = invoice?.document_id;
   const docQuery = useQuery({ ...documentOptions(api, documentId ?? ""), enabled: Boolean(documentId) });
   const queue = useQuery({ ...queueOptions(api), enabled: inQueue });
-  const siblings = useQuery({ ...documentInvoicesOptions(api, documentId ?? ""), enabled: Boolean(documentId) });
+  const archived = Boolean(invoice?.archived_at);
+  // An invoice archived with its file comes back only with the file (the API refuses otherwise).
+  const fileArchived = Boolean(docQuery.data?.archived_at);
+  const siblings = useQuery({
+    ...documentInvoicesOptions(api, documentId ?? "", archived),
+    enabled: Boolean(documentId) && invoice !== undefined,
+  });
 
   const [tab, setTab] = useState<Tab>("fields");
   const [sourcePage, setSourcePage] = useState<number | undefined>(undefined);
@@ -133,6 +145,18 @@ export function InvoiceDetail({ id }: { id: string }) {
     el.scrollIntoView({ block: "center", behavior: calm ? "auto" : "smooth" });
     el.focus({ preventScroll: true });
   }, [issueTarget]);
+  // A link ending in #field-<name> (from "Issues in this file") lands on that field, via the same
+  // Go-to path as the banner buttons.
+  useEffect(() => {
+    if (!loaded) return;
+    const name = /^#field-(\w+)$/.exec(window.location.hash)?.[1];
+    if (!name || !(name in FIELD_LABELS)) return;
+    const frame = requestAnimationFrame(() => {
+      setTab("fields");
+      setTarget((t) => ({ name, n: (t?.n ?? 0) + 1 }));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [loaded]);
   const landOnIssues = useRef(false);
   useEffect(() => {
     if (!loaded || window.location.hash !== "#issues") return;
@@ -225,7 +249,7 @@ export function InvoiceDetail({ id }: { id: string }) {
     j: () => inQueue && nextId && router.push(hrefFor(nextId)),
     k: () => inQueue && prevId && router.push(hrefFor(prevId)),
     a: () => {
-      if (!approved && !blocked && !approve.isPending) doApprove();
+      if (!approved && !blocked && !archived && !approve.isPending) doApprove();
     },
     e: () => {
       const el = document.activeElement;
@@ -249,7 +273,15 @@ export function InvoiceDetail({ id }: { id: string }) {
     <>
       <PageHeader
         crumbs={[
-          { label: inQueue ? "Review queue" : "Invoices", href: inQueue ? "/review" : "/invoices" },
+          archived
+            ? { label: "Archived", href: "/archived" }
+            : fromDoc
+              ? { label: "Documents", href: "/documents" }
+              : { label: inQueue ? "Review queue" : "Invoices", href: inQueue ? "/review" : "/invoices" },
+          // Only when the invoice was opened from its file: the way back is the file, then the list.
+          ...(fromDoc && sourceDoc
+            ? [{ label: sourceDoc.filename, href: `/documents/${sourceDoc.id}` }]
+            : []),
           { label: invoice.invoice_number ?? "No invoice number" },
         ]}
         title={invoice.invoice_number ?? "No invoice number"}
@@ -314,10 +346,28 @@ export function InvoiceDetail({ id }: { id: string }) {
                 </ul>
               </TooltipContent>
             </Tooltip>
+            {archived ? (
+              <Button
+                variant="outline"
+                disabled={fileArchived || actions.isBusy("invoice", id)}
+                title={fileArchived ? "Restore the file first" : undefined}
+                onClick={() => void actions.restore("invoice", id, invoiceLabel(invoice))}
+              >
+                <ArchiveRestore aria-hidden="true" /> Restore
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                disabled={actions.isBusy("invoice", id)}
+                onClick={() => actions.askArchive("invoice", id, invoiceLabel(invoice))}
+              >
+                <Archive aria-hidden="true" /> Archive
+              </Button>
+            )}
             <Button
               onClick={doApprove}
-              title="Approve invoice (A)"
-              disabled={approved || blocked || approve.isPending}
+              title={archived ? "Restore the invoice to approve it" : "Approve invoice (A)"}
+              disabled={approved || blocked || archived || approve.isPending}
               aria-describedby={blocked ? "approve-hint" : undefined}
             >
               <Check aria-hidden="true" /> {approved ? "Approved" : approve.isPending ? "Approving" : "Approve invoice"}
@@ -328,7 +378,21 @@ export function InvoiceDetail({ id }: { id: string }) {
       />
     <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
       <InvoiceShortcuts handlers={shortcuts} />
-      {blocked && !approved && (
+      {actions.dialog}
+      {archived && (
+        <ArchivedNotice
+          title="This invoice is archived"
+          restoring={actions.isBusy("invoice", id)}
+          disabled={fileArchived}
+          restoreLabel="Restore invoice"
+          onRestore={() => void actions.restore("invoice", id, invoiceLabel(invoice))}
+        >
+          It is hidden from lists, search, the review queue and the dashboard numbers, and no longer counts as a
+          duplicate. Nothing was deleted. Restore it to edit or approve it.
+          {fileArchived ? " Its file is archived too, so restore the file first." : ""}
+        </ArchivedNotice>
+      )}
+      {blocked && !approved && !archived && (
         <p id="approve-hint" className="text-[13px] text-ink-2">
           Resolve {plural(errors.length, "error", "errors")} to approve this invoice.
         </p>
@@ -419,6 +483,7 @@ export function InvoiceDetail({ id }: { id: string }) {
                       issues={invoice.issues.filter((i) => i.field === def.name)}
                       onShowIssue={() => showIssue(def.name)}
                       highlighted={target?.name === def.name}
+                      readOnly={archived}
                       onSave={(value) => save(def.name, def.label, value)}
                       onShowPage={() => {
                         const first = pages?.[0];

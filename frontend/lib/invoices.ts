@@ -42,6 +42,10 @@ export const FIELD_GROUPS: { title: string; fields: FieldDef[] }[] = [
   },
 ];
 
+/** How an invoice is named in a message: its number, or a plain description when it has none. */
+export const invoiceLabel = (inv: { invoice_number: string | null }): string =>
+  inv.invoice_number ? `invoice ${inv.invoice_number}` : "invoice without a number";
+
 export const FIELD_LABELS: Record<string, string> = Object.fromEntries(
   FIELD_GROUPS.flatMap((g) => g.fields.map((f) => [f.name, f.label])),
 );
@@ -99,8 +103,8 @@ export function issueHint(issue: Issue): string {
       return "Check the date on the source and edit it if it was misread. If it is correct you can still approve.";
     case "V-07":
       return field === "invoice_number"
-        ? "Open the existing copy and compare. If this number was misread, edit Invoice number; otherwise this is a duplicate: delete one of the two documents from its document page."
-        : "Open the existing copy. This is the same file uploaded twice. Editing fields cannot clear this; the error goes when one of the two documents is deleted from its document page.";
+        ? "Open the existing copy and compare. If this number was misread, edit Invoice number; otherwise this is a duplicate: archive one of the two documents from its document page."
+        : "Open the existing copy. This is the same file uploaded twice. Editing fields cannot clear this; the error goes when one of the two documents is archived from its document page.";
     case "V-08":
       return field
         ? `Check the ${label} against the source page and edit it if it is wrong. Saving an edit marks it as checked.`

@@ -14,7 +14,7 @@ export function InvoicesSkeleton() {
         <Skeleton className="h-[52px] w-full max-w-3xl bg-skeleton" />
       </div>
       <div className="h-5" />
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-clip rounded-lg border border-line bg-surface">
         <div className="h-9 border-b border-line bg-surface-2" />
         <TableSkeleton rows={8} widths={["w-28", "w-44", "w-20", "w-10", "w-20", "w-24", "w-8"]} />
       </div>

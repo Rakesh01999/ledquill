@@ -3,7 +3,15 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+/**
+ * `bare` renders the table with no scroll wrapper. A wrapper with overflow-x:auto becomes the
+ * scroll container of everything inside it, which stops a sticky header row from sticking to the
+ * page. Use it where the columns fit (the sticky tables); the default keeps the wrapper.
+ */
+function Table({ className, bare = false, ...props }: React.ComponentProps<"table"> & { bare?: boolean }) {
+  if (bare) {
+    return <table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} />
+  }
   return (
     <div
       data-slot="table-container"

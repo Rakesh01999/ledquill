@@ -8,7 +8,7 @@ const SCROLL = "ledquill:scroll:";
 const LIST = "ledquill:list:";
 
 /** List pages whose last URL is remembered, so a breadcrumb can return to the same view. */
-export const LIST_PATHS = ["/documents", "/invoices", "/review"];
+export const LIST_PATHS = ["/documents", "/invoices", "/review", "/archived"];
 
 const read = (key: string): string | null => {
   try {

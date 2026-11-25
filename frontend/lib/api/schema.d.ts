@@ -14,7 +14,8 @@ export interface paths {
         /**
          * List Documents
          * @description Newest first. supplier, currency and the date range match documents holding at least one
-         *     invoice that satisfies all of them.
+         *     invoice that satisfies all of them. Archived documents are left out unless `archived=true`,
+         *     which lists only them.
          */
         get: operations["list_documents_api_v1_documents_get"];
         put?: never;
@@ -39,6 +40,27 @@ export interface paths {
         post?: never;
         /** Delete */
         delete: operations["delete_api_v1_documents__document_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{document_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive
+         * @description Hide the document and its invoices. Nothing is deleted. 409 while it is queued or
+         *     processing. Archiving an archived document changes nothing.
+         */
+        post: operations["archive_api_v1_documents__document_id__archive_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -122,6 +144,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/documents/{document_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore
+         * @description Bring back the document and the invoices that were archived with it.
+         */
+        post: operations["restore_api_v1_documents__document_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -150,7 +192,8 @@ export interface paths {
          * List Invoices
          * @description Newest first; the invoices of one document come in document order. `sort=severity` is the
          *     review-queue order: open errors, then other warnings, then low-confidence only (V-08), then
-         *     invoices with no issue; oldest first within each group.
+         *     invoices with no issue; oldest first within each group. Archived invoices are left out unless
+         *     `archived=true`, which lists only them.
          */
         get: operations["list_invoices_api_v1_invoices_get"];
         put?: never;
@@ -190,6 +233,46 @@ export interface paths {
         put?: never;
         /** Approve */
         post: operations["approve_api_v1_invoices__invoice_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive
+         * @description Hide the invoice. Nothing is deleted. 409 while its document is queued or processing.
+         */
+        post: operations["archive_api_v1_invoices__invoice_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invoices/{invoice_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore
+         * @description Bring the invoice back. 409 while its document is archived (restore the document).
+         */
+        post: operations["restore_api_v1_invoices__invoice_id__restore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -311,6 +394,8 @@ export interface components {
         };
         /** DocumentOut */
         DocumentOut: {
+            /** Archived At */
+            archived_at: string | null;
             /**
              * Created At
              * Format: date-time
@@ -435,6 +520,8 @@ export interface components {
         };
         /** InvoiceOut */
         InvoiceOut: {
+            /** Archived At */
+            archived_at: string | null;
             /** Confidence */
             confidence: {
                 [key: string]: number;
@@ -695,6 +782,7 @@ export interface operations {
                 currency?: string | null;
                 date_from?: string | null;
                 date_to?: string | null;
+                archived?: boolean;
                 limit?: number;
                 offset?: number;
             };
@@ -813,6 +901,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_api_v1_documents__document_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -961,6 +1082,39 @@ export interface operations {
             };
         };
     };
+    restore_api_v1_documents__document_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;
@@ -986,6 +1140,7 @@ export interface operations {
             query?: {
                 document_id?: string | null;
                 sort?: "newest" | "severity";
+                archived?: boolean;
                 supplier?: string | null;
                 invoice_number?: string | null;
                 date_from?: string | null;
@@ -1097,6 +1252,72 @@ export interface operations {
         };
     };
     approve_api_v1_invoices__invoice_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_api_v1_invoices__invoice_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_api_v1_invoices__invoice_id__restore_post: {
         parameters: {
             query?: never;
             header?: {

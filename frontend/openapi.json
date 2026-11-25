@@ -134,6 +134,18 @@
       },
       "DocumentOut": {
         "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -241,6 +253,7 @@
           "current_stage",
           "invoice_count",
           "issue_count",
+          "archived_at",
           "created_at",
           "updated_at"
         ],
@@ -565,6 +578,18 @@
       },
       "InvoiceOut": {
         "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
           "confidence": {
             "additionalProperties": {
               "type": "number"
@@ -770,6 +795,7 @@
           "line_items",
           "issues",
           "corrections",
+          "archived_at",
           "created_at",
           "updated_at"
         ],
@@ -1435,7 +1461,7 @@
   "paths": {
     "/api/v1/documents": {
       "get": {
-        "description": "Newest first. supplier, currency and the date range match documents holding at least one\ninvoice that satisfies all of them.",
+        "description": "Newest first. supplier, currency and the date range match documents holding at least one\ninvoice that satisfies all of them. Archived documents are left out unless `archived=true`,\nwhich lists only them.",
         "operationId": "list_documents_api_v1_documents_get",
         "parameters": [
           {
@@ -1550,6 +1576,16 @@
                 }
               ],
               "title": "Date To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
             }
           },
           {
@@ -1781,6 +1817,66 @@
           }
         },
         "summary": "Get Document",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/archive": {
+      "post": {
+        "description": "Hide the document and its invoices. Nothing is deleted. 409 while it is queued or\nprocessing. Archiving an archived document changes nothing.",
+        "operationId": "archive_api_v1_documents__document_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive",
         "tags": [
           "documents"
         ]
@@ -2055,6 +2151,66 @@
         ]
       }
     },
+    "/api/v1/documents/{document_id}/restore": {
+      "post": {
+        "description": "Bring back the document and the invoices that were archived with it.",
+        "operationId": "restore_api_v1_documents__document_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "health_api_v1_health_get",
@@ -2076,7 +2232,7 @@
     },
     "/api/v1/invoices": {
       "get": {
-        "description": "Newest first; the invoices of one document come in document order. `sort=severity` is the\nreview-queue order: open errors, then other warnings, then low-confidence only (V-08), then\ninvoices with no issue; oldest first within each group.",
+        "description": "Newest first; the invoices of one document come in document order. `sort=severity` is the\nreview-queue order: open errors, then other warnings, then low-confidence only (V-08), then\ninvoices with no issue; oldest first within each group. Archived invoices are left out unless\n`archived=true`, which lists only them.",
         "operationId": "list_invoices_api_v1_invoices_get",
         "parameters": [
           {
@@ -2108,6 +2264,16 @@
               ],
               "title": "Sort",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
             }
           },
           {
@@ -2523,6 +2689,126 @@
           }
         },
         "summary": "Approve",
+        "tags": [
+          "invoices"
+        ]
+      }
+    },
+    "/api/v1/invoices/{invoice_id}/archive": {
+      "post": {
+        "description": "Hide the invoice. Nothing is deleted. 409 while its document is queued or processing.",
+        "operationId": "archive_api_v1_invoices__invoice_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invoice_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invoice Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive",
+        "tags": [
+          "invoices"
+        ]
+      }
+    },
+    "/api/v1/invoices/{invoice_id}/restore": {
+      "post": {
+        "description": "Bring the invoice back. 409 while its document is archived (restore the document).",
+        "operationId": "restore_api_v1_invoices__invoice_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invoice_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invoice Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore",
         "tags": [
           "invoices"
         ]

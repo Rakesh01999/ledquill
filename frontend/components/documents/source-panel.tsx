@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,6 +111,11 @@ export function SourcePanel({
   const { data, isPending, error, refetch } = useQuery(pagesOptions(api, documentId));
   const [ownIndex, setOwnIndex] = useState(0);
   const [view, setView] = useState<"image" | "text">("image");
+  const activeSheet = useRef<HTMLButtonElement>(null);
+  // Keep the selected sheet tab in view when the strip scrolls sideways (many sheets, narrow screen).
+  useEffect(() => {
+    activeSheet.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [ownIndex, controlledPage]);
 
   if (isPending) {
     return <Skeleton className="h-[380px] w-full bg-skeleton" role="status" aria-label="Loading pages" />;
@@ -139,6 +144,31 @@ export function SourcePanel({
 
   return (
     <div className="flex flex-col gap-3">
+      {isSheet && total > 1 && (
+        // One tab per sheet. The API gives the sheet's position, not its name, so the tabs say "Sheet 2".
+        <div
+          role="tablist"
+          aria-label="Sheets"
+          className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+        >
+          {pages.map((p, i) => (
+            <button
+              key={p.page_no}
+              ref={i === current ? activeSheet : undefined}
+              type="button"
+              role="tab"
+              aria-selected={i === current}
+              onClick={() => setIndex(i)}
+              className={cn(
+                "flex-none rounded-md border px-2.5 py-1 text-xs whitespace-nowrap outline-none hover:bg-surface-2",
+                i === current ? "border-line-strong bg-primary-soft font-semibold text-link" : "border-line text-ink-2",
+              )}
+            >
+              Sheet {p.page_no}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"

@@ -31,6 +31,8 @@ export type FieldRowProps = {
   onShowPage: () => void;
   /** True for a moment after "Go to <field>" brings this row into view. */
   highlighted?: boolean;
+  /** An archived invoice cannot be corrected: the value is shown, not editable. */
+  readOnly?: boolean;
 };
 
 function display(def: FieldDef, value: string | null): string | null {
@@ -57,6 +59,7 @@ export function FieldRow({
   onSave,
   onShowPage,
   highlighted = false,
+  readOnly = false,
 }: FieldRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -171,17 +174,24 @@ export function FieldRow({
               id={`field-${def.name}`}
               type="button"
               onClick={start}
-              aria-label={`Edit ${def.label}${shown ? `, current value ${shown}` : ", not found in document"}`}
+              disabled={readOnly}
+              aria-label={
+                readOnly
+                  ? `${def.label}${shown ? `, ${shown}` : ", not found in document"}. Archived, not editable`
+                  : `Edit ${def.label}${shown ? `, current value ${shown}` : ", not found in document"}`
+              }
               className={cn(
                 "group -mx-1.5 flex min-h-7 max-w-full items-center gap-1.5 rounded-md px-1.5 text-left text-[13px] font-medium outline-none hover:bg-surface-2",
                 def.kind === "money" && "tabular-nums",
               )}
             >
               <span className="min-w-0 break-words">{shown ?? <Missing />}</span>
-              <Pencil
-                className="size-3 flex-none text-ink-3 group-hover:text-ink group-focus-visible:text-ink"
-                aria-hidden="true"
-              />
+              {!readOnly && (
+                <Pencil
+                  className="size-3 flex-none text-ink-3 group-hover:text-ink group-focus-visible:text-ink"
+                  aria-hidden="true"
+                />
+              )}
             </button>
 
             {issues.length > 0 && (

@@ -1,11 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { ShallowLink } from "@/components/shared/shallow-link";
 import { Pager } from "@/components/shared/pager";
+import { RefreshButton } from "@/components/shared/refresh-button";
+import { TableBar } from "@/components/shared/table-bar";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { api } from "@/lib/api/client";
 import { describeError } from "@/lib/api/problem";
@@ -35,6 +37,13 @@ export function DocumentsView() {
   const paused = error instanceof ApiProblem && error.status === 429 && data;
   const filtered = Boolean(params.status || params.file_type);
 
+  // Archiving the last row of the last page leaves that page empty: step back to the new last one.
+  useEffect(() => {
+    if (!data || data.items.length > 0 || data.total === 0 || params.page <= 1 || isPlaceholderData) return;
+    const last = Math.max(1, Math.ceil(data.total / params.size));
+    window.history.replaceState(null, "", listHref({ ...params, page: Math.min(params.page, last) }));
+  }, [data, params, isPlaceholderData]);
+
   return (
     <div className="flex flex-col gap-5">
       <UploadSection />
@@ -55,7 +64,10 @@ export function DocumentsView() {
         <DocumentChips params={params} />
       </Toolbar>
 
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-clip rounded-lg border border-line bg-surface">
+        <TableBar refresh={<RefreshButton label="Refresh documents" queryKeys={[["documents", "list"]]} />}>
+          {data ? `${data.total} ${data.total === 1 ? "document" : "documents"}` : null}
+        </TableBar>
         <div aria-busy={isFetching} className={cn(isPlaceholderData && "opacity-60 transition-opacity")}>
           {isPending ? (
             <TableSkeleton rows={10} widths={["w-56", "w-24", "w-40", "w-20"]} />

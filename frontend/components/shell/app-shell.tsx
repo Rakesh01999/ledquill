@@ -12,8 +12,8 @@ import { Topbar } from "./topbar";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-dvh min-h-0">
-      <aside className="hidden w-14 flex-none flex-col border-r border-line bg-surface px-2 py-3.5 md:flex lg:w-[232px] lg:px-3">
-        <div className="px-1 pb-[18px] lg:px-2">
+      <aside className="hidden h-dvh w-14 flex-none flex-col border-r border-line bg-surface px-2 pt-3.5 md:flex lg:w-[232px] lg:px-3">
+        <div className="flex-none px-1 pb-[18px] lg:px-2">
           <div className="lg:hidden">
             <LogoLink showName={false} />
           </div>
@@ -21,14 +21,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             <LogoLink />
           </div>
         </div>
-        <div className="lg:hidden">
-          <SidebarNav collapsed />
+        {/* The list scrolls inside the sidebar only if it ever overflows; the footer stays put. */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="lg:hidden">
+            <SidebarNav collapsed />
+          </div>
+          <div className="hidden lg:block">
+            <SidebarNav />
+          </div>
         </div>
-        <div className="hidden lg:block">
-          <SidebarNav />
-        </div>
-        <div className="flex-1" />
-        <div className="border-t border-line px-1 pt-3 lg:px-2.5">
+        <div className="flex-none border-t border-line px-1 pt-3 pb-3.5 lg:px-2.5">
           <div className="lg:hidden">
             <ApiStatus compact />
           </div>
@@ -41,7 +43,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
         <ScrollRestore />
-        <main id="main" className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
+        {/* `relative` makes <main> the containing block of absolutely positioned descendants (the
+            screen-reader-only text). Without it they are placed against the viewport, are not clipped
+            by <main>'s scrolling, and stretch the document, so the whole page (sidebar included)
+            scrolls and leaves empty space under the content. */}
+        <main id="main" className="relative min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
       </div>

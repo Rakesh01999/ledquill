@@ -2,20 +2,23 @@
 
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, TriangleAlert } from "lucide-react";
+import { Archive, ArrowRight, CircleAlert, TriangleAlert } from "lucide-react";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { CountBadge } from "@/components/shared/count-badge";
 import { Missing, Money } from "@/components/shared/money";
 import { Pager } from "@/components/shared/pager";
 import { useHoverPrefetch } from "@/components/shared/use-hover-prefetch";
-import { useLocalPaging } from "@/components/shared/use-local-paging";
+import { RefreshButton } from "@/components/shared/refresh-button";
+import { TableBar } from "@/components/shared/table-bar";
+import { RowAction } from "@/components/shared/row-action";
+import { useConfirmedActions } from "@/components/shared/use-confirmed-actions";
+import { useUrlPaging } from "@/components/shared/use-url-paging";
 import { rowNavKeyDown } from "@/components/shared/row-nav";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api/client";
 import { formatAge } from "@/lib/documents";
-import { ruleTitle, topIssue } from "@/lib/invoices";
+import { invoiceLabel, ruleTitle, topIssue } from "@/lib/invoices";
 import { HEAD, ROW } from "@/lib/table";
 import { prefetchInvoice } from "@/lib/query/prefetch";
 import { QUEUE_LIMIT, queueOptions } from "@/lib/query/options";
@@ -29,17 +32,20 @@ export function ReviewView() {
   const { data, error, isPending, refetch } = useQuery(queueOptions(api));
   const total = data?.total ?? 0;
   const hoverPrefetch = useHoverPrefetch();
-  const { pageItems, pagerProps } = useLocalPaging(data?.items ?? []);
+  const { pageItems, pagerProps } = useUrlPaging(data?.items ?? [], "/review");
+  const actions = useConfirmedActions();
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h2 className="text-sm font-semibold">Needs review</h2>
-        {data && total > 0 && <CountBadge count={total} />}
-        <span className="text-xs text-ink-2">Sorted by severity: errors, then warnings, then low confidence; oldest first.</span>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-clip rounded-lg border border-line bg-surface">
+        <TableBar refresh={<RefreshButton label="Refresh review queue" queryKeys={[["invoices", "queue"]]} />}>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <h2 className="text-sm font-semibold text-ink">Needs review</h2>
+            {data && total > 0 && <CountBadge count={total} />}
+            <span>Sorted by severity: errors, then warnings, then low confidence; oldest first.</span>
+          </div>
+        </TableBar>
+        {actions.dialog}
         <div>
           {isPending ? (
             <TableSkeleton rows={10} widths={["w-28", "w-44", "w-20", "w-72", "w-10"]} />
@@ -56,16 +62,16 @@ export function ReviewView() {
             />
           ) : (
             <>
-            <Table className="hidden lg:table" onKeyDown={rowNavKeyDown}>
+            <Table bare className="hidden lg:table" onKeyDown={rowNavKeyDown}>
               <TableHeader className="bg-surface-2 [&_tr]:border-line">
                 <TableRow className="h-9 hover:bg-transparent">
                   <TableHead className={cn("pl-4", head)}>Invoice</TableHead>
                   <TableHead className={head}>Supplier</TableHead>
-                  <TableHead className={head}>Currency</TableHead>
+                  <TableHead className={cn("hidden xl:table-cell", head)}>Currency</TableHead>
                   <TableHead className={cn("text-right", head)}>Total</TableHead>
                   <TableHead className={head}>Top issue</TableHead>
                   <TableHead className={head}>Age</TableHead>
-                  <TableHead className={cn("pr-4 text-right", head)}>Action</TableHead>
+                  <TableHead className={cn("w-[148px] pr-4 text-right max-xl:w-[96px]", head)}>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -88,14 +94,15 @@ export function ReviewView() {
                           {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
                         </Link>
                       </TableCell>
-                      <TableCell className="max-w-56 truncate" title={inv.supplier_name ?? undefined}>
+                      <TableCell className="max-w-32 truncate xl:max-w-56" title={inv.supplier_name ?? undefined}>
                         {inv.supplier_name ?? <Missing />}
                       </TableCell>
-                      <TableCell>{inv.currency ?? <Missing />}</TableCell>
+                      <TableCell className="hidden xl:table-cell">{inv.currency ?? <Missing />}</TableCell>
                       <TableCell className="text-right">
                         <Money value={inv.total} />
+                        {inv.currency && <span className="ml-1 text-xs text-ink-3 xl:hidden">{inv.currency}</span>}
                       </TableCell>
-                      <TableCell className="max-w-md">
+                      <TableCell className="max-w-48 xl:max-w-md">
                         {issue ? (
                           <span className="flex items-center gap-2">
                             {issue.severity === "error" ? (
@@ -119,12 +126,26 @@ export function ReviewView() {
                         {formatAge(inv.created_at)}
                       </TableCell>
                       <TableCell className="pr-4 text-right">
-                        {/* The invoice number is the same link, so this one stays out of the tab order. */}
-                        <Button asChild variant="ghost" size="sm" className="text-link">
-                          <Link href={`/invoices/${inv.id}?queue=1`} tabIndex={-1} aria-hidden="true">
-                            Review
-                          </Link>
-                        </Button>
+                        <div className="-mr-2.5 flex items-center justify-end gap-0.5 max-xl:-mr-2">
+                          {/* The invoice number is the same link, so Review stays out of the tab order. */}
+                          <RowAction
+                            icon={ArrowRight}
+                            label="Review"
+                            name={`Review ${invoiceLabel(inv)}`}
+                            href={`/invoices/${inv.id}?queue=1`}
+                            compact
+                            decorative
+                          />
+                          <RowAction
+                            icon={Archive}
+                            label="Archive"
+                            name={`Archive ${invoiceLabel(inv)}`}
+                            tone="muted"
+                            compact
+                            disabled={actions.isBusy("invoice", inv.id)}
+                            onClick={() => actions.askArchive("invoice", inv.id, invoiceLabel(inv))}
+                          />
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -179,6 +200,17 @@ export function ReviewView() {
                         </span>
                       </span>
                     </Link>
+                    <div className="flex justify-end px-4 pb-2">
+                      <RowAction
+                        icon={Archive}
+                        label="Archive"
+                        name={`Archive ${invoiceLabel(inv)}`}
+                        tone="muted"
+                        variant="outline"
+                        disabled={actions.isBusy("invoice", inv.id)}
+                        onClick={() => actions.askArchive("invoice", inv.id, invoiceLabel(inv))}
+                      />
+                    </div>
                   </li>
                 );
               })}

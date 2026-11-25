@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ExternalLink, RotateCw, Archive } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useHoverPrefetch } from "@/components/shared/use-hover-prefetch";
 import { StatusChip } from "@/components/shared/status-chip";
-import { api, unwrap } from "@/lib/api/client";
+import { RowAction } from "@/components/shared/row-action";
+import { useConfirmedActions } from "@/components/shared/use-confirmed-actions";
+import { api } from "@/lib/api/client";
 import { describeError } from "@/lib/api/problem";
 import type { DocumentOut } from "@/lib/api/types";
 import { formatBytes } from "@/lib/format";
@@ -119,38 +121,82 @@ function TypeTile({ type, className }: { type: string; className?: string }) {
 const meta = (doc: DocumentOut) =>
   `${formatBytes(doc.size_bytes)}${doc.page_count ? ` · ${doc.page_count} ${doc.page_count === 1 ? "page" : "pages"}` : ""}`;
 
+const WAIT_HINT = "Not available while this file is processing";
+
+/**
+ * Open, Reprocess and Archive for one document: the same actions as its detail page. Reprocess
+ * and Archive ask first, and wait while the file is queued or processing, as the API would refuse
+ * them. In the table the labels collapse to icons below xl (the title and accessible name stay).
+ */
+function DocumentActions({
+  doc,
+  actions,
+  variant,
+}: {
+  doc: DocumentOut;
+  actions: ReturnType<typeof useConfirmedActions>;
+  variant: "table" | "list";
+}) {
+  const running = isActive(doc);
+  const table = variant === "table";
+  const kind = table ? "ghost" : "outline";
+  return (
+    <div className={cn("flex items-center", table ? "-mr-2.5 justify-end gap-0.5 max-xl:-mr-2" : "flex-wrap gap-2")}>
+      <RowAction
+        icon={ExternalLink}
+        label="Open"
+        name={`Open ${doc.filename}`}
+        href={`/documents/${doc.id}`}
+        variant={kind}
+        compact={table}
+        decorative={false}
+      />
+      <RowAction
+        icon={RotateCw}
+        label="Reprocess"
+        name={`Reprocess ${doc.filename}`}
+        variant={kind}
+        compact={table}
+        disabled={running || actions.isBusy("reprocess", doc.id)}
+        title={running ? WAIT_HINT : undefined}
+        onClick={() => actions.askReprocess(doc.id, doc.filename)}
+      />
+      <RowAction
+        icon={Archive}
+        label="Archive"
+        name={`Archive ${doc.filename}`}
+        tone="muted"
+        variant={kind}
+        compact={table}
+        disabled={running || actions.isBusy("document", doc.id)}
+        title={running ? WAIT_HINT : undefined}
+        onClick={() => actions.askArchive("document", doc.id, doc.filename)}
+      />
+    </div>
+  );
+}
+
 /**
  * Documents as a table from lg up, and as two-line rows below it: the file on the first line, the
- * status and what it produced on the second, so nothing needs a sideways scroll on a phone.
+ * status and what it produced on the second, then the actions, so nothing needs a sideways scroll
+ * on a phone.
  */
 export function DocumentsTable({ items }: { items: DocumentOut[] }) {
   const queryClient = useQueryClient();
   const hoverPrefetch = useHoverPrefetch();
-
-  async function reprocess(doc: DocumentOut) {
-    try {
-      await unwrap(
-        api.POST("/api/v1/documents/{document_id}/reprocess", { params: { path: { document_id: doc.id } } }),
-      );
-      toast.success("Reprocessing queued");
-      void queryClient.invalidateQueries({ queryKey: ["documents"] });
-      void queryClient.invalidateQueries({ queryKey: ["stats"] });
-    } catch (error) {
-      const { title, message } = describeError(error);
-      toast.error(title, { description: message });
-    }
-  }
+  const actions = useConfirmedActions();
 
   return (
     <>
-      <Table className="hidden table-fixed lg:table">
+      {actions.dialog}
+      <Table bare className="hidden table-fixed lg:table">
         <TableHeader className="bg-surface-2 [&_tr]:border-line">
           <TableRow className="h-9 hover:bg-transparent">
             <TableHead className={cn("w-[32%] pl-4", HEAD)}>File</TableHead>
             <TableHead className={cn("w-[124px]", HEAD)}>Status</TableHead>
             <TableHead className={HEAD}>Stage</TableHead>
-            <TableHead className={cn("w-[116px]", HEAD)}>Uploaded</TableHead>
-            <TableHead className={cn("w-[104px] pr-4 text-right", HEAD)}>Action</TableHead>
+            <TableHead className={cn("hidden w-[116px] xl:table-cell", HEAD)}>Uploaded</TableHead>
+            <TableHead className={cn("w-[276px] pr-4 text-right max-xl:w-[132px]", HEAD)}>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -172,7 +218,10 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
                     >
                       {doc.filename}
                     </Link>
-                    <div className="truncate text-xs text-ink-3">{meta(doc)}</div>
+                    <div className="truncate text-xs text-ink-3" suppressHydrationWarning>
+                      {meta(doc)}
+                      <span className="xl:hidden"> · {formatWhen(doc.created_at)}</span>
+                    </div>
                   </div>
                 </div>
               </TableCell>
@@ -182,23 +231,11 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
               <TableCell>
                 <Stage doc={doc} />
               </TableCell>
-              <TableCell className="text-ink-2" suppressHydrationWarning>
+              <TableCell className="hidden text-ink-2 xl:table-cell" suppressHydrationWarning>
                 {formatWhen(doc.created_at)}
               </TableCell>
               <TableCell className="pr-4 text-right">
-                {doc.status === "failed" && (
-                  <Button variant="ghost" size="sm" className="text-link" onClick={() => void reprocess(doc)}>
-                    Reprocess
-                  </Button>
-                )}
-                {doc.status === "completed" && (
-                  // The file name is the same link, so this one stays out of the tab order.
-                  <Button asChild variant="ghost" size="sm" className="text-link">
-                    <Link href={`/documents/${doc.id}`} tabIndex={-1} aria-hidden="true">
-                      Open
-                    </Link>
-                  </Button>
-                )}
+                <DocumentActions doc={doc} actions={actions} variant="table" />
               </TableCell>
             </TableRow>
           ))}
@@ -229,11 +266,9 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
               <div className="min-w-0 flex-1 basis-40">
                 <Stage doc={doc} wrap />
               </div>
-              {doc.status === "failed" && (
-                <Button variant="outline" size="sm" onClick={() => void reprocess(doc)}>
-                  Reprocess
-                </Button>
-              )}
+            </div>
+            <div className="pl-[42px]">
+              <DocumentActions doc={doc} actions={actions} variant="list" />
             </div>
           </li>
         ))}

@@ -1,11 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { ShallowLink } from "@/components/shared/shallow-link";
 import { Pager } from "@/components/shared/pager";
+import { RefreshButton } from "@/components/shared/refresh-button";
+import { TableBar } from "@/components/shared/table-bar";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { api } from "@/lib/api/client";
 import { FALLBACK_NOTES, invoicesHref, isSearchOnly, parseInvoiceParams } from "@/lib/invoices";
@@ -42,6 +44,18 @@ export function InvoicesView() {
     params.q || params.status || params.supplier || params.currency || params.date_from || params.date_to || params.min_total || params.max_total,
   );
 
+  const count = searchMode ? rows?.length : list.data?.total;
+
+  // Archiving the last row of the last page leaves that page empty: step back to the new last one.
+  useEffect(() => {
+    const data = list.data;
+    if (searchMode || !data || data.items.length > 0 || data.total === 0 || params.page <= 1 || list.isPlaceholderData) {
+      return;
+    }
+    const last = Math.max(1, Math.ceil(data.total / params.size));
+    window.history.replaceState(null, "", invoicesHref({ ...params, page: Math.min(params.page, last) }));
+  }, [list.data, list.isPlaceholderData, params, searchMode]);
+
   return (
     <div className="flex flex-col gap-4">
       <Toolbar>
@@ -67,7 +81,20 @@ export function InvoicesView() {
         )}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="overflow-clip rounded-lg border border-line bg-surface">
+        <TableBar
+          refresh={
+            <RefreshButton
+              label="Refresh invoices"
+              queryKeys={[
+                ["invoices", "list"],
+                ["invoices", "search"],
+              ]}
+            />
+          }
+        >
+          {count === undefined ? null : `${count} ${count === 1 ? "invoice" : "invoices"}`}
+        </TableBar>
         <div aria-busy={active.isFetching} className={cn(active.isPlaceholderData && "opacity-60 transition-opacity")}>
           {active.isPending && active.fetchStatus !== "idle" ? (
             <TableSkeleton rows={10} widths={SKELETON_WIDTHS} />

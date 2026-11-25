@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
-import { statsOptions } from "@/lib/query/options";
+import { documentOptions, invoiceOptions, statsOptions } from "@/lib/query/options";
 import { CountBadge } from "@/components/shared/count-badge";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav";
@@ -32,12 +32,20 @@ export function SidebarNav({ collapsed = false, onNavigate }: { collapsed?: bool
   const pathname = usePathname();
   // An invoice opened from the review queue (?queue=1) belongs to the Review queue item.
   const fromQueue = useSearchParams().get("queue") === "1" && pathname.startsWith("/invoices/");
+  // An archived invoice or document belongs to the Archived item. The page loads the same query,
+  // so this reads the cache; it is only enabled on a detail page.
+  const detail = /^\/(invoices|documents)\/([^/]+)$/.exec(pathname);
+  const invoice = useQuery({ ...invoiceOptions(api, detail?.[2] ?? ""), enabled: detail?.[1] === "invoices" });
+  const document = useQuery({ ...documentOptions(api, detail?.[2] ?? ""), enabled: detail?.[1] === "documents" });
+  const archived = Boolean((detail?.[1] === "invoices" ? invoice.data : document.data)?.archived_at);
   return (
     <nav aria-label="Main" className="flex flex-col gap-0.5">
       {NAV_ITEMS.map((item) => {
-        const active = fromQueue
-          ? item.href === "/review"
-          : pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const active = archived
+          ? item.href === "/archived"
+          : fromQueue
+            ? item.href === "/review"
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
         return (
           <Link

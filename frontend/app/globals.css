@@ -9,6 +9,8 @@
  * count badge only, never a text colour.
  */
 :root {
+  /* Where sticky table headers stick; the page header measures the real value (sticky-offset.tsx). */
+  --table-head-top: 3.5rem;
   --canvas: #f6f7f9;
   --surface: #ffffff;
   --surface-2: #f1f3f6;
