@@ -62,6 +62,55 @@ export const ruleTitle = (id: string): string => RULE_TITLES[id] ?? id;
 
 export type Issue = InvoiceOut["issues"][number];
 
+/** The file name V-09 quotes in its message ("... but X in "other.pdf""), if there is one. */
+export const otherFileName = (message: string): string | null => /\bin "([^"]+)"\s*\.?$/.exec(message)?.[1] ?? null;
+
+/** "line_items[2].amount" -> 2; null for any other field. */
+export function issueLineNo(issue: Issue): number | null {
+  const m = /^line_items\[(\d+)\]/.exec(issue.field ?? "");
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * One line telling the reviewer what they can do about an issue, from what each rule checks
+ * (backend/app/pipeline/validate.py) and what this screen can do: edit a header field, approve,
+ * open the other invoice. Line items are read-only here, so no hint tells anyone to edit them.
+ */
+export function issueHint(issue: Issue): string {
+  const field = issue.field ?? "";
+  const label = (FIELD_LABELS[field] ?? field).toLowerCase();
+  switch (issue.rule_id) {
+    case "V-01":
+      return `Find the ${label} on the source page, select it here and enter it. The error clears once it is saved.`;
+    case "V-02":
+      return issueLineNo(issue) !== null
+        ? "A line value is negative. Line items cannot be edited on this screen; compare with the source."
+        : field === "currency"
+          ? "Select Currency and enter a three-letter code such as USD or EUR. You can still approve."
+          : `Check the sign of the ${label} on the source and correct it.`;
+    case "V-03":
+      return "Compare this line with the source. Line items cannot be edited here; if the document itself is wrong you can still approve.";
+    case "V-04":
+      return "Compare the line items with the printed subtotal on the source. If the subtotal was misread, edit Subtotal. Line items cannot be edited here.";
+    case "V-05":
+      return "Compare subtotal, tax and total with the source and edit the one that was misread.";
+    case "V-06":
+      return "Check the date on the source and edit it if it was misread. If it is correct you can still approve.";
+    case "V-07":
+      return field === "invoice_number"
+        ? "Open the existing copy and compare. If this number was misread, edit Invoice number; otherwise this is a duplicate: delete one of the two documents from its document page."
+        : "Open the existing copy. This is the same file uploaded twice. Editing fields cannot clear this; the error goes when one of the two documents is deleted from its document page.";
+    case "V-08":
+      return field
+        ? `Check the ${label} against the source page and edit it if it is wrong. Saving an edit marks it as checked.`
+        : "This describes how the file was read, so editing does not clear it. Compare every field with the source; you can still approve.";
+    case "V-09":
+      return `The same invoice number exists in another file with a different ${label || "value"}. Open it and check which value is correct; edit this invoice if its value is wrong.`;
+    default:
+      return "";
+  }
+}
+
 export const errorIssues = (inv: Pick<InvoiceOut, "issues">): Issue[] =>
   inv.issues.filter((i) => i.severity === "error");
 

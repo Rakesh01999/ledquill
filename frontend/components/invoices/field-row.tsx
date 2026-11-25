@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type KeyboardEvent } from "react";
-import { Pencil } from "lucide-react";
+import { CircleAlert, Pencil, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Missing } from "@/components/shared/money";
@@ -25,6 +25,8 @@ export type FieldRowProps = {
   edited: boolean;
   pageLabel: string | null;
   issues: Issue[];
+  /** Scrolls to the first issue of this field in the issues banner. */
+  onShowIssue?: () => void;
   onSave: (value: string | null) => Promise<SaveResult>;
   onShowPage: () => void;
   /** True for a moment after "Go to <field>" brings this row into view. */
@@ -51,6 +53,7 @@ export function FieldRow({
   edited,
   pageLabel,
   issues,
+  onShowIssue,
   onSave,
   onShowPage,
   highlighted = false,
@@ -180,6 +183,26 @@ export function FieldRow({
                 aria-hidden="true"
               />
             </button>
+
+            {issues.length > 0 && (
+              <button
+                type="button"
+                onClick={onShowIssue}
+                className={cn(
+                  "inline-flex min-h-7 items-center gap-1 rounded-md px-1.5 text-xs font-medium outline-none hover:bg-surface-2",
+                  hasError ? "text-danger" : "text-warn",
+                )}
+              >
+                {hasError ? (
+                  <CircleAlert className="size-3.5" aria-hidden="true" />
+                ) : (
+                  <TriangleAlert className="size-3.5" aria-hidden="true" />
+                )}
+                {hasError ? "Error" : "Warning"}
+                {issues.length > 1 && <span className="tabular-nums"> ({issues.length})</span>}
+                <span className="sr-only">. Show in the issues list</span>
+              </button>
+            )}
 
             {edited && (
               <span className="rounded-md bg-primary-soft px-1.5 py-0.5 text-xs font-medium text-link">Edited</span>

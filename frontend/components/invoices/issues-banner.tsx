@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CircleAlert, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { FIELD_LABELS, ruleTitle, type Issue } from "@/lib/invoices";
+import { FIELD_LABELS, issueHint, issueLineNo, otherFileName, ruleTitle, type Issue } from "@/lib/invoices";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,6 +14,13 @@ import { cn } from "@/lib/utils";
 function showsExpectedFound(issue: Issue): boolean {
   if (!issue.expected || !issue.actual || issue.rule_id === "V-01") return false;
   return !(issue.message.includes(issue.expected) && issue.message.includes(issue.actual));
+}
+
+/** The field an issue is about, or "Whole invoice"; a line issue names its line. */
+function fieldName(issue: Issue): string {
+  const line = issueLineNo(issue);
+  if (line !== null) return `Line ${line}`;
+  return issue.field ? (FIELD_LABELS[issue.field] ?? issue.field) : "Whole invoice";
 }
 
 /**
@@ -78,26 +85,49 @@ export function IssuesBanner({
       </h2>
       <ul className="mt-2 flex flex-col divide-y divide-line/70">
         {rows.map(({ issue, goTo, related }, i) => (
-          <li key={`${issue.rule_id}-${issue.field ?? ""}-${i}`} className="flex flex-wrap items-start gap-x-3 gap-y-1 py-2">
+          <li
+            key={`${issue.rule_id}-${issue.field ?? ""}-${i}`}
+            id={`issue-${i}`}
+            tabIndex={-1}
+            className="flex scroll-mt-4 flex-wrap items-start gap-x-3 gap-y-1 py-2 outline-none target:bg-surface/50 focus-visible:ring-2 focus-visible:ring-primary"
+          >
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] text-ink">
-                <span className="font-semibold">{ruleTitle(issue.rule_id)}</span>{" "}
+              <p className="flex flex-wrap items-center gap-x-2 text-[13px] text-ink">
+                <span className={cn("font-semibold", issue.severity === "error" ? "text-danger" : "text-warn")}>
+                  {issue.severity === "error" ? "Error" : "Warning"}
+                </span>
+                <span className="font-semibold">{ruleTitle(issue.rule_id)}</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span tabIndex={0} className="cursor-help rounded-sm text-ink-2 underline decoration-dotted underline-offset-2">
-                      {issue.severity === "error" ? "Error" : "Warning"}
-                      <span className="sr-only">, rule {issue.rule_id}</span>
+                    <span tabIndex={0} className="cursor-help rounded-sm font-mono text-xs text-ink-2 underline decoration-dotted underline-offset-2">
+                      {issue.rule_id}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>Rule {issue.rule_id}</TooltipContent>
                 </Tooltip>
+                <span className="rounded-sm border border-line bg-surface px-1.5 text-xs text-ink-2">
+                  {fieldName(issue)}
+                </span>
               </p>
               <p className="text-[13px] text-ink">{issue.message}</p>
-              {showsExpectedFound(issue) && (
-                <p className="text-xs text-ink-2">
-                  Expected {issue.expected}; found {issue.actual}.
+              {issue.rule_id === "V-09" && issue.expected && issue.actual ? (
+                <p className="mt-1 grid max-w-xl grid-cols-[auto_minmax(0,1fr)] gap-x-3 text-xs text-ink-2">
+                  <span>This invoice:</span>
+                  <span className="font-medium text-ink">{issue.actual}</span>
+                  <span>In {otherFileName(issue.message) ?? "the other file"}:</span>
+                  <span className="font-medium text-ink">{issue.expected}</span>
                 </p>
+              ) : (
+                showsExpectedFound(issue) && (
+                  <p className="text-xs text-ink-2">
+                    Expected {issue.expected}; found {issue.actual}.
+                  </p>
+                )
               )}
+              <p className="mt-1 text-xs text-ink-2">
+                <span className="font-medium text-ink">What to do: </span>
+                {issueHint(issue)}
+              </p>
             </div>
             {(goTo || related) && (
               <div className="flex flex-none flex-wrap items-center gap-1">
