@@ -16,6 +16,7 @@ from app.db.models import Document, Invoice, ValidationIssue
 from app.db.session import get_session
 from app.pipeline.embed import Embedder, get_embedder
 from app.schemas.invoices import InvoiceCorrection, InvoiceList, InvoiceOut
+from app.services.archive import archive_invoice, restore_invoice
 from app.services.invoices import (
     LOAD,
     InvoiceFilters,
@@ -64,14 +65,17 @@ def _severity_rank():
 def list_invoices(
     document_id: uuid.UUID | None = None,
     sort: Literal["newest", "severity"] = "newest",
+    archived: bool = False,
     filters: InvoiceFilters = Depends(invoice_filters),
     page: PageParams = Depends(page_params),
     session: Session = Depends(get_session),
 ):
     """Newest first; the invoices of one document come in document order. `sort=severity` is the
     review-queue order: open errors, then other warnings, then low-confidence only (V-08), then
-    invoices with no issue; oldest first within each group."""
+    invoices with no issue; oldest first within each group. Archived invoices are left out unless
+    `archived=true`, which lists only them."""
     where = invoice_conditions(filters)
+    where.append(Invoice.archived_at.is_not(None) if archived else Invoice.archived_at.is_(None))
     order = (Invoice.created_at.desc(), Invoice.id)
     if sort == "severity":
         order = (_severity_rank(), Invoice.created_at, Invoice.id)
@@ -115,3 +119,17 @@ def patch_invoice(
 @router.post("/{invoice_id}/approve", response_model=InvoiceOut)
 def approve(invoice_id: uuid.UUID, session: Session = Depends(get_session)):
     return InvoiceOut.model_validate(approve_invoice(session, invoice_id))
+
+
+@router.post("/{invoice_id}/archive", response_model=InvoiceOut)
+def archive(invoice_id: uuid.UUID, session: Session = Depends(get_session)):
+    """Hide the invoice. Nothing is deleted. 409 while its document is queued or processing."""
+    archive_invoice(session, invoice_id)
+    return InvoiceOut.model_validate(load_invoice(session, invoice_id))
+
+
+@router.post("/{invoice_id}/restore", response_model=InvoiceOut)
+def restore(invoice_id: uuid.UUID, session: Session = Depends(get_session)):
+    """Bring the invoice back. 409 while its document is archived (restore the document)."""
+    restore_invoice(session, invoice_id)
+    return InvoiceOut.model_validate(load_invoice(session, invoice_id))

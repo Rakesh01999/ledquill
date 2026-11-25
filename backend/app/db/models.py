@@ -55,6 +55,7 @@ class Document(Base):
     __table_args__ = (
         Index("ix_documents_sha256", "sha256"),
         Index("ix_documents_status_created_at", "status", text("created_at DESC")),
+        Index("ix_documents_archived_at", "archived_at"),
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
@@ -68,6 +69,9 @@ class Document(Base):
     status: Mapped[str] = mapped_column(Text, nullable=False, server_default="queued")
     progress: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     error: Mapped[str | None] = mapped_column(Text)
+    # Set when archived (hidden, never deleted); the same value is stamped on the invoices that
+    # were archived with it, so a restore brings back exactly those.
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = _created_at()
     updated_at: Mapped[datetime] = _updated_at()
 
@@ -125,6 +129,7 @@ class Invoice(Base):
         Index("ix_invoices_invoice_date", "invoice_date"),
         Index("ix_invoices_total", "total"),
         Index("ix_invoices_status", "status"),
+        Index("ix_invoices_archived_at", "archived_at"),
         Index("ix_invoices_search_tsv", "search_tsv", postgresql_using="gin"),
         Index(
             "ix_invoices_supplier_name_trgm",
@@ -164,6 +169,7 @@ class Invoice(Base):
         TSVECTOR, Computed("to_tsvector('english', coalesce(search_text,''))", persisted=True)
     )
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIMS))
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = _created_at()
     updated_at: Mapped[datetime] = _updated_at()
 

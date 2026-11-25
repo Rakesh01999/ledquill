@@ -14,24 +14,35 @@ DOCUMENT_STATUSES = ("queued", "processing", "completed", "failed")
 INVOICE_STATUSES = ("needs_review", "ready", "approved")
 
 
-def _counts(session: Session, column, statuses: tuple[str, ...]) -> dict[str, int]:
-    found = dict(session.execute(select(column, func.count()).group_by(column)).all())
+def _counts(session: Session, column, statuses: tuple[str, ...], live) -> dict[str, int]:
+    """Counts per status over live (not archived) rows only."""
+    found = dict(session.execute(select(column, func.count()).where(live).group_by(column)).all())
     return {s: found.get(s, 0) for s in statuses}
 
 
 @router.get("/stats", response_model=Stats)
 def get_stats(session: Session = Depends(get_session)):
-    documents = _counts(session, Document.status, DOCUMENT_STATUSES)
-    invoices = _counts(session, Invoice.status, INVOICE_STATUSES)
+    documents = _counts(session, Document.status, DOCUMENT_STATUSES, Document.archived_at.is_(None))
+    invoices = _counts(session, Invoice.status, INVOICE_STATUSES, Invoice.archived_at.is_(None))
     finished = documents["completed"] + documents["failed"]
     avg_seconds = session.scalar(
-        select(func.avg(func.extract("epoch", Job.finished_at - Job.started_at))).where(
-            Job.status == "completed", Job.started_at.is_not(None), Job.finished_at.is_not(None)
+        select(func.avg(func.extract("epoch", Job.finished_at - Job.started_at)))
+        .join(Document, Document.id == Job.document_id)
+        .where(
+            Job.status == "completed",
+            Job.started_at.is_not(None),
+            Job.finished_at.is_not(None),
+            Document.archived_at.is_(None),
         )
     )
     stage_ms = session.execute(
         select(ProcessingEvent.stage, func.avg(ProcessingEvent.duration_ms))
-        .where(ProcessingEvent.status == "succeeded", ProcessingEvent.duration_ms.is_not(None))
+        .join(Document, Document.id == ProcessingEvent.document_id)
+        .where(
+            ProcessingEvent.status == "succeeded",
+            ProcessingEvent.duration_ms.is_not(None),
+            Document.archived_at.is_(None),
+        )
         .group_by(ProcessingEvent.stage)
     )
     return Stats(

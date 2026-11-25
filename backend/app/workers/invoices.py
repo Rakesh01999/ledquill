@@ -141,7 +141,7 @@ def _candidates(session: Session, invoice: Invoice, document: Document) -> list[
     rows = session.execute(
         select(Invoice, Document)
         .join(Document, Invoice.document_id == Document.id)
-        .where(Invoice.id != invoice.id, or_(*conditions))
+        .where(Invoice.id != invoice.id, Invoice.archived_at.is_(None), or_(*conditions))
         .limit(_CANDIDATE_LIMIT)
     ).all()
     return [

@@ -39,6 +39,7 @@ from app.schemas.documents import (
     ReprocessResponse,
     UploadResponse,
 )
+from app.services.archive import archive_document, restore_document
 from app.services.documents import (
     delete_document,
     document_counts,
@@ -197,14 +198,16 @@ def list_documents(
     currency: str | None = Query(None, pattern=r"^[A-Za-z]{3}$"),
     date_from: date | None = None,
     date_to: date | None = None,
+    archived: bool = False,
     page: PageParams = Depends(page_params),
     session: Session = Depends(get_session),
 ):
     """Newest first. supplier, currency and the date range match documents holding at least one
-    invoice that satisfies all of them."""
+    invoice that satisfies all of them. Archived documents are left out unless `archived=true`,
+    which lists only them."""
     if date_from and date_to and date_from > date_to:
         raise AppError(422, "date_from must not be after date_to.")
-    where = []
+    where = [Document.archived_at.is_not(None) if archived else Document.archived_at.is_(None)]
     if status:
         where.append(Document.status == status)
     if file_type:
@@ -213,7 +216,8 @@ def list_documents(
         InvoiceFilters(supplier=supplier, currency=currency, date_from=date_from, date_to=date_to)
     )
     if by_invoice:
-        where.append(exists().where(Invoice.document_id == Document.id, *by_invoice))
+        live = [] if archived else [Invoice.archived_at.is_(None)]
+        where.append(exists().where(Invoice.document_id == Document.id, *live, *by_invoice))
     total = session.scalar(select(func.count()).select_from(Document).where(*where)) or 0
     docs = session.scalars(
         select(Document)
@@ -233,14 +237,32 @@ def list_documents(
     )
 
 
+def _document_response(session: Session, doc: Document) -> DocumentOut:
+    session.refresh(doc)
+    return document_out(
+        doc, latest_jobs(session, [doc.id]).get(doc.id), document_counts(session, [doc.id])[doc.id]
+    )
+
+
 @router.get("/{document_id}", response_model=DocumentOut)
 def get_document(document_id: uuid.UUID, session: Session = Depends(get_session)):
     doc = session.get(Document, document_id)
     if doc is None:
         raise AppError(404, "Document not found.")
-    return document_out(
-        doc, latest_jobs(session, [doc.id]).get(doc.id), document_counts(session, [doc.id])[doc.id]
-    )
+    return _document_response(session, doc)
+
+
+@router.post("/{document_id}/archive", response_model=DocumentOut)
+def archive(document_id: uuid.UUID, session: Session = Depends(get_session)):
+    """Hide the document and its invoices. Nothing is deleted. 409 while it is queued or
+    processing. Archiving an archived document changes nothing."""
+    return _document_response(session, archive_document(session, document_id))
+
+
+@router.post("/{document_id}/restore", response_model=DocumentOut)
+def restore(document_id: uuid.UUID, session: Session = Depends(get_session)):
+    """Bring back the document and the invoices that were archived with it."""
+    return _document_response(session, restore_document(session, document_id))
 
 
 @router.get("/{document_id}/events", response_model=EventList)

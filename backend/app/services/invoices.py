@@ -109,6 +109,11 @@ def load_invoice(session: Session, invoice_id: uuid.UUID, *, lock: bool = False)
     return invoice
 
 
+def _refuse_if_archived(invoice: Invoice) -> None:
+    if invoice.archived_at is not None:
+        raise AppError(409, "This invoice is archived. Restore it first.")
+
+
 # --- correction ---------------------------------------------------------------------------
 
 
@@ -202,6 +207,7 @@ def correct_invoice(
     confidence 1.0, then re-run V-01..V-09 and re-derive the status. An approved invoice that
     changes goes back to review. Nothing is written when no value actually changes."""
     invoice = load_invoice(session, invoice_id, lock=True)
+    _refuse_if_archived(invoice)
     old_number = invoice.invoice_number
     changed: list[tuple[str, str | None, str | None]] = []
 
@@ -276,6 +282,7 @@ def approve_invoice(session: Session, invoice_id: uuid.UUID) -> Invoice:
     """Approve unless an error-severity issue is open. Warnings do not block: overriding one is
     the reviewer's call. Approving an approved invoice is a no-op."""
     invoice = load_invoice(session, invoice_id, lock=True)
+    _refuse_if_archived(invoice)
     if invoice.status == "approved":
         return invoice
     errors = sorted({i.rule_id for i in invoice.issues if i.severity == "error"})

@@ -36,7 +36,7 @@ def keyword_ranking(session: Session, q: str, limit: int) -> list[Hit]:
     rank = func.ts_rank(Invoice.search_tsv, query)
     rows = session.execute(
         select(Invoice.id, rank)
-        .where(Invoice.search_tsv.op("@@")(query))
+        .where(Invoice.search_tsv.op("@@")(query), Invoice.archived_at.is_(None))
         .order_by(rank.desc(), Invoice.id)
         .limit(limit)
     ).all()
@@ -48,7 +48,7 @@ def semantic_ranking(session: Session, vector: list[float], limit: int) -> list[
     distance = Invoice.embedding.cosine_distance(vector)
     rows = session.execute(
         select(Invoice.id, distance)
-        .where(Invoice.embedding.is_not(None))
+        .where(Invoice.embedding.is_not(None), Invoice.archived_at.is_(None))
         .order_by(distance, Invoice.id)
         .limit(limit)
     ).all()

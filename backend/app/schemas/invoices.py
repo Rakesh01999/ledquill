@@ -70,6 +70,7 @@ class InvoiceOut(BaseModel):
     line_items: list[LineItemOut]
     issues: list[IssueOut]
     corrections: list[CorrectionOut]
+    archived_at: datetime | None  # set while archived (hidden from lists, never deleted)
     created_at: datetime
     updated_at: datetime
 

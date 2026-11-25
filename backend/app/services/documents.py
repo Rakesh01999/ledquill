@@ -39,11 +39,14 @@ def document_counts(
 ) -> dict[uuid.UUID, tuple[int, int]]:
     """(invoice_count, issue_count) per document; documents without invoices are absent."""
     ids = list(document_ids)
+    # An active document counts its live invoices; an archived one counts all of them.
+    shown = Invoice.archived_at.is_(None) | Document.archived_at.is_not(None)
     invoices = {
         doc_id: n
         for doc_id, n in session.execute(
             select(Invoice.document_id, func.count())
-            .where(Invoice.document_id.in_(ids))
+            .join(Document, Document.id == Invoice.document_id)
+            .where(Invoice.document_id.in_(ids), shown)
             .group_by(Invoice.document_id)
         )
     }
@@ -52,7 +55,8 @@ def document_counts(
         for doc_id, n in session.execute(
             select(Invoice.document_id, func.count(ValidationIssue.id))
             .join(ValidationIssue, ValidationIssue.invoice_id == Invoice.id)
-            .where(Invoice.document_id.in_(ids))
+            .join(Document, Document.id == Invoice.document_id)
+            .where(Invoice.document_id.in_(ids), shown)
             .group_by(Invoice.document_id)
         )
     }
@@ -74,6 +78,7 @@ def document_out(doc: Document, job: Job | None, counts: tuple[int, int] = (0, 0
         current_stage=job.current_stage if job else None,
         invoice_count=counts[0],
         issue_count=counts[1],
+        archived_at=doc.archived_at,
         created_at=doc.created_at,
         updated_at=doc.updated_at,
     )
@@ -115,6 +120,17 @@ def reprocess_document(session: Session, document_id: uuid.UUID, settings: Setti
     stages is idempotent, so no duplicate invoices appear."""
     doc = _lock_document(session, document_id)
     _refuse_if_active(doc, settings, "reprocess")
+    archived = session.scalar(
+        select(func.count(Invoice.id)).where(
+            Invoice.document_id == doc.id, Invoice.archived_at.is_not(None)
+        )
+    )
+    if doc.archived_at is not None or archived:
+        raise AppError(
+            409,
+            "Cannot reprocess: reprocessing rebuilds the invoices and would permanently remove "
+            "archived ones. Restore the document and its archived invoices first.",
+        )
 
     corrections = session.scalar(
         select(func.count(Correction.id))

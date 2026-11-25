@@ -38,6 +38,7 @@ class DocumentOut(BaseModel):
     current_stage: str | None
     invoice_count: int
     issue_count: int  # validation issues across the document's invoices
+    archived_at: datetime | None  # set while archived (hidden from lists, never deleted)
     created_at: datetime
     updated_at: datetime
 
