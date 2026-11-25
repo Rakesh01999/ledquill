@@ -48,7 +48,8 @@ export function ReviewView() {
               }
             />
           ) : (
-            <Table className="min-w-[860px]" onKeyDown={rowNavKeyDown}>
+            <>
+            <Table className="hidden min-w-[860px] lg:table" onKeyDown={rowNavKeyDown}>
               <TableHeader className="sticky top-0 z-10 bg-surface-2 [&_tr]:border-line">
                 <TableRow className="h-9 hover:bg-transparent">
                   <TableHead className={cn("pl-4", head)}>Invoice</TableHead>
@@ -76,7 +77,9 @@ export function ReviewView() {
                           {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
                         </Link>
                       </TableCell>
-                      <TableCell className="max-w-56 truncate">{inv.supplier_name ?? <Missing />}</TableCell>
+                      <TableCell className="max-w-56 truncate" title={inv.supplier_name ?? undefined}>
+                        {inv.supplier_name ?? <Missing />}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Money value={inv.total} />
                       </TableCell>
@@ -109,6 +112,59 @@ export function ReviewView() {
                 })}
               </TableBody>
             </Table>
+
+            <ul className="divide-y divide-line lg:hidden">
+              {data.items.map((inv) => {
+                const issue = topIssue(inv);
+                return (
+                  <li key={inv.id}>
+                    <Link
+                      href={`/invoices/${inv.id}?queue=1`}
+                      onFocus={() => prefetchInvoice(queryClient, inv.id)}
+                      className="flex flex-col gap-1.5 px-4 py-3 hover:bg-surface-2/60"
+                    >
+                      <span className="flex items-baseline gap-3">
+                        <span className="flex-none font-mono text-[13px] font-medium text-link">
+                          {inv.invoice_number ?? <Missing />}
+                          {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-ink" title={inv.supplier_name ?? undefined}>
+                          {inv.supplier_name ?? <Missing />}
+                        </span>
+                        <span className="flex-none text-right text-ink">
+                          <Money value={inv.total} />
+                          {inv.currency && <span className="ml-1 text-xs text-ink-3">{inv.currency}</span>}
+                        </span>
+                      </span>
+                      <span className="flex items-start gap-2 text-[13px]">
+                        {issue ? (
+                          <>
+                            {issue.severity === "error" ? (
+                              <CircleAlert className="mt-0.5 size-4 flex-none text-danger" aria-label="Error" />
+                            ) : (
+                              <TriangleAlert className="mt-0.5 size-4 flex-none text-warn" aria-label="Warning" />
+                            )}
+                            <span className="line-clamp-2 min-w-0 flex-1">
+                              <span className="font-medium text-ink">{ruleTitle(issue.rule_id)}.</span>{" "}
+                              <span className="text-ink-2">{issue.message}</span>
+                              {inv.issues.length > 1 && (
+                                <span className="ml-1 text-xs text-ink-3">+{inv.issues.length - 1}</span>
+                              )}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="flex-1 text-ink-3">None</span>
+                        )}
+                        <span className="flex-none text-xs text-ink-3 tabular-nums" suppressHydrationWarning>
+                          {formatAge(inv.created_at)}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            </>
           )}
         </div>
         {data && data.total > QUEUE_LIMIT && (

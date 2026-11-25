@@ -9,7 +9,7 @@ import { Pager } from "@/components/shared/pager";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { api } from "@/lib/api/client";
 import { FALLBACK_NOTES, invoicesHref, isSearchOnly, parseInvoiceParams } from "@/lib/invoices";
-import { PAGE_SIZE, SEARCH_LIMIT, invoicesOptions, searchOptions } from "@/lib/query/options";
+import { PAGE_SIZE, invoicesOptions, searchOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
 import { InvoiceFilters } from "./invoice-filters";
 import { InvoicesTable, type InvoiceRow } from "./invoices-table";
@@ -34,6 +34,9 @@ export function InvoicesView() {
     ? search.data?.items.map((h) => ({ invoice: h.invoice, matchedBy: h.matched_by }))
     : list.data?.items.map((invoice) => ({ invoice }));
   const fallback = searchMode ? search.data?.fallback_reason : null;
+  // Counted from the rows the API returned: how many matched the text itself, not only the meaning.
+  const shown = search.data?.items.length ?? 0;
+  const exact = search.data?.items.filter((h) => h.matched_by.includes("keyword")).length ?? 0;
   const filtered = Boolean(
     params.q || params.status || params.supplier || params.currency || params.date_from || params.date_to || params.min_total || params.max_total,
   );
@@ -45,13 +48,14 @@ export function InvoicesView() {
       <div className="flex min-h-5 flex-col gap-1 text-[13px] text-ink-2" role="status">
         {searchMode && search.data && (
           <>
-            <p>
-              {search.data.total} {search.data.total === 1 ? "result" : "results"} for “{params.q}”. Ranked results
-              ({search.data.mode_used} search), no pagination. Showing up to {SEARCH_LIMIT}.
-            </p>
-            {search.data.items.some((h) => !h.matched_by.includes("keyword")) && (
-              <p>Rows matched by meaning only are the closest invoices to your words, not exact matches.</p>
+            {shown > 0 && (
+              <p>
+                {exact === shown
+                  ? `${shown} ${shown === 1 ? "match" : "matches"} for “${params.q}”.`
+                  : `${shown} closest ${shown === 1 ? "match" : "matches"} for “${params.q}” (${exact} exact).`}
+              </p>
             )}
+            {exact < shown && <p>Rows marked “Similar meaning” are close in meaning to your words, not exact text matches.</p>}
             {fallback && <p className="text-ink">{FALLBACK_NOTES[fallback] ?? "Semantic search is not available."}</p>}
           </>
         )}

@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { DebouncedInput } from "@/components/shared/debounced-input";
-import { ShallowLink } from "@/components/shared/shallow-link";
+import { SegmentedFilter } from "@/components/shared/segmented-filter";
 import { invoicesHref, type InvoiceListParams } from "@/lib/invoices";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -46,29 +46,19 @@ export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
             className={cn(field, "w-full pl-8")}
           />
         </div>
-        <nav aria-label="Filter by status" className="flex max-w-full overflow-x-auto rounded-md border border-line bg-surface text-xs">
-          {STATUS_SEGMENTS.map((s, i) => {
+        <SegmentedFilter
+          label="Filter by status"
+          segments={STATUS_SEGMENTS.map((s) => {
             const status = s.key === "all" ? undefined : s.key;
-            const active = params.status === status;
-            const count = s.key === "all" ? stats?.invoices.total : counts?.[s.key as string];
-            return (
-              <ShallowLink
-                data-focus-inset
-                key={s.key}
-                href={invoicesHref({ ...params, status, page: 1 })}
-                aria-current={active ? "true" : undefined}
-                className={cn(
-                  "px-2.5 py-1.5 whitespace-nowrap text-ink-2 outline-none hover:bg-surface-2",
-                  i > 0 && "border-l border-line",
-                  active && "bg-surface-2 font-semibold text-ink",
-                )}
-              >
-                {s.label}
-                {count !== undefined && <span className="ml-1 tabular-nums">{count}</span>}
-              </ShallowLink>
-            );
+            return {
+              key: s.key ?? "all",
+              label: s.label,
+              count: s.key === "all" ? stats?.invoices.total : counts?.[s.key as string],
+              href: invoicesHref({ ...params, status, page: 1 }),
+              active: params.status === status,
+            };
           })}
-        </nav>
+        />
       </div>
 
       <div className="flex flex-wrap items-end gap-x-3 gap-y-2">

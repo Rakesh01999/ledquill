@@ -60,7 +60,7 @@ export function DocumentsView() {
           )}
         >
           {isPending ? (
-            <TableSkeleton rows={8} rowClass={DOC_ROW} widths={["w-56", "w-24", "w-40", "w-10", "w-10", "w-20"]} />
+            <TableSkeleton rows={8} rowClass={DOC_ROW} widths={["w-56", "w-24", "w-40", "w-20"]} />
           ) : error && !data ? (
             <ErrorState error={error} onRetry={() => void query.refetch()} />
           ) : data && data.items.length === 0 ? (

@@ -12,7 +12,7 @@ import { prefetchInvoice } from "@/lib/query/prefetch";
 import { cn } from "@/lib/utils";
 
 const head = "text-xs font-medium text-ink-2";
-const MATCH_LABEL: Record<string, string> = { keyword: "Keyword", semantic: "Meaning" };
+const MATCH_LABEL: Record<string, string> = { keyword: "Exact text", semantic: "Similar meaning" };
 
 export type InvoiceRow = { invoice: InvoiceOut; matchedBy?: string[] };
 
@@ -48,7 +48,9 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
                 {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
               </Link>
             </TableCell>
-            <TableCell className="max-w-56 truncate">{inv.supplier_name ?? <Missing />}</TableCell>
+            <TableCell className="max-w-56 truncate" title={inv.supplier_name ?? undefined}>
+              {inv.supplier_name ?? <Missing />}
+            </TableCell>
             <TableCell className="tabular-nums">{formatDate(inv.invoice_date) ?? <Missing />}</TableCell>
             <TableCell>{inv.currency ?? <Missing />}</TableCell>
             <TableCell className="text-right">
@@ -68,7 +70,7 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
             </TableCell>
             {showMatch && (
               <TableCell className="pr-4 text-ink-2">
-                {matchedBy?.map((m) => MATCH_LABEL[m] ?? m).join(" and ") || "—"}
+                {matchedBy?.map((m) => MATCH_LABEL[m] ?? m).join(" + ") || "—"}
               </TableCell>
             )}
           </TableRow>

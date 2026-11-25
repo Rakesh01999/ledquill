@@ -49,7 +49,9 @@ export function InvoicesFound({ documentId, status }: { documentId: string; stat
                 {inv.invoice_number ?? <Missing />}
               </Link>
             </TableCell>
-            <TableCell className="max-w-56 truncate">{inv.supplier_name ?? <Missing />}</TableCell>
+            <TableCell className="max-w-56 truncate" title={inv.supplier_name ?? undefined}>
+              {inv.supplier_name ?? <Missing />}
+            </TableCell>
             <TableCell className="tabular-nums">{formatDate(inv.invoice_date) ?? <Missing />}</TableCell>
             <TableCell>{inv.currency ?? <Missing />}</TableCell>
             <TableCell className="text-right">

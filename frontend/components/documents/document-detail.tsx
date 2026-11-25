@@ -102,7 +102,7 @@ export function DocumentDetail({ id }: { id: string }) {
 
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-5">
-      <Link href="/documents" className="inline-flex w-fit items-center gap-1 text-[13px] text-link hover:underline">
+      <Link href="/documents" className="inline-flex min-h-8 w-fit items-center gap-1 text-[13px] text-link hover:underline">
         <ArrowLeft className="size-3.5" aria-hidden="true" /> Documents
       </Link>
 
@@ -148,7 +148,7 @@ export function DocumentDetail({ id }: { id: string }) {
             </p>
           )}
         </div>
-        <div className="flex flex-none items-center gap-2">
+        <div className="flex flex-none basis-full items-center gap-2 sm:basis-auto">
           <Button
             variant="outline"
             size="sm"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -16,7 +16,16 @@ export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  // On the invoices page the box shows the search that is in the URL, so it never disagrees with it.
+  const urlQuery = useSearchParams().get("q") ?? "";
+  const shownUrlQuery = pathname === "/invoices" ? urlQuery : "";
+  const [query, setQuery] = useState(shownUrlQuery);
+  const [seenUrlQuery, setSeenUrlQuery] = useState(shownUrlQuery);
+  if (shownUrlQuery !== seenUrlQuery) {
+    // Adjust state while rendering, the React-recommended way to follow a changed value.
+    setSeenUrlQuery(shownUrlQuery);
+    setQuery(shownUrlQuery);
+  }
   const searchInput = useRef<HTMLInputElement>(null);
   // "/" jumps to the search field from anywhere that is not a text field.
   useShortcuts(useMemo(() => ({ "/": () => searchInput.current?.focus() }), []));
@@ -46,6 +55,7 @@ export function Topbar() {
           <SidebarNav onNavigate={() => setDrawerOpen(false)} />
           <div className="mt-auto border-t border-line px-2.5 pt-3">
             <ApiStatus />
+            <p className="mt-3 text-[11px] text-ink-3">© 2026 LedQuill</p>
           </div>
         </SheetContent>
       </Sheet>

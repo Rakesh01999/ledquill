@@ -193,7 +193,7 @@ export function InvoiceDetail({ id }: { id: string }) {
       <InvoiceShortcuts handlers={shortcuts} />
       <Link
         href={inQueue ? "/review" : "/invoices"}
-        className="inline-flex w-fit items-center gap-1 text-[13px] text-link hover:underline"
+        className="inline-flex min-h-8 w-fit items-center gap-1 text-[13px] text-link hover:underline"
       >
         <ArrowLeft className="size-3.5" aria-hidden="true" /> {inQueue ? "Review queue" : "Invoices"}
       </Link>

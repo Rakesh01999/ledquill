@@ -204,7 +204,7 @@ export function FieldRow({
                   <button
                     type="button"
                     onClick={onShowPage}
-                    className="rounded-md border border-line px-1.5 py-0.5 text-xs text-ink-2 outline-none hover:bg-surface-2"
+                    className="inline-flex min-h-7 items-center rounded-md border border-line px-2 text-xs text-ink-2 outline-none hover:bg-surface-2"
                   >
                     {pageLabel}
                     <span className="sr-only">. Show this page in the source panel</span>

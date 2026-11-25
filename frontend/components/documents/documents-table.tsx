@@ -15,23 +15,28 @@ import { prefetchDocument } from "@/lib/query/prefetch";
 import { openUploadPicker } from "./upload-section";
 import { cn } from "@/lib/utils";
 
-function Stage({ doc }: { doc: DocumentOut }) {
+/** What the document is doing, or what it produced; a failed one also offers a new upload. */
+function Stage({ doc, wrap = false }: { doc: DocumentOut; wrap?: boolean }) {
   const text = stageText(doc);
   const running = isActive(doc);
+  const failed = doc.status === "failed";
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <span
-        title={doc.status === "failed" ? text : undefined}
-        className={cn("truncate", doc.status === "failed" ? "text-danger" : "text-ink-2")}
+        title={text}
+        className={cn(
+          wrap ? "break-words" : "truncate",
+          failed ? "text-danger" : doc.status === "completed" && doc.issue_count > 0 ? "text-warn" : "text-ink-2",
+        )}
       >
         {text}
         {doc.status === "processing" && <span className="ml-1 text-ink-3 tabular-nums">{doc.progress}%</span>}
       </span>
-      {doc.status === "failed" && (
+      {failed && (
         <button
           type="button"
           onClick={openUploadPicker}
-          className="w-fit cursor-pointer rounded-sm text-[13px] font-medium text-link hover:underline"
+          className="-my-1 w-fit cursor-pointer rounded-sm py-1 text-[13px] font-medium text-link hover:underline"
         >
           Upload a new copy
         </button>
@@ -52,6 +57,27 @@ function Stage({ doc }: { doc: DocumentOut }) {
   );
 }
 
+function TypeTile({ type, className }: { type: string; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex h-[34px] w-[30px] flex-none items-end justify-center rounded-sm border border-line-strong bg-surface pb-1 font-mono text-[8.5px] font-semibold text-ink-2",
+        className,
+      )}
+    >
+      {typeTile(type)}
+    </span>
+  );
+}
+
+const meta = (doc: DocumentOut) =>
+  `${formatBytes(doc.size_bytes)}${doc.page_count ? ` · ${doc.page_count} ${doc.page_count === 1 ? "page" : "pages"}` : ""}`;
+
+/**
+ * Documents as a table from lg up, and as two-line rows below it: the file on the first line, the
+ * status and what it produced on the second, so nothing needs a sideways scroll on a phone.
+ */
 export function DocumentsTable({ items }: { items: DocumentOut[] }) {
   const queryClient = useQueryClient();
 
@@ -70,85 +96,101 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
   }
 
   return (
-    <Table className="min-w-[860px] table-fixed">
-      <TableHeader className="sticky top-0 z-10 bg-surface-2 [&_tr]:border-line">
-        <TableRow className="h-9 hover:bg-transparent">
-          <TableHead className="w-[30%] pl-4 text-xs font-medium text-ink-2">File</TableHead>
-          <TableHead className="w-[124px] text-xs font-medium text-ink-2">Status</TableHead>
-          <TableHead className="w-[26%] text-xs font-medium text-ink-2">Stage</TableHead>
-          <TableHead className="w-20 text-right text-xs font-medium text-ink-2">Invoices</TableHead>
-          <TableHead className="w-[72px] text-right text-xs font-medium text-ink-2">Issues</TableHead>
-          <TableHead className="w-[116px] text-right text-xs font-medium text-ink-2">Uploaded</TableHead>
-          <TableHead className="w-[112px] pr-4 text-right text-xs font-medium text-ink-2">
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((doc) => (
-          <TableRow key={doc.id} className={cn(DOC_ROW, "border-line hover:bg-surface-2/60")}>
-            <TableCell className="pl-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className="flex h-[34px] w-[30px] flex-none items-end justify-center rounded-sm border border-line-strong bg-surface pb-1 font-mono text-[8.5px] font-semibold text-ink-2"
-                >
-                  {typeTile(doc.file_type)}
-                </span>
-                <div className="min-w-0">
-                  <Link
-                    href={`/documents/${doc.id}`}
-                    onMouseEnter={() => prefetchDocument(queryClient, doc.id)}
-                    onFocus={() => prefetchDocument(queryClient, doc.id)}
-                    className="block truncate font-medium text-ink hover:text-link hover:underline"
-                  >
-                    {doc.filename}
-                  </Link>
-                  <div className="truncate text-xs text-ink-3">
-                    {formatBytes(doc.size_bytes)}
-                    {doc.page_count ? ` · ${doc.page_count} ${doc.page_count === 1 ? "page" : "pages"}` : ""}
+    <>
+      <Table className="hidden min-w-[800px] table-fixed lg:table">
+        <TableHeader className="sticky top-0 z-10 bg-surface-2 [&_tr]:border-line">
+          <TableRow className="h-9 hover:bg-transparent">
+            <TableHead className="w-[38%] pl-4 text-xs font-medium text-ink-2">File</TableHead>
+            <TableHead className="w-[124px] text-xs font-medium text-ink-2">Status</TableHead>
+            <TableHead className="text-xs font-medium text-ink-2">Stage</TableHead>
+            <TableHead className="w-[116px] text-right text-xs font-medium text-ink-2">Uploaded</TableHead>
+            <TableHead className="w-[112px] pr-4 text-right text-xs font-medium text-ink-2">
+              <span className="sr-only">Actions</span>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((doc) => (
+            <TableRow key={doc.id} className={cn(DOC_ROW, "border-line hover:bg-surface-2/60")}>
+              <TableCell className="pl-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <TypeTile type={doc.file_type} />
+                  <div className="min-w-0">
+                    <Link
+                      href={`/documents/${doc.id}`}
+                      title={doc.filename}
+                      onMouseEnter={() => prefetchDocument(queryClient, doc.id)}
+                      onFocus={() => prefetchDocument(queryClient, doc.id)}
+                      className="block truncate font-medium text-ink hover:text-link hover:underline"
+                    >
+                      {doc.filename}
+                    </Link>
+                    <div className="truncate text-xs text-ink-3">{meta(doc)}</div>
                   </div>
                 </div>
+              </TableCell>
+              <TableCell>
+                <StatusChip status={doc.status} />
+              </TableCell>
+              <TableCell>
+                <Stage doc={doc} />
+              </TableCell>
+              <TableCell className="text-right text-ink-2" suppressHydrationWarning>
+                {formatWhen(doc.created_at)}
+              </TableCell>
+              <TableCell className="pr-4 text-right">
+                {doc.status === "failed" && (
+                  <Button variant="ghost" size="sm" className="text-link" onClick={() => void reprocess(doc)}>
+                    Reprocess
+                  </Button>
+                )}
+                {doc.status === "completed" && (
+                  // The file name is the same link, so this one stays out of the tab order.
+                  <Button asChild variant="ghost" size="sm" className="text-link">
+                    <Link href={`/documents/${doc.id}`} tabIndex={-1} aria-hidden="true">
+                      Open
+                    </Link>
+                  </Button>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <ul className="divide-y divide-line lg:hidden">
+        {items.map((doc) => (
+          <li key={doc.id} className="flex flex-col gap-2 px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <TypeTile type={doc.file_type} />
+              <div className="min-w-0 flex-1">
+                <Link
+                  href={`/documents/${doc.id}`}
+                  title={doc.filename}
+                  onFocus={() => prefetchDocument(queryClient, doc.id)}
+                  className="block truncate font-medium text-ink hover:text-link hover:underline"
+                >
+                  {doc.filename}
+                </Link>
+                <div className="truncate text-xs text-ink-3" suppressHydrationWarning>
+                  {meta(doc)} · {formatWhen(doc.created_at)}
+                </div>
               </div>
-            </TableCell>
-            <TableCell>
+            </div>
+            <div className="flex min-w-0 flex-wrap items-start gap-x-3 gap-y-1 pl-[42px]">
               <StatusChip status={doc.status} />
-            </TableCell>
-            <TableCell>
-              <Stage doc={doc} />
-            </TableCell>
-            <TableCell className="text-right tabular-nums">
-              {doc.status === "completed" ? doc.invoice_count : <span className="text-ink-3">—</span>}
-            </TableCell>
-            <TableCell
-              className={cn(
-                "text-right tabular-nums",
-                doc.issue_count > 0 ? "font-medium text-warn" : "text-ink-3",
-              )}
-            >
-              {doc.status === "completed" ? (doc.issue_count > 0 ? doc.issue_count : "None") : "—"}
-            </TableCell>
-            <TableCell className="text-right text-ink-2" suppressHydrationWarning>
-              {formatWhen(doc.created_at)}
-            </TableCell>
-            <TableCell className="pr-4 text-right">
+              <div className="min-w-0 flex-1 basis-40">
+                <Stage doc={doc} wrap />
+              </div>
               {doc.status === "failed" && (
-                <Button variant="ghost" size="sm" className="text-link" onClick={() => void reprocess(doc)}>
+                <Button variant="outline" size="sm" onClick={() => void reprocess(doc)}>
                   Reprocess
                 </Button>
               )}
-              {doc.status === "completed" && (
-                // The file name is the same link, so this one stays out of the tab order.
-                <Button asChild variant="ghost" size="sm" className="text-link">
-                  <Link href={`/documents/${doc.id}`} tabIndex={-1} aria-hidden="true">
-                    Open
-                  </Link>
-                </Button>
-              )}
-            </TableCell>
-          </TableRow>
+            </div>
+          </li>
         ))}
-      </TableBody>
-    </Table>
+      </ul>
+    </>
   );
 }
