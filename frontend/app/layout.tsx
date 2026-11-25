@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { AppShell } from "@/components/shell/app-shell";
+import { SIDEBAR_COOKIE } from "@/components/shell/sidebar-state";
 import { Providers } from "@/components/providers";
 import { getQueryClient, prefetch } from "@/lib/query/server";
 import { statsOptions } from "@/lib/query/options";
@@ -40,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Pages hydrate what they prefetch with their own HydrationBoundary: this one is dehydrated
   // before they run.
   await prefetch(statsOptions);
+  const sidebarCollapsed = (await cookies()).get(SIDEBAR_COOKIE)?.value === "collapsed";
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
@@ -51,7 +54,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </a>
         <Providers>
           <HydrationBoundary state={dehydrate(getQueryClient())}>
-            <AppShell>{children}</AppShell>
+            <AppShell initialCollapsed={sidebarCollapsed}>{children}</AppShell>
           </HydrationBoundary>
         </Providers>
       </body>
