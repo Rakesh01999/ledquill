@@ -28,6 +28,30 @@ export const healthOptions = (client: ApiClient) =>
     retry: false,
   });
 
+/** Invoices over time, top suppliers and the currency split for a date range (invoice_date). */
+export const trendsOptions = (client: ApiClient, range: { date_from?: string; date_to?: string }) =>
+  queryOptions({
+    queryKey: ["stats", "trends", range.date_from ?? null, range.date_to ?? null],
+    queryFn: ({ signal }) =>
+      unwrap(client.GET("/api/v1/stats/trends", { signal, params: { query: { date_from: range.date_from, date_to: range.date_to } } })),
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
+  });
+
+/** The few invoices that most need a person: the head of the review queue. */
+export const ATTENTION_LIMIT = 5;
+export const attentionOptions = (client: ApiClient) =>
+  queryOptions({
+    queryKey: ["invoices", "attention"],
+    queryFn: () =>
+      unwrap(
+        client.GET("/api/v1/invoices", {
+          params: { query: { status: ["needs_review"], sort: "severity", limit: ATTENTION_LIMIT } },
+        }),
+      ),
+    staleTime: 15_000,
+  });
+
 export type DocumentListParams = {
   status?: DocumentStatus;
   file_type?: FileType;
