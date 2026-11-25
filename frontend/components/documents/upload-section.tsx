@@ -2,11 +2,12 @@
 
 import { useRef, useState, type DragEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, Loader, Upload, X } from "lucide-react";
+import { CircleAlert, CircleCheck, Loader, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api/client";
 import { ApiProblem, describeError } from "@/lib/api/problem";
 import type { RejectedFile, UploadResponse } from "@/lib/api/types";
+import { formatBytes } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.tif,.tiff,.xlsx,.xls,.csv";
@@ -16,9 +17,41 @@ const HOSTED_MAX_MB = (() => {
   const n = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_MB);
   return Number.isFinite(n) && n > 0 ? n : null;
 })();
+const HOSTED_LIMIT_BYTES = HOSTED_MAX_MB === null ? null : HOSTED_MAX_MB * 1024 * 1024;
+
+/** The file input lives in the dropzone; other parts of the page can open its picker. */
+const UPLOAD_INPUT_ID = "upload-files-input";
+export function openUploadPicker(): void {
+  document.getElementById(UPLOAD_INPUT_ID)?.click();
+}
+
+/**
+ * Groups files into requests: at most FILES_PER_REQUEST each and, where the host caps the request
+ * body, no more bytes than the cap. Every file is already within the cap on its own.
+ */
+function toBatches<T extends { file: File }>(items: T[]): T[][] {
+  const batches: T[][] = [];
+  let current: T[] = [];
+  let bytes = 0;
+  for (const item of items) {
+    const full =
+      current.length >= FILES_PER_REQUEST ||
+      (HOSTED_LIMIT_BYTES !== null && current.length > 0 && bytes + item.file.size > HOSTED_LIMIT_BYTES);
+    if (full) {
+      batches.push(current);
+      current = [];
+      bytes = 0;
+    }
+    current.push(item);
+    bytes += item.file.size;
+  }
+  if (current.length > 0) batches.push(current);
+  return batches;
+}
 
 type Entry =
   | { id: number; name: string; state: "uploading" }
+  | { id: number; name: string; state: "accepted" }
   | { id: number; name: string; state: "rejected"; reason: string }
   | { id: number; name: string; state: "failed"; reason: string };
 
@@ -63,6 +96,7 @@ export function UploadSection() {
     const ids = items.map((i) => i.id);
     patch(ids, (e) => ({ id: e.id, name: e.name, state: "uploading" }));
     let accepted = 0;
+    let acceptedIds: number[] = [];
     try {
       let result: { accepted: number; rejected: RejectedFile[] };
       try {
@@ -83,10 +117,14 @@ export function UploadSection() {
         if (hit) reasons.set(item.id, hit.reason);
         pending.current.delete(item.id);
       }
-      // Files that are not refused were accepted: they now show as rows in the table.
+      // Files that are not refused were accepted. They stay listed as "Accepted" until the table
+      // has reloaded and shows their rows, so a file never disappears before it appears there.
+      acceptedIds = ids.filter((i) => !reasons.has(i));
       patch(ids, (e) => {
         const reason = reasons.get(e.id);
-        return reason === undefined ? null : { id: e.id, name: e.name, state: "rejected", reason };
+        return reason === undefined
+          ? { id: e.id, name: e.name, state: "accepted" }
+          : { id: e.id, name: e.name, state: "rejected", reason };
       });
     } catch (error) {
       const { title, message } = describeError(error);
@@ -94,6 +132,7 @@ export function UploadSection() {
     }
     if (accepted > 0) setQueued((n) => n + accepted);
     await queryClient.invalidateQueries({ queryKey: ["documents", "list"] });
+    patch(acceptedIds, () => null);
     void queryClient.invalidateQueries({ queryKey: ["stats"] });
   }
 
@@ -102,13 +141,26 @@ export function UploadSection() {
     if (files.length === 0) return;
     setQueued(0);
     const items = files.map((file) => ({ id: nextId++, file }));
-    for (const i of items) pending.current.set(i.id, i.file);
-    setEntries((list) => [...list, ...items.map((i) => ({ id: i.id, name: i.file.name, state: "uploading" as const }))]);
-    // Batches run one after the other so the API's per-minute upload limit counts one request each.
+    // Where the host caps the request body, a file over the cap is refused here, before it is sent.
+    const tooLarge = (f: File) => HOSTED_LIMIT_BYTES !== null && f.size > HOSTED_LIMIT_BYTES;
+    const toSend = items.filter((i) => !tooLarge(i.file));
+    for (const i of toSend) pending.current.set(i.id, i.file);
+    setEntries((list) => [
+      ...list,
+      ...items.map((i): Entry =>
+        tooLarge(i.file)
+          ? {
+              id: i.id,
+              name: i.file.name,
+              state: "rejected",
+              reason: `File too large (${formatBytes(i.file.size)}). The hosted demo accepts files up to ${HOSTED_MAX_MB} MB.`,
+            }
+          : { id: i.id, name: i.file.name, state: "uploading" },
+      ),
+    ]);
+    // Requests run one after the other so the API's per-minute upload limit counts one request each.
     void (async () => {
-      for (let n = 0; n < items.length; n += FILES_PER_REQUEST) {
-        await send(items.slice(n, n + FILES_PER_REQUEST));
-      }
+      for (const batch of toBatches(toSend)) await send(batch);
     })();
   }
 
@@ -154,14 +206,15 @@ export function UploadSection() {
           <div className="text-ink-2">
             PDF, JPG, PNG, TIFF, XLSX, XLS, CSV ·{" "}
             {HOSTED_MAX_MB !== null
-              ? `up to ${HOSTED_MAX_MB} MB per upload (hosted demo)`
+              ? `up to ${HOSTED_MAX_MB} MB per file (hosted demo)`
               : "up to 25 MB per file"}{" "}
             · 20 files per upload
           </div>
         </div>
-        <div className="text-xs text-ink-3">Scans under 150 dpi may fail OCR</div>
+        <div className="text-xs text-ink-3">Scans below 150 dpi may not be readable.</div>
         <input
           ref={inputRef}
+          id={UPLOAD_INPUT_ID}
           type="file"
           multiple
           accept={ACCEPT}
@@ -187,13 +240,16 @@ export function UploadSection() {
             <li key={e.id} className="flex items-start gap-3 px-4 py-2.5">
               {e.state === "uploading" ? (
                 <Loader className="mt-0.5 size-4 flex-none text-ink-3 motion-safe:animate-spin" aria-hidden="true" />
+              ) : e.state === "accepted" ? (
+                <CircleCheck className="mt-0.5 size-4 flex-none text-ok" aria-hidden="true" />
               ) : (
                 <CircleAlert className="mt-0.5 size-4 flex-none text-danger" aria-hidden="true" />
               )}
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">{e.name}</div>
-                <div className={cn("text-[13px]", e.state === "uploading" ? "text-ink-2" : "text-danger")}>
+                <div className={cn("text-[13px]", e.state === "uploading" || e.state === "accepted" ? "text-ink-2" : "text-danger")}>
                   {e.state === "uploading" && "Uploading"}
+                  {e.state === "accepted" && "Accepted. It is queued for processing."}
                   {e.state === "rejected" && `Rejected: ${e.reason}`}
                   {e.state === "failed" && `Not uploaded. ${e.reason}`}
                 </div>
@@ -203,7 +259,7 @@ export function UploadSection() {
                   Try again
                 </Button>
               )}
-              {e.state !== "uploading" && (
+              {e.state !== "uploading" && e.state !== "accepted" && (
                 <Button
                   variant="ghost"
                   size="icon-sm"

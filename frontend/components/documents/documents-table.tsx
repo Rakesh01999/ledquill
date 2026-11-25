@@ -12,6 +12,7 @@ import type { DocumentOut } from "@/lib/api/types";
 import { formatBytes } from "@/lib/format";
 import { DOC_ROW, formatWhen, isActive, stageText, typeTile } from "@/lib/documents";
 import { prefetchDocument } from "@/lib/query/prefetch";
+import { openUploadPicker } from "./upload-section";
 import { cn } from "@/lib/utils";
 
 function Stage({ doc }: { doc: DocumentOut }) {
@@ -26,6 +27,15 @@ function Stage({ doc }: { doc: DocumentOut }) {
         {text}
         {doc.status === "processing" && <span className="ml-1 text-ink-3 tabular-nums">{doc.progress}%</span>}
       </span>
+      {doc.status === "failed" && (
+        <button
+          type="button"
+          onClick={openUploadPicker}
+          className="w-fit cursor-pointer rounded-sm text-[13px] font-medium text-link hover:underline"
+        >
+          Upload a new copy
+        </button>
+      )}
       {running && (
         <div
           role="progressbar"
@@ -128,8 +138,11 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
                 </Button>
               )}
               {doc.status === "completed" && (
+                // The file name is the same link, so this one stays out of the tab order.
                 <Button asChild variant="ghost" size="sm" className="text-link">
-                  <Link href={`/documents/${doc.id}`}>Open</Link>
+                  <Link href={`/documents/${doc.id}`} tabIndex={-1} aria-hidden="true">
+                    Open
+                  </Link>
                 </Button>
               )}
             </TableCell>

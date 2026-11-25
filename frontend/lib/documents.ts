@@ -47,6 +47,15 @@ const STAGE_LABELS: Record<string, string> = {
 
 export const stageLabel = (stage: string): string => STAGE_LABELS[stage] ?? stage;
 
+const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** What a finished document produced, from counts the list response already carries. */
+function outcomeText(doc: DocumentOut): string {
+  if (doc.invoice_count === 0) return "No invoices found";
+  const issues = doc.issue_count > 0 ? count(doc.issue_count, "issue", "issues") : "no issues";
+  return `${count(doc.invoice_count, "invoice", "invoices")}, ${issues}`;
+}
+
 /** Stage text for a table row: the stage name while running, otherwise the outcome. */
 export function stageText(doc: DocumentOut): string {
   switch (doc.status) {
@@ -55,7 +64,7 @@ export function stageText(doc: DocumentOut): string {
     case "processing":
       return doc.current_stage ? stageLabel(doc.current_stage) : "Starting";
     case "completed":
-      return "Finished";
+      return outcomeText(doc);
     default:
       return doc.error ?? "Failed";
   }

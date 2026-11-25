@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { EmptyState, ErrorState } from "@/components/shared/states";
+import { ShallowLink } from "@/components/shared/shallow-link";
 import { Pager } from "@/components/shared/pager";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { api } from "@/lib/api/client";
@@ -79,6 +80,23 @@ export function InvoicesView() {
                   : filtered
                     ? "No invoices match these filters."
                     : "No invoices yet. Upload documents to create them."
+              }
+              action={
+                searchMode ? (
+                  <ShallowLink
+                    href={invoicesHref({ ...params, q: undefined, page: 1 })}
+                    className="text-[13px] font-medium text-link hover:underline"
+                  >
+                    Clear search
+                  </ShallowLink>
+                ) : filtered ? (
+                  <ShallowLink
+                    href={invoicesHref({ page: 1 })}
+                    className="text-[13px] font-medium text-link hover:underline"
+                  >
+                    Clear filters
+                  </ShallowLink>
+                ) : undefined
               }
             />
           ) : rows ? (

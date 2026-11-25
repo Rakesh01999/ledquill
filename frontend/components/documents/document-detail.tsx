@@ -96,6 +96,8 @@ export function DocumentDetail({ id }: { id: string }) {
   if (!doc) return null;
 
   const running = isActive(doc);
+  // A failed file that never produced a page has no invoices and nothing to show as a source.
+  const noPages = doc.status === "failed" && !doc.page_count;
   const paused = error instanceof ApiProblem && error.status === 429;
 
   return (
@@ -173,21 +175,29 @@ export function DocumentDetail({ id }: { id: string }) {
         <Alert variant="destructive" className="border-danger/40 bg-danger-bg">
           <AlertTitle className="text-danger">This file could not be processed</AlertTitle>
           <AlertDescription className="text-ink">
-            {doc.error ?? "No reason was recorded."} Choose Reprocess to try again, or delete the document and upload a corrected file.
+            <p>{doc.error ?? "No reason was recorded."}</p>
+            <p>Reprocess only helps if the problem was temporary. Otherwise upload a new copy of the file.</p>
+            <Button asChild variant="outline" size="sm" className="mt-2 text-ink">
+              <Link href="/documents">Upload a new copy</Link>
+            </Button>
           </AlertDescription>
         </Alert>
       )}
       {reprocess.error && <ProblemAlert error={reprocess.error} />}
 
-      <Section title="Invoices found">
-        <InvoicesFound documentId={id} status={doc.status} />
-      </Section>
+      {!noPages && (
+        <Section title="Invoices found">
+          <InvoicesFound documentId={id} status={doc.status} />
+        </Section>
+      )}
 
-      <Section title="Source">
-        <div className="p-4">
-          <SourcePanel documentId={id} filename={doc.filename} />
-        </div>
-      </Section>
+      {!noPages && (
+        <Section title="Source">
+          <div className="p-4">
+            <SourcePanel documentId={id} filename={doc.filename} />
+          </div>
+        </Section>
+      )}
 
       <Section title="Processing history">
         <EventsTable documentId={id} />

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { EmptyState, ErrorState } from "@/components/shared/states";
+import { ShallowLink } from "@/components/shared/shallow-link";
 import { Pager } from "@/components/shared/pager";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { api } from "@/lib/api/client";
@@ -65,6 +66,13 @@ export function DocumentsView() {
           ) : data && data.items.length === 0 ? (
             <EmptyState
               title={filtered ? "No documents match these filters." : "No documents yet. Drop files to start."}
+              action={
+                filtered ? (
+                  <ShallowLink href={listHref({ page: 1 })} className="text-[13px] font-medium text-link hover:underline">
+                    Clear filters
+                  </ShallowLink>
+                ) : undefined
+              }
             />
           ) : data ? (
             <DocumentsTable items={data.items} />

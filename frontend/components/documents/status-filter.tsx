@@ -29,7 +29,7 @@ export function StatusFilter({ params }: { params: DocumentListParams }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <h2 className="text-sm font-semibold">Uploads</h2>
+      <h2 className="text-sm font-semibold">Documents</h2>
       <nav aria-label="Filter by status" className="flex max-w-full overflow-x-auto rounded-md border border-line bg-surface text-xs">
         {segments.map((s, i) => {
           const active = (params.status ?? "all") === s.key;
