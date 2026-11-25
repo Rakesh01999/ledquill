@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "gen:api": "openapi-typescript openapi.json -o lib/api/schema.d.ts",
-    "export:api": "docker compose exec -T api python -c \"import json;from app.main import create_app;print(json.dumps(create_app().openapi(),indent=2,sort_keys=True))\" > openapi.json"
+    "export:api": "docker compose exec -T api python -c \"import json;from app.main import create_app;print(json.dumps(create_app().openapi(),indent=2,sort_keys=True))\" > openapi.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tanstack/react-query": "5.107.1",
@@ -29,13 +30,19 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.5",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.13",
     "@types/node": "24.19.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "4.7.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.5",
+    "jsdom": "26.1.0",
     "openapi-typescript": "7.13.0",
     "tailwindcss": "4.3.5",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
   }
 }
