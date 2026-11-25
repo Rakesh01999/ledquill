@@ -27,9 +27,11 @@ function fieldName(issue: Issue): string {
  * What the related invoice is, per rule (validate.py): V-07 points at the copy that was stored
  * first (same file, or same number and supplier); V-09 at the same invoice number in another document.
  */
-function relatedLabel(ruleId: string): string {
-  if (ruleId === "V-07") return "Open the existing copy";
-  if (ruleId === "V-09") return "Open the matching invoice";
+function relatedLabel(issue: Issue): string {
+  if (issue.rule_id === "V-07") {
+    return issue.field === "invoice_number" ? "Open the earlier invoice with the same number" : "Open the earlier upload (same file)";
+  }
+  if (issue.rule_id === "V-09") return "Open the other invoice with this number";
   return "Open related invoice";
 }
 
@@ -83,6 +85,9 @@ export function IssuesBanner({
         )}
         {heading}
       </h2>
+      <p className="mt-1 text-xs text-ink-2">
+        Error: must be resolved before approval. Warning: worth checking, you can still approve.
+      </p>
       <ul className="mt-2 flex flex-col divide-y divide-line/70">
         {rows.map(({ issue, goTo, related }, i) => (
           <li
@@ -130,7 +135,7 @@ export function IssuesBanner({
               </p>
             </div>
             {(goTo || related) && (
-              <div className="flex flex-none flex-wrap items-center gap-1">
+              <div className="flex flex-none flex-wrap items-center gap-1 max-sm:basis-full">
                 {goTo && (
                   <Button variant="outline" size="sm" onClick={() => onGoToField(goTo as string)}>
                     Go to {FIELD_LABELS[goTo as string]?.toLowerCase() ?? goTo}
@@ -138,7 +143,7 @@ export function IssuesBanner({
                 )}
                 {related && (
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/invoices/${related}`}>{relatedLabel(issue.rule_id)}</Link>
+                    <Link href={`/invoices/${related}`}>{relatedLabel(issue)}</Link>
                   </Button>
                 )}
               </div>
