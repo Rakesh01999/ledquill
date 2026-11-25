@@ -357,6 +357,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/stats/trends": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Trends
+         * @description Invoices over time, top suppliers and the currency split, for the dashboard. The range
+         *     applies to invoice_date, like `date_from` / `date_to` on GET /invoices, so every number here can
+         *     be reproduced by that list. Money is summed per currency, never across currencies.
+         */
+        get: operations["get_trends_api_v1_stats_trends_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -377,6 +399,16 @@ export interface components {
             job_id: string;
             /** Status */
             status: string;
+        };
+        /**
+         * Amount
+         * @description A sum in one currency. Currencies are never added together.
+         */
+        Amount: {
+            /** Currency */
+            currency: string;
+            /** Total */
+            total: string;
         };
         /** Body_upload_documents_api_v1_documents_post */
         Body_upload_documents_api_v1_documents_post: {
@@ -401,6 +433,15 @@ export interface components {
             note: string | null;
             /** Old Value */
             old_value: string | null;
+        };
+        /** CurrencyTotal */
+        CurrencyTotal: {
+            /** Count */
+            count: number;
+            /** Currency */
+            currency: string;
+            /** Total */
+            total: string;
         };
         /** DocumentList */
         DocumentList: {
@@ -781,6 +822,60 @@ export interface components {
             needs_review: number;
             /** Success Rate */
             success_rate: number | null;
+        };
+        /** SupplierTotal */
+        SupplierTotal: {
+            /** Amounts */
+            amounts: components["schemas"]["Amount"][];
+            /** Count */
+            count: number;
+            /** Supplier */
+            supplier: string;
+        };
+        /** TrendPoint */
+        TrendPoint: {
+            /** Count */
+            count: number;
+            /**
+             * Period
+             * Format: date
+             */
+            period: string;
+        };
+        /**
+         * Trends
+         * @description Live (not archived) invoices whose invoice_date is inside the range; no range = all.
+         */
+        Trends: {
+            /**
+             * Bucket
+             * @enum {string}
+             */
+            bucket: "day" | "week" | "month";
+            /** By Status */
+            by_status: {
+                [key: string]: number;
+            };
+            /** Currencies */
+            currencies: components["schemas"]["CurrencyTotal"][];
+            /** Date From */
+            date_from: string | null;
+            /** Date To */
+            date_to: string | null;
+            /** Range End */
+            range_end: string | null;
+            /** Range Start */
+            range_start: string | null;
+            /** Series */
+            series: components["schemas"]["TrendPoint"][];
+            /** Top Suppliers */
+            top_suppliers: components["schemas"]["SupplierTotal"][];
+            /** Total */
+            total: number;
+            /** Undated */
+            undated: number;
+            /** Unknown Currency */
+            unknown_currency: number;
         };
         /** UploadResponse */
         UploadResponse: {
@@ -1514,6 +1609,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Stats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trends_api_v1_stats_trends_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Trends"];
                 };
             };
             /** @description Validation Error */

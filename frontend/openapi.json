@@ -31,6 +31,25 @@
         "title": "AcceptedFile",
         "type": "object"
       },
+      "Amount": {
+        "description": "A sum in one currency. Currencies are never added together.",
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "total"
+        ],
+        "title": "Amount",
+        "type": "object"
+      },
       "Body_upload_documents_api_v1_documents_post": {
         "properties": {
           "files": {
@@ -99,6 +118,29 @@
           "created_at"
         ],
         "title": "CorrectionOut",
+        "type": "object"
+      },
+      "CurrencyTotal": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "count",
+          "total"
+        ],
+        "title": "CurrencyTotal",
         "type": "object"
       },
       "DocumentList": {
@@ -1428,6 +1470,169 @@
           "avg_stage_ms"
         ],
         "title": "Stats",
+        "type": "object"
+      },
+      "SupplierTotal": {
+        "properties": {
+          "amounts": {
+            "items": {
+              "$ref": "#/components/schemas/Amount"
+            },
+            "title": "Amounts",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "supplier": {
+            "title": "Supplier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier",
+          "count",
+          "amounts"
+        ],
+        "title": "SupplierTotal",
+        "type": "object"
+      },
+      "TrendPoint": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "period": {
+            "format": "date",
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "period",
+          "count"
+        ],
+        "title": "TrendPoint",
+        "type": "object"
+      },
+      "Trends": {
+        "description": "Live (not archived) invoices whose invoice_date is inside the range; no range = all.",
+        "properties": {
+          "bucket": {
+            "enum": [
+              "day",
+              "week",
+              "month"
+            ],
+            "title": "Bucket",
+            "type": "string"
+          },
+          "by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Status",
+            "type": "object"
+          },
+          "currencies": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyTotal"
+            },
+            "title": "Currencies",
+            "type": "array"
+          },
+          "date_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date From"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date To"
+          },
+          "range_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range End"
+          },
+          "range_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range Start"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPoint"
+            },
+            "title": "Series",
+            "type": "array"
+          },
+          "top_suppliers": {
+            "items": {
+              "$ref": "#/components/schemas/SupplierTotal"
+            },
+            "title": "Top Suppliers",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "undated": {
+            "title": "Undated",
+            "type": "integer"
+          },
+          "unknown_currency": {
+            "title": "Unknown Currency",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date_from",
+          "date_to",
+          "range_start",
+          "range_end",
+          "bucket",
+          "total",
+          "undated",
+          "unknown_currency",
+          "by_status",
+          "series",
+          "top_suppliers",
+          "currencies"
+        ],
+        "title": "Trends",
         "type": "object"
       },
       "UploadResponse": {
@@ -3201,6 +3406,90 @@
           }
         },
         "summary": "Get Stats",
+        "tags": [
+          "stats"
+        ]
+      }
+    },
+    "/api/v1/stats/trends": {
+      "get": {
+        "description": "Invoices over time, top suppliers and the currency split, for the dashboard. The range\napplies to invoice_date, like `date_from` / `date_to` on GET /invoices, so every number here can\nbe reproduced by that list. Money is summed per currency, never across currencies.",
+        "operationId": "get_trends_api_v1_stats_trends_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trends"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Trends",
         "tags": [
           "stats"
         ]
