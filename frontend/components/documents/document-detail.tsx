@@ -26,10 +26,11 @@ import { ApiProblem, describeError, invalidIdAsMissing } from "@/lib/api/problem
 import type { DocumentOut } from "@/lib/api/types";
 import { formatBytes } from "@/lib/format";
 import { formatWhen, isActive, stageText, typeTile } from "@/lib/documents";
-import { documentOptions } from "@/lib/query/options";
+import { documentInvoicesOptions, documentOptions } from "@/lib/query/options";
 import { useBackoffInterval } from "@/lib/query/polling";
 import { EventsTable } from "./events-table";
 import { InvoicesFound } from "./invoices-found";
+import { IssuesInFile } from "./issues-in-file";
 import { SourcePanel } from "./source-panel";
 
 const active = (d: DocumentOut) => isActive(d);
@@ -41,6 +42,18 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="border-b border-line px-4 py-2.5 text-sm font-semibold">{title}</h2>
       <div className="overflow-x-auto">{children}</div>
     </section>
+  );
+}
+
+/** Hidden until the file has issues, so a clean file shows no empty section. */
+function IssuesSection({ documentId }: { documentId: string }) {
+  const { data } = useQuery(documentInvoicesOptions(api, documentId));
+  const count = data?.items.reduce((sum, inv) => sum + inv.issues.length, 0) ?? 0;
+  if (count === 0) return null;
+  return (
+    <Section title={`Issues in this file (${count})`}>
+      <IssuesInFile documentId={documentId} />
+    </Section>
   );
 }
 
@@ -190,6 +203,8 @@ export function DocumentDetail({ id }: { id: string }) {
           <InvoicesFound documentId={id} status={doc.status} />
         </Section>
       )}
+
+      {!noPages && <IssuesSection documentId={id} />}
 
       {!noPages && (
         <Section title="Source">

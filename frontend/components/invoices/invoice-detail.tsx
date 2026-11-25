@@ -24,11 +24,12 @@ import {
   fieldValue,
   type FieldName,
 } from "@/lib/invoices";
-import { documentOptions, invoiceOptions, queueOptions } from "@/lib/query/options";
+import { documentInvoicesOptions, documentOptions, invoiceOptions, queueOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
 import { useShortcuts } from "@/lib/shortcuts";
 import { CorrectionsPanel } from "./corrections-panel";
 import { FieldRow, type SaveResult } from "./field-row";
+import { FileIssuesLine } from "./file-issues-line";
 import { IssuesBanner } from "./issues-banner";
 import { LineItems } from "./line-items";
 import { useApproveInvoice, useCorrectInvoice } from "./use-invoice-actions";
@@ -93,6 +94,7 @@ export function InvoiceDetail({ id }: { id: string }) {
   const documentId = invoice?.document_id;
   const docQuery = useQuery({ ...documentOptions(api, documentId ?? ""), enabled: Boolean(documentId) });
   const queue = useQuery({ ...queueOptions(api), enabled: inQueue });
+  const siblings = useQuery({ ...documentInvoicesOptions(api, documentId ?? ""), enabled: Boolean(documentId) });
 
   const [tab, setTab] = useState<Tab>("fields");
   const [sourcePage, setSourcePage] = useState<number | undefined>(undefined);
@@ -119,6 +121,16 @@ export function InvoiceDetail({ id }: { id: string }) {
     const timer = setTimeout(() => setTarget(null), 1800);
     return () => clearTimeout(timer);
   }, [target]);
+  // The issue a field marker pointed at; below lg the banner is a tab, so it is opened first.
+  const [issueTarget, setIssueTarget] = useState<{ index: number; n: number } | null>(null);
+  useEffect(() => {
+    if (!issueTarget) return;
+    const el = document.getElementById(`issue-${issueTarget.index}`);
+    if (!el) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "center", behavior: calm ? "auto" : "smooth" });
+    el.focus({ preventScroll: true });
+  }, [issueTarget]);
   const landOnIssues = useRef(false);
   useEffect(() => {
     if (!loaded || window.location.hash !== "#issues") return;
@@ -156,6 +168,16 @@ export function InvoiceDetail({ id }: { id: string }) {
   const position = queueIds.indexOf(id);
   const prevId = position > 0 ? queueIds[position - 1] : undefined;
   const nextId = position >= 0 ? queueIds[position + 1] : queueIds[0];
+  const fileItems = siblings.data?.items ?? [];
+  const fileIndex = fileItems.findIndex((i) => i.id === id);
+  const filePosition =
+    fileItems.length >= 2 && fileIndex >= 0 ? `Invoice ${fileIndex + 1} of ${fileItems.length} in this file` : null;
+  const showIssue = (field: string) => {
+    const index = invoice.issues.findIndex((i) => i.field === field);
+    if (index < 0) return;
+    setTab("issues");
+    setIssueTarget((t) => ({ index, n: (t?.n ?? 0) + 1 }));
+  };
   const hrefFor = (target: string) => `/invoices/${target}?queue=1`;
 
   /** Show the Fields tab and mark the field; the effect above scrolls once the row is on screen. */
@@ -238,6 +260,15 @@ export function InvoiceDetail({ id }: { id: string }) {
               {invoice.invoice_number ?? "No invoice number"}
             </h2>
             <StatusChip status={invoice.status} />
+            {invoice.issues.length > 0 && (
+              <span className="text-[13px] font-medium">
+                <span className={errors.length > 0 ? "text-danger" : "text-ink-2"}>
+                  {plural(errors.length, "error", "errors")}
+                </span>
+                <span className="text-ink-2">, {plural(invoice.issues.length - errors.length, "warning", "warnings")}</span>
+              </span>
+            )}
+            {filePosition && <span className="text-[13px] text-ink-2">{filePosition}</span>}
           </div>
           <p className="mt-1 text-[13px] text-ink-2" suppressHydrationWarning>
             {invoice.supplier_name ?? "Supplier not found"}
@@ -347,7 +378,10 @@ export function InvoiceDetail({ id }: { id: string }) {
       </div>
 
       <div className={cn(tab !== "issues" && "max-lg:hidden")}>
-        <IssuesBanner issues={invoice.issues} onGoToField={goToField} />
+        <div className="flex flex-col gap-3">
+          <FileIssuesLine invoiceId={id} documentId={invoice.document_id} />
+          <IssuesBanner issues={invoice.issues} onGoToField={goToField} />
+        </div>
         {invoice.issues.length === 0 && (
           <p className="rounded-lg border border-line bg-surface px-4 py-3 text-[13px] text-ink-2 lg:hidden">
             No validation issues.
@@ -397,6 +431,7 @@ export function InvoiceDetail({ id }: { id: string }) {
                       edited={invoice.corrected_fields.includes(def.name)}
                       pageLabel={pageLabel(pages)}
                       issues={invoice.issues.filter((i) => i.field === def.name)}
+                      onShowIssue={() => showIssue(def.name)}
                       highlighted={target?.name === def.name}
                       onSave={(value) => save(def.name, def.label, value)}
                       onShowPage={() => {
@@ -414,7 +449,7 @@ export function InvoiceDetail({ id }: { id: string }) {
       </div>
 
       <Section title="Line items">
-        <LineItems invoice={invoice} />
+        <LineItems invoice={invoice} issues={invoice.issues} />
       </Section>
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
