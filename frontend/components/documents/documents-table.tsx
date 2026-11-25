@@ -196,7 +196,7 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
             <TableHead className={cn("w-[124px]", HEAD)}>Status</TableHead>
             <TableHead className={HEAD}>Stage</TableHead>
             <TableHead className={cn("hidden w-[116px] xl:table-cell", HEAD)}>Uploaded</TableHead>
-            <TableHead className={cn("w-[276px] pr-4 text-right max-xl:w-[132px]", HEAD)}>Action</TableHead>
+            <TableHead className={cn("w-[276px] pr-4 text-right max-xl:w-[132px]", HEAD)}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

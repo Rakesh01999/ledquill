@@ -62,7 +62,7 @@ export function InvoicesFound({
           <TableHead className={`text-right ${head}`}>Total</TableHead>
           <TableHead className={`pl-4 xl:pl-6 ${head}`}>Status</TableHead>
           <TableHead className={`hidden text-right xl:table-cell ${head}`}>Issues</TableHead>
-          <TableHead className={`w-[148px] pr-4 text-right max-xl:w-[96px] ${head}`}>Action</TableHead>
+          <TableHead className={`w-[148px] pr-4 text-right max-xl:w-[96px] ${head}`}>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

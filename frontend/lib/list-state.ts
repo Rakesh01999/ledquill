@@ -57,3 +57,18 @@ export function takeRestoreIntent(url: string): boolean {
   restoreIntent = null;
   return hit;
 }
+
+/**
+ * Where the user came from inside the app: set by ScrollRestore on every client navigation. A
+ * page opened directly (link, reload) has none, so Back falls back to the remembered list.
+ */
+let previousPath: string | null = null;
+export const notePreviousPath = (path: string): void => {
+  previousPath = path;
+};
+/**
+ * True when the page before this one came from somewhere in the app other than another invoice
+ * (a list, a file page, the dashboard), so history Back lands where the user was. Stepping through
+ * the review queue is not that: Back should leave the queue, not replay it.
+ */
+export const cameFromList = (): boolean => previousPath !== null && !previousPath.startsWith("/invoices/");

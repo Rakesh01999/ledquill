@@ -71,7 +71,7 @@ export function ReviewView() {
                   <TableHead className={cn("text-right", head)}>Total</TableHead>
                   <TableHead className={head}>Top issue</TableHead>
                   <TableHead className={head}>Age</TableHead>
-                  <TableHead className={cn("w-[148px] pr-4 text-right max-xl:w-[96px]", head)}>Action</TableHead>
+                  <TableHead className={cn("w-[148px] pr-4 text-right max-xl:w-[96px]", head)}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

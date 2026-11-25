@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SourcePanel } from "@/components/documents/source-panel";
+import { BackButton } from "@/components/shared/back-button";
 import { PageHeader } from "@/components/shared/page-header";
 import { ArchivedNotice } from "@/components/shared/archived-notice";
 import { ProblemAlert } from "@/components/shared/problem-alert";
@@ -21,15 +22,23 @@ import { api } from "@/lib/api/client";
 import { ApiProblem, describeError, fieldErrors, invalidIdAsMissing } from "@/lib/api/problem";
 import type { InvoiceOut } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
+import { formatDuration, formatWhen } from "@/lib/documents";
 import {
   FIELD_GROUPS,
   FIELD_LABELS,
+  confidenceLevel,
   errorIssues,
   fieldValue,
   invoiceLabel,
   type FieldName,
 } from "@/lib/invoices";
-import { documentInvoicesOptions, documentOptions, invoiceOptions, queueOptions } from "@/lib/query/options";
+import {
+  documentInvoicesOptions,
+  documentOptions,
+  eventsOptions,
+  invoiceOptions,
+  queueOptions,
+} from "@/lib/query/options";
 import { cn } from "@/lib/utils";
 import { useShortcuts } from "@/lib/shortcuts";
 import { CorrectionsPanel } from "./corrections-panel";
@@ -102,6 +111,7 @@ export function InvoiceDetail({ id }: { id: string }) {
   const documentId = invoice?.document_id;
   const docQuery = useQuery({ ...documentOptions(api, documentId ?? ""), enabled: Boolean(documentId) });
   const queue = useQuery({ ...queueOptions(api), enabled: inQueue });
+  const events = useQuery({ ...eventsOptions(api, documentId ?? ""), enabled: Boolean(documentId) });
   const archived = Boolean(invoice?.archived_at);
   // An invoice archived with its file comes back only with the file (the API refuses otherwise).
   const fileArchived = Boolean(docQuery.data?.archived_at);
@@ -110,7 +120,8 @@ export function InvoiceDetail({ id }: { id: string }) {
     enabled: Boolean(documentId) && invoice !== undefined,
   });
 
-  const [tab, setTab] = useState<Tab>("fields");
+  // Below lg the sections are tabs and the source comes first (the preview is what you check values against).
+  const [tab, setTab] = useState<Tab>("source");
   const [sourcePage, setSourcePage] = useState<number | undefined>(undefined);
   const [saved, setSaved] = useState<string | null>(null);
 
@@ -198,6 +209,15 @@ export function InvoiceDetail({ id }: { id: string }) {
   const fileIndex = fileItems.findIndex((i) => i.id === id);
   const filePosition =
     fileItems.length >= 2 && fileIndex >= 0 ? `Invoice ${fileIndex + 1} of ${fileItems.length} in this file` : null;
+  // Fields the model was unsure about (a reviewer's edit counts as certain, as in the field rows).
+  const lowConfidence = Object.entries(invoice.confidence)
+    .filter(([name, value]) => confidenceLevel(value) === "low" && !invoice.corrected_fields.includes(name))
+    .map(([name]) => name);
+  // Time spent by the latest run of this file's pipeline: the stage durations of its newest job.
+  const runEvents = events.data?.items ?? [];
+  const newestJob = [...runEvents].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.job_id;
+  const timed = runEvents.filter((e) => e.job_id === newestJob && e.duration_ms != null);
+  const processingMs = timed.length > 0 ? timed.reduce((sum, e) => sum + (e.duration_ms ?? 0), 0) : null;
   const showIssue = (field: string) => {
     const index = invoice.issues.findIndex((i) => i.field === field);
     if (index < 0) return;
@@ -282,7 +302,7 @@ export function InvoiceDetail({ id }: { id: string }) {
           ...(fromDoc && sourceDoc
             ? [{ label: sourceDoc.filename, href: `/documents/${sourceDoc.id}` }]
             : []),
-          { label: invoice.invoice_number ?? "No invoice number" },
+          { label: invoice.invoice_number ? `Invoice ${invoice.invoice_number}` : "Invoice (no number)" },
         ]}
         title={invoice.invoice_number ?? "No invoice number"}
         titleClassName="font-mono"
@@ -302,6 +322,7 @@ export function InvoiceDetail({ id }: { id: string }) {
         actions={
         <div className="flex flex-none flex-col items-start gap-1.5 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">
+            <BackButton fallback={archived ? "/archived" : fromDoc ? "/documents" : inQueue ? "/review" : "/invoices"} />
             {inQueue && (
               <div className="flex items-center gap-1" aria-label="Queue navigation">
                 <span className="mr-1 text-xs text-ink-2 tabular-nums">
@@ -421,8 +442,8 @@ export function InvoiceDetail({ id }: { id: string }) {
           state, so the banner, the Go-to buttons and the field markers keep switching tabs as before. */}
       <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)} className="gap-0 lg:hidden">
         <TabsList aria-label="Invoice sections">
-          <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="source">Source</TabsTrigger>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="issues">{issuesLabel}</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -439,17 +460,17 @@ export function InvoiceDetail({ id }: { id: string }) {
         )}
       </div>
 
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <Section
           title="Source"
           // Desktop: the source stays in view while the fields scroll, and scrolls inside itself.
           className={cn(
-            "lg:sticky lg:top-0 lg:flex lg:max-h-[calc(100dvh-5.5rem)] lg:flex-col",
+            "lg:sticky lg:top-0 lg:flex lg:h-[calc(100dvh-14rem)] lg:min-h-[420px] lg:flex-col",
             tab !== "source" && "max-lg:hidden",
           )}
-          bodyClassName="lg:min-h-0 lg:overflow-y-auto"
+          bodyClassName="lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden"
         >
-          <div className="p-4">
+          <div className="p-4 lg:min-h-0 lg:flex-1">
             {sourceDoc ? (
               <SourcePanel
                 documentId={sourceDoc.id}
@@ -508,11 +529,25 @@ export function InvoiceDetail({ id }: { id: string }) {
           <CorrectionsPanel corrections={invoice.corrections} />
         </Section>
         <Section title="Extraction details">
-          <dl className="grid grid-cols-[112px_minmax(0,1fr)] gap-y-1.5 px-4 py-3 text-[13px]">
+          <dl className="grid grid-cols-[132px_minmax(0,1fr)] gap-y-1.5 px-4 py-3 text-[13px]">
+            <dt className="text-ink-2">Status</dt>
+            <dd>
+              <StatusChip status={invoice.status} />
+            </dd>
             <dt className="text-ink-2">Method</dt>
             <dd>{invoice.method ?? "Not recorded"}</dd>
             <dt className="text-ink-2">Model</dt>
             <dd className="break-all">{invoice.model ?? "Not recorded"}</dd>
+            <dt className="text-ink-2">Low confidence</dt>
+            <dd>
+              {lowConfidence.length > 0 ? lowConfidence.map((f) => FIELD_LABELS[f] ?? f).join(", ") : "None"}
+            </dd>
+            <dt className="text-ink-2">Processing time</dt>
+            <dd className="tabular-nums">{processingMs === null ? "Not recorded" : formatDuration(processingMs)}</dd>
+            <dt className="text-ink-2">Extracted</dt>
+            <dd suppressHydrationWarning>{formatWhen(invoice.created_at)}</dd>
+            <dt className="text-ink-2">Last changed</dt>
+            <dd suppressHydrationWarning>{formatWhen(invoice.updated_at)}</dd>
             <dt className="text-ink-2">Edited fields</dt>
             <dd>
               {invoice.corrected_fields.length > 0

@@ -110,7 +110,7 @@ export const queueOptions = (client: ApiClient) =>
     queryFn: () =>
       unwrap(
         client.GET("/api/v1/invoices", {
-          params: { query: { status: "needs_review", sort: "severity", limit: QUEUE_LIMIT } },
+          params: { query: { status: ["needs_review"], sort: "severity", limit: QUEUE_LIMIT } },
         }),
       ),
     staleTime: 10_000,
@@ -126,9 +126,11 @@ export const invoicesOptions = (client: ApiClient, params: InvoiceListParams, ar
           params: {
             query: {
               q: params.q,
-              status: params.status,
-              supplier: params.supplier,
+              status: params.status ? [params.status] : undefined,
+              supplier_exact: params.supplier,
               currency: params.currency,
+              sort: params.sort,
+              order: params.order,
               date_from: params.date_from,
               date_to: params.date_to,
               min_total: params.min_total,
@@ -154,6 +156,16 @@ export const searchOptions = (client: ApiClient, q: string) =>
     staleTime: 30_000,
     placeholderData: keepPreviousData,
     retry: false,
+  });
+
+/** Distinct suppliers and currencies for the filter dropdowns. `q` narrows the supplier list. */
+export const facetsOptions = (client: ApiClient, q = "") =>
+  queryOptions({
+    queryKey: ["invoices", "facets", q],
+    queryFn: ({ signal }) =>
+      unwrap(client.GET("/api/v1/invoices/facets", { signal, params: { query: { q: q || undefined, limit: 100 } } })),
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 
 export const invoiceOptions = (client: ApiClient, id: string) =>

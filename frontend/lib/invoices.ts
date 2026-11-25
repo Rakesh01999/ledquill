@@ -173,11 +173,20 @@ export function isChanged(kind: FieldKind, current: string | null, next: string 
   return true;
 }
 
+/** Columns the list can be sorted by (the API's `sort` values). */
+export type InvoiceSort = "number" | "supplier" | "date" | "total" | "status" | "issues";
+export const INVOICE_SORTS: InvoiceSort[] = ["number", "supplier", "date", "total", "status", "issues"];
+/** Direction a column starts in: text and dates read best A-Z / oldest first, amounts biggest first. */
+export const defaultOrder = (sort: InvoiceSort): "asc" | "desc" => (sort === "total" || sort === "issues" ? "desc" : "asc");
+
 export type InvoiceListParams = {
   q?: string;
   status?: "needs_review" | "ready" | "approved";
-  supplier?: string;
-  currency?: string;
+  /** Several suppliers or currencies may be chosen: an invoice matches any of them. */
+  supplier?: string[];
+  currency?: string[];
+  sort?: InvoiceSort;
+  order?: "asc" | "desc";
   date_from?: string;
   date_to?: string;
   min_total?: string;
@@ -196,6 +205,11 @@ export function parseInvoiceParams(
     const s = Array.isArray(v) ? v[0] : v;
     return s && s.trim() ? s.trim() : undefined;
   };
+  const all = (k: string): string[] => {
+    const raw = sp instanceof URLSearchParams ? sp.getAll(k) : sp[k];
+    const list = Array.isArray(raw) ? raw : raw === undefined ? [] : [raw];
+    return [...new Set(list.map((v) => v.trim()).filter(Boolean))];
+  };
   const num = (k: string) => {
     const v = get(k);
     return v && isMoneyInput(v) ? v : undefined;
@@ -204,13 +218,21 @@ export function parseInvoiceParams(
     const v = get(k);
     return v && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : undefined;
   };
-  const cur = get("currency");
+  const currencies = all("currency")
+    .filter((c) => /^[A-Za-z]{3}$/.test(c))
+    .map((c) => c.toUpperCase());
+  const suppliers = all("supplier").map((s) => s.slice(0, 200));
+  const sort = INVOICE_SORTS.find((s) => s === get("sort"));
+  const order = get("order") === "asc" || get("order") === "desc" ? (get("order") as "asc" | "desc") : undefined;
   const page = Number.parseInt(get("page") ?? "1", 10);
   return {
     q: get("q")?.slice(0, 200),
     status: STATUS_VALUES.find((s) => s === get("status")),
-    supplier: get("supplier")?.slice(0, 200),
-    currency: cur && /^[A-Za-z]{3}$/.test(cur) ? cur.toUpperCase() : undefined,
+    supplier: suppliers.length > 0 ? suppliers : undefined,
+    currency: currencies.length > 0 ? [...new Set(currencies)] : undefined,
+    sort,
+    // A direction without a column means nothing; the default of a column is not written to the URL.
+    order: sort && order && order !== defaultOrder(sort) ? order : undefined,
     date_from: date("date_from"),
     date_to: date("date_to"),
     min_total: num("min_total"),
@@ -225,6 +247,7 @@ export function invoicesHref(params: InvoiceListParams): string {
   for (const [k, v] of Object.entries(params)) {
     if (k === "page" || k === "size") continue;
     if (typeof v === "string" && v) q.set(k, v);
+    else if (Array.isArray(v)) for (const item of v) q.append(k, item);
   }
   if (params.size !== DEFAULT_PAGE_SIZE) q.set("size", String(params.size));
   if (params.page > 1) q.set("page", String(params.page));
@@ -234,7 +257,15 @@ export function invoicesHref(params: InvoiceListParams): string {
 
 /** Only a query, no other filter: this is the case that uses ranked hybrid search. */
 export const isSearchOnly = (p: InvoiceListParams): boolean =>
-  Boolean(p.q) && !p.status && !p.supplier && !p.currency && !p.date_from && !p.date_to && !p.min_total && !p.max_total;
+  Boolean(p.q) &&
+  !p.status &&
+  !p.supplier &&
+  !p.currency &&
+  !p.date_from &&
+  !p.date_to &&
+  !p.min_total &&
+  !p.max_total &&
+  !p.sort;
 
 export const FALLBACK_NOTES: Record<string, string> = {
   semantic_disabled: "Semantic search is turned off on this server, so these are keyword matches only.",

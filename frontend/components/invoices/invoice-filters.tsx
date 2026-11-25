@@ -1,14 +1,16 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Combobox } from "@/components/shared/combobox";
 import { DebouncedInput } from "@/components/shared/debounced-input";
 import { FilterChips, type Chip } from "@/components/shared/filter-chips";
+import { SearchInput } from "@/components/shared/search-input";
 import { SegmentedFilter } from "@/components/shared/segmented-filter";
-import { invoicesHref, type InvoiceListParams } from "@/lib/invoices";
-import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
-import { statsOptions } from "@/lib/query/options";
+import { invoicesHref, type InvoiceListParams } from "@/lib/invoices";
+import { facetsOptions, statsOptions } from "@/lib/query/options";
+import { cn } from "@/lib/utils";
 
 const STATUS_SEGMENTS: { key: InvoiceListParams["status"] | "all"; label: string }[] = [
   { key: "all", label: "All" },
@@ -25,7 +27,10 @@ function replaceUrl(params: InvoiceListParams) {
   window.history.replaceState(null, "", invoicesHref(params));
 }
 
-export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
+export function InvoiceFilters({ params, searching = false }: { params: InvoiceListParams; searching?: boolean }) {
+  const [supplierQuery, setSupplierQuery] = useState("");
+  const facets = useQuery(facetsOptions(api, supplierQuery));
+  const onSupplierQuery = useCallback((q: string) => setSupplierQuery(q), []);
   const { data: stats } = useQuery(statsOptions(api));
   const counts = stats?.invoices.by_status;
   const set = (patch: Partial<InvoiceListParams>) => replaceUrl({ ...params, ...patch, page: 1 });
@@ -33,20 +38,15 @@ export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full max-w-[380px] min-w-56 flex-1">
-          <label htmlFor="invoice-q" className="sr-only">
-            Search invoices
-          </label>
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-ink-3" aria-hidden="true" />
-          <DebouncedInput
-            id="invoice-q"
-            type="search"
-            value={params.q ?? ""}
-            onCommit={(q) => set({ q: q.trim() || undefined })}
-            placeholder="Search by number, supplier, amount or meaning"
-            className={cn(field, "w-full pl-8")}
-          />
-        </div>
+        <SearchInput
+          id="invoice-q"
+          label="Search invoices"
+          value={params.q ?? ""}
+          onCommit={(q) => set({ q: q.trim() || undefined })}
+          loading={searching}
+          placeholder="Search by number, supplier, amount or meaning"
+          className="w-full max-w-[380px] min-w-56 flex-1"
+        />
         <SegmentedFilter
           label="Filter by status"
           segments={STATUS_SEGMENTS.map((s) => {
@@ -63,25 +63,29 @@ export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
       </div>
 
       <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-        <label className="flex flex-col gap-1 text-xs text-ink-2">
-          Supplier
-          <DebouncedInput
-            value={params.supplier ?? ""}
-            onCommit={(v) => set({ supplier: v.trim() || undefined })}
-            className={cn(field, "w-44")}
-            placeholder="Any"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-ink-2">
-          Currency
-          <DebouncedInput
-            value={params.currency ?? ""}
-            onCommit={(v) => set({ currency: v.trim().toUpperCase() || undefined })}
-            className={cn(field, "w-20 uppercase")}
-            maxLength={3}
-            placeholder="Any"
-          />
-        </label>
+        <Combobox
+          label="Supplier"
+          className="w-52"
+          selected={params.supplier ?? []}
+          onChange={(next) => set({ supplier: next.length > 0 ? next : undefined })}
+          options={(facets.data?.suppliers ?? []).map((f) => ({ value: f.value, hint: f.count }))}
+          onQueryChange={onSupplierQuery}
+          loading={facets.isFetching}
+          error={facets.isError}
+          searchPlaceholder="Search suppliers"
+          emptyText="No supplier matches"
+        />
+        <Combobox
+          label="Currency"
+          className="w-36"
+          selected={params.currency ?? []}
+          onChange={(next) => set({ currency: next.length > 0 ? next : undefined })}
+          options={(facets.data?.currencies ?? []).map((f) => ({ value: f.value, hint: f.count }))}
+          loading={facets.isFetching}
+          error={facets.isError}
+          searchPlaceholder="Search currencies"
+          emptyText="No currency matches"
+        />
         <label className="flex flex-col gap-1 text-xs text-ink-2">
           Date from
           <input
@@ -136,8 +140,15 @@ function InvoiceChips({ params }: { params: InvoiceListParams }) {
   if (params.status) {
     chips.push({ key: "status", label: `Status: ${STATUS_LABEL[params.status]}`, href: without({ status: undefined }) });
   }
-  if (params.supplier) chips.push({ key: "supplier", label: `Supplier: ${params.supplier}`, href: without({ supplier: undefined }) });
-  if (params.currency) chips.push({ key: "currency", label: `Currency: ${params.currency}`, href: without({ currency: undefined }) });
+  // One chip per chosen supplier and currency, each removing only itself.
+  for (const name of params.supplier ?? []) {
+    const rest = (params.supplier ?? []).filter((v) => v !== name);
+    chips.push({ key: `supplier:${name}`, label: `Supplier: ${name}`, href: without({ supplier: rest.length ? rest : undefined }) });
+  }
+  for (const code of params.currency ?? []) {
+    const rest = (params.currency ?? []).filter((v) => v !== code);
+    chips.push({ key: `currency:${code}`, label: `Currency: ${code}`, href: without({ currency: rest.length ? rest : undefined }) });
+  }
   if (params.date_from) chips.push({ key: "date_from", label: `Date from ${params.date_from}`, href: without({ date_from: undefined }) });
   if (params.date_to) chips.push({ key: "date_to", label: `Date to ${params.date_to}`, href: without({ date_to: undefined }) });
   if (params.min_total) chips.push({ key: "min_total", label: `Total from ${params.min_total}`, href: without({ min_total: undefined }) });

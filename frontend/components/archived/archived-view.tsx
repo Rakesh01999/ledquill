@@ -77,7 +77,7 @@ function DocumentRows({ items, actions }: { items: DocumentOut[]; actions: Actio
             <TableHead className={cn("w-[124px]", HEAD)}>Status</TableHead>
             <TableHead className={cn("w-[100px] text-right", HEAD)}>Invoices</TableHead>
             <TableHead className={cn("pl-6", HEAD)}>Archived</TableHead>
-            <TableHead className={cn("w-[190px] pr-4 text-right max-xl:w-[96px]", HEAD)}>Action</TableHead>
+            <TableHead className={cn("w-[190px] pr-4 text-right max-xl:w-[96px]", HEAD)}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -180,7 +180,7 @@ function InvoiceRows({ items, actions }: { items: InvoiceOut[]; actions: Actions
             <TableHead className={cn("text-right", HEAD)}>Total</TableHead>
             <TableHead className={cn("pl-4 xl:pl-6", HEAD)}>Status</TableHead>
             <TableHead className={HEAD}>Archived</TableHead>
-            <TableHead className={cn("w-[190px] pr-4 text-right max-xl:w-[96px]", HEAD)}>Action</TableHead>
+            <TableHead className={cn("w-[190px] pr-4 text-right max-xl:w-[96px]", HEAD)}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

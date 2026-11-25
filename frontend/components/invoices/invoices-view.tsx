@@ -59,7 +59,7 @@ export function InvoicesView() {
   return (
     <div className="flex flex-col gap-4">
       <Toolbar>
-        <InvoiceFilters params={params} />
+        <InvoiceFilters params={params} searching={Boolean(params.q) && active.isFetching} />
       </Toolbar>
 
       <div className="flex min-h-5 flex-col gap-1 text-[13px] text-ink-2" role="status">
@@ -128,7 +128,7 @@ export function InvoicesView() {
               }
             />
           ) : rows ? (
-            <InvoicesTable rows={rows} showMatch={searchMode} />
+            <InvoicesTable rows={rows} showMatch={searchMode} params={searchMode ? undefined : params} />
           ) : null}
         </div>
         {!searchMode && list.data && (

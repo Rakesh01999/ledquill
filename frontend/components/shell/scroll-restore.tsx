@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { currentUrl, rememberList, saveScroll, savedScroll, takeRestoreIntent } from "@/lib/list-state";
+import { currentUrl, notePreviousPath, rememberList, saveScroll, savedScroll, takeRestoreIntent } from "@/lib/list-state";
 
 /** Keep trying for this long: rows arrive from the network, so the page may not be tall enough yet. */
 const RESTORE_FRAMES = 120;
@@ -76,6 +76,7 @@ export function ScrollRestore() {
     const main = document.getElementById("main");
     const before = previous.current;
     previous.current = { pathname, search };
+    if (before.pathname !== pathname) notePreviousPath(before.pathname);
     if (!main || (before.pathname === pathname && before.search === search)) return;
 
     if (popped.current) {

@@ -12,7 +12,8 @@ import { rowNavKeyDown } from "@/components/shared/row-nav";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { InvoiceOut } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
-import { invoiceLabel } from "@/lib/invoices";
+import { defaultOrder, invoiceLabel, invoicesHref, type InvoiceListParams, type InvoiceSort } from "@/lib/invoices";
+import { SortableHead } from "@/components/shared/sortable-head";
 import { HEAD, ROW } from "@/lib/table";
 import { prefetchInvoice } from "@/lib/query/prefetch";
 import { cn } from "@/lib/utils";
@@ -30,25 +31,56 @@ const matchText = (matchedBy?: string[]) => matchedBy?.map((m) => MATCH_LABEL[m]
  * the currency moves next to the total. In search results a "Matched by" column explains why each
  * row is there.
  */
-export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[]; showMatch?: boolean }) {
+export function InvoicesTable({
+  rows,
+  showMatch = false,
+  params,
+}: {
+  rows: InvoiceRow[];
+  showMatch?: boolean;
+  /** Present when the order is the user's (filters or plain list): headers then sort. Ranked search results keep their relevance order. */
+  params?: InvoiceListParams;
+}) {
   const queryClient = useQueryClient();
   const hoverPrefetch = useHoverPrefetch();
   const actions = useConfirmedActions();
+  // The column sorted now: the chosen one, or the API's newest-first when none is chosen.
+  const direction = (column: InvoiceSort) =>
+    params?.sort === column ? (params.order ?? defaultOrder(column)) : undefined;
+  const sortHead = (column: InvoiceSort, label: string, extra?: { align?: "right"; className?: string }) => {
+    if (!params) {
+      return (
+        <TableHead className={cn(head, extra?.align === "right" && "text-right", extra?.className)}>{label}</TableHead>
+      );
+    }
+    const now = direction(column);
+    const order = now ? (now === "asc" ? "desc" : "asc") : defaultOrder(column);
+    return (
+      <SortableHead
+        direction={now}
+        align={extra?.align}
+        className={extra?.className}
+        nextHref={invoicesHref({ ...params, sort: column, order: order === defaultOrder(column) ? undefined : order, page: 1 })}
+      >
+        {label}
+      </SortableHead>
+    );
+  };
   return (
     <>
       {actions.dialog}
       <Table bare className="hidden lg:table" onKeyDown={rowNavKeyDown}>
         <TableHeader className="bg-surface-2 [&_tr]:border-line">
           <TableRow className="h-9 hover:bg-transparent">
-            <TableHead className={cn("pl-4", head)}>Invoice</TableHead>
-            <TableHead className={head}>Supplier</TableHead>
-            <TableHead className={cn("hidden xl:table-cell", head)}>Date</TableHead>
+            {sortHead("number", "Invoice", { className: "pl-4" })}
+            {sortHead("supplier", "Supplier")}
+            {sortHead("date", "Date", { className: "hidden xl:table-cell" })}
             <TableHead className={cn("hidden xl:table-cell", head)}>Currency</TableHead>
-            <TableHead className={cn("text-right", head)}>Total</TableHead>
-            <TableHead className={cn("pl-4 xl:pl-6", head)}>Status</TableHead>
-            <TableHead className={cn("text-right", head)}>Issues</TableHead>
+            {sortHead("total", "Total", { align: "right" })}
+            {sortHead("status", "Status", { className: "pl-4 xl:pl-6" })}
+            {sortHead("issues", "Issues", { align: "right" })}
             {showMatch && <TableHead className={cn("hidden xl:table-cell", head)}>Matched by</TableHead>}
-            <TableHead className={cn("w-[148px] pr-4 text-right max-xl:w-[96px]", head)}>Action</TableHead>
+            <TableHead className={cn("w-[148px] pr-4 text-right max-xl:w-[96px]", head)}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
