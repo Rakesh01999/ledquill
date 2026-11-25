@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { api, unwrap } from "@/lib/api/client";
 import type { PageOut } from "@/lib/api/types";
 import { pagesOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
+import { ImageViewer, OpenLargeButton, ZoomToolbar, clampZoom } from "./image-viewer";
 
 const METHOD_LABEL: Record<string, string> = { text: "Text layer", ocr: "OCR", sheet: "Sheet" };
 
@@ -27,7 +29,21 @@ function blobToDataUrl(blob: Blob): Promise<string> {
  * as a data URL so it can sit in the query cache without object URLs to revoke. A plain
  * <img src="/api/..."> would also work through the proxy, but a fetch lets errors show properly.
  */
-function PageImage({ documentId, page, label, wide }: { documentId: string; page: number; label: string; wide: boolean }) {
+function PageImage({
+  documentId,
+  page,
+  label,
+  extra,
+  className,
+  viewportClassName,
+}: {
+  documentId: string;
+  page: number;
+  label: string;
+  extra?: ReactNode;
+  className?: string;
+  viewportClassName: string;
+}) {
   const query = useQuery({
     queryKey: ["page-image", documentId, page],
     queryFn: async () => {
@@ -43,44 +59,66 @@ function PageImage({ documentId, page, label, wide }: { documentId: string; page
     gcTime: 2 * 60_000,
   });
 
-  // Reserve an A4 portrait box so the page does not jump when the image arrives.
-  return (
-    <div className="flex min-h-[320px] items-start justify-center rounded-md border border-line bg-surface-2 p-3">
-      {query.isPending ? (
-        <Skeleton
-          className={cn("aspect-[1/1.414] w-full bg-skeleton", !wide && "max-w-[520px]")}
-          role="status"
-          aria-label="Loading page image"
-        />
-      ) : query.isError ? (
+  if (query.isPending) {
+    return (
+      <div className={cn("flex items-start justify-center rounded-md border border-line bg-surface-2 p-3", viewportClassName)}>
+        <Skeleton className="aspect-[1/1.414] w-full max-w-[520px] bg-skeleton" role="status" aria-label="Loading page image" />
+      </div>
+    );
+  }
+  if (query.isError) {
+    return (
+      <div className={cn("rounded-md border border-line bg-surface-2", viewportClassName)}>
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element -- a data URL from the authenticated proxy; next/image cannot optimise it
-        <img src={query.data} alt={label} className={cn("h-auto w-full bg-white shadow-sm", !wide && "max-w-[520px]")} />
-      )}
-    </div>
+      </div>
+    );
+  }
+  // key: a new page starts at fit-to-width, not at the previous page's zoom.
+  return (
+    <ImageViewer
+      key={`${documentId}-${page}`}
+      src={query.data}
+      alt={label}
+      extra={extra}
+      className={className}
+      viewportClassName={viewportClassName}
+    />
   );
 }
 
-function PageText({ page, isSheet, fill }: { page: PageOut; isSheet: boolean; fill: boolean }) {
+/** Extracted text (also the preview of a spreadsheet). Zoom scales the type; the box scrolls inside itself. */
+function PageText({
+  page,
+  isSheet,
+  extra,
+  className,
+  viewportClassName,
+}: {
+  page: PageOut;
+  isSheet: boolean;
+  extra?: ReactNode;
+  className?: string;
+  viewportClassName: string;
+}) {
   const text = page.text?.trim();
+  const [zoom, setZoom] = useState(1);
   return (
-    <div className="min-h-[320px] rounded-md border border-line bg-surface-2">
-      {text ? (
-        <pre
-          tabIndex={0}
-          aria-label={isSheet ? "Extracted sheet text" : "Extracted page text"}
-          className={cn(
-            "overflow-auto p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-ink",
-            // In the invoice view the whole panel scrolls, so the text does not scroll inside it.
-            !fill && "max-h-[640px]",
-          )}
-        >
-          {text}
-        </pre>
-      ) : (
-        <EmptyState title="No text was found on this page." />
-      )}
+    <div className={cn("flex min-h-0 flex-col gap-2", className)}>
+      {text && <ZoomToolbar zoom={zoom} onZoom={(z) => setZoom(clampZoom(z))} extra={extra} />}
+      <div className={cn("overflow-auto overscroll-contain rounded-md border border-line bg-surface-2", viewportClassName)}>
+        {text ? (
+          <pre
+            tabIndex={0}
+            aria-label={isSheet ? "Extracted sheet text" : "Extracted page text"}
+            style={{ fontSize: 12 * zoom }}
+            className="w-max min-w-full p-3 font-mono leading-relaxed whitespace-pre-wrap text-ink"
+          >
+            {text}
+          </pre>
+        ) : (
+          <EmptyState title="No text was found on this page." />
+        )}
+      </div>
     </div>
   );
 }
@@ -100,6 +138,7 @@ export function SourcePanel({
   page: controlledPage,
   onPageChange,
   layout = "side-by-side",
+  large = false,
 }: {
   documentId: string;
   filename: string;
@@ -107,10 +146,13 @@ export function SourcePanel({
   page?: number;
   onPageChange?: (pageNo: number) => void;
   layout?: "side-by-side" | "toggle";
+  /** Rendered inside the "open large" dialog: fills it, and has no "open large" button of its own. */
+  large?: boolean;
 }) {
   const { data, isPending, error, refetch } = useQuery(pagesOptions(api, documentId));
   const [ownIndex, setOwnIndex] = useState(0);
   const [view, setView] = useState<"image" | "text">("image");
+  const [open, setOpen] = useState(false);
   const activeSheet = useRef<HTMLButtonElement>(null);
   // Keep the selected sheet tab in view when the strip scrolls sideways (many sheets, narrow screen).
   useEffect(() => {
@@ -141,9 +183,21 @@ export function SourcePanel({
   const noun = isSheet ? "Sheet" : "Page";
   const toggle = layout === "toggle";
   const showImage = page.has_image && (!toggle || view === "image");
+  const showText = !toggle || !showImage;
+
+  // The viewer needs a height of its own. Large: it fills the dialog. Invoice view (toggle) on
+  // desktop: it fills the sticky panel. Everywhere else: a viewport-relative height with a floor.
+  const fill = large || toggle;
+  const viewportClass = large
+    ? "min-h-[240px] flex-1"
+    : toggle
+      ? "h-[65dvh] min-h-[360px] lg:h-auto lg:min-h-[300px] lg:flex-1"
+      : "h-[70dvh] min-h-[420px]";
+  const bodyClass = fill ? "min-h-0 flex-1" : undefined;
+  const largeButton = large ? undefined : <OpenLargeButton onClick={() => setOpen(true)} />;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={cn("flex flex-col gap-3", fill && "min-h-0 lg:h-full", large && "h-full")}>
       {isSheet && total > 1 && (
         // One tab per sheet. The API gives the sheet's position, not its name, so the tabs say "Sheet 2".
         <div
@@ -180,7 +234,7 @@ export function SourcePanel({
           <ChevronLeft className="size-4" aria-hidden="true" />
         </Button>
         <span className="min-w-24 text-center text-[13px] tabular-nums" aria-live="polite">
-          {noun} {current + 1} of {total}
+          {noun} {current + 1} / {total}
         </span>
         <Button
           variant="outline"
@@ -213,17 +267,52 @@ export function SourcePanel({
           </div>
         )}
       </div>
-      <div className={page.has_image && !toggle ? "grid gap-4 lg:grid-cols-2" : ""}>
+      <div className={cn(page.has_image && !toggle ? "grid gap-4 lg:grid-cols-2" : "flex flex-col", bodyClass)}>
         {showImage && (
           <PageImage
             documentId={documentId}
             page={page.page_no}
             label={`${filename}, page ${page.page_no}`}
-            wide={toggle}
+            extra={largeButton}
+            className={fill ? "min-h-0 flex-1" : undefined}
+            viewportClassName={viewportClass}
           />
         )}
-        {(!toggle || !showImage) && <PageText page={page} isSheet={isSheet} fill={toggle} />}
+        {showText && (
+          <PageText
+            page={page}
+            isSheet={isSheet}
+            // With an image beside it the image toolbar already carries the button.
+            extra={showImage ? undefined : largeButton}
+            className={fill ? "min-h-0 flex-1" : undefined}
+            viewportClassName={viewportClass}
+          />
+        )}
       </div>
+      {!large && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="flex h-[94dvh] w-[96vw] max-w-[96vw] flex-col gap-3 p-4 sm:max-w-[96vw]">
+            <DialogTitle className="pr-8 text-sm break-all">{filename}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Large preview. Ctrl and mouse wheel zoom, drag to move, Escape closes.
+            </DialogDescription>
+            <div className="min-h-0 flex-1">
+              <SourcePanel
+                documentId={documentId}
+                filename={filename}
+                pageNumbers={pageNumbers}
+                page={page.page_no}
+                onPageChange={(n) => {
+                  setOwnIndex(Math.max(0, pages.findIndex((p) => p.page_no === n)));
+                  onPageChange?.(n);
+                }}
+                layout={toggle ? "toggle" : "side-by-side"}
+                large
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
