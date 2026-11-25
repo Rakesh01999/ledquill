@@ -222,11 +222,11 @@ export function FieldRow({
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 text-xs text-ink-2">
                     <span className="size-2 rounded-full bg-warn-dot" aria-hidden="true" />
-                    <span className="sr-only">Medium confidence. </span>
-                    <span className="sr-only">Confidence {confidence?.toFixed(2)}</span>
+                    Check value
+                    <span className="sr-only">. Medium confidence {confidence?.toFixed(2)}</span>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>Medium confidence ({confidence?.toFixed(2)}). Check this value.</TooltipContent>
+                <TooltipContent>Medium confidence ({confidence?.toFixed(2)}). Compare with the source page.</TooltipContent>
               </Tooltip>
             )}
             {level === "low" && value !== null && (
