@@ -15,6 +15,9 @@ import {
 } from "@/lib/invoices";
 import { cn } from "@/lib/utils";
 
+/** What a save came back with. On failure `error` is the sentence to show at the field. */
+export type SaveResult = { ok: true } | { ok: false; error: string };
+
 export type FieldRowProps = {
   def: FieldDef;
   value: string | null;
@@ -22,9 +25,7 @@ export type FieldRowProps = {
   edited: boolean;
   pageLabel: string | null;
   issues: Issue[];
-  saving: boolean;
-  serverError?: string;
-  onSave: (value: string | null) => void;
+  onSave: (value: string | null) => Promise<SaveResult>;
   onShowPage: () => void;
 };
 
@@ -38,6 +39,8 @@ function display(def: FieldDef, value: string | null): string | null {
 /**
  * One field: value, confidence marker, source page, and inline edit. Click the value (or press
  * Enter on it) to edit; Enter saves, Escape cancels. Nothing is sent when the value is unchanged.
+ * The editor stays open while the save runs and closes only when it succeeds; a failure (for
+ * example a 422 from the server) is shown under the input so the value can be corrected in place.
  */
 export function FieldRow({
   def,
@@ -46,54 +49,57 @@ export function FieldRow({
   edited,
   pageLabel,
   issues,
-  saving,
-  serverError,
   onSave,
   onShowPage,
 }: FieldRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const level = edited ? null : confidenceLevel(confidence);
   const hasError = issues.some((i) => i.severity === "error");
-  const error = localError ?? serverError ?? null;
   const inputId = `edit-${def.name}`;
   const errorId = `${inputId}-error`;
 
   function start() {
     setDraft(value ?? "");
-    setLocalError(null);
+    setError(null);
     setEditing(true);
   }
 
   function stop() {
     setEditing(false);
-    setLocalError(null);
+    setError(null);
     requestAnimationFrame(() => trigger.current?.focus());
   }
 
-  function submit() {
+  async function submit() {
+    if (busy) return;
     const parsed = parseEdit(def.kind, draft);
     if (!parsed.ok) {
-      setLocalError(parsed.error);
+      setError(parsed.error);
       return;
     }
     if (!isChanged(def.kind, value, parsed.value)) {
       stop(); // unchanged: no request, no correction row
       return;
     }
-    onSave(parsed.value);
-    stop();
+    setError(null);
+    setBusy(true);
+    const result = await onSave(parsed.value);
+    setBusy(false);
+    if (result.ok) stop();
+    else setError(result.error);
   }
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === "Enter") {
       event.preventDefault();
-      submit();
+      void submit();
     } else if (event.key === "Escape") {
       event.preventDefault();
-      stop();
+      if (!busy) stop();
     }
   }
 
@@ -117,7 +123,10 @@ export function FieldRow({
               id={inputId}
               autoFocus
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setError(null);
+              }}
               onKeyDown={onKeyDown}
               type={def.kind === "date" ? "date" : "text"}
               inputMode={def.kind === "money" ? "decimal" : undefined}
@@ -137,10 +146,10 @@ export function FieldRow({
               </p>
             )}
             <div className="flex items-center gap-2">
-              <Button size="sm" onClick={submit} disabled={saving}>
-                Save
+              <Button size="sm" onClick={() => void submit()} disabled={busy}>
+                {busy ? "Saving" : "Save"}
               </Button>
-              <Button size="sm" variant="ghost" onClick={stop}>
+              <Button size="sm" variant="ghost" onClick={stop} disabled={busy}>
                 Cancel
               </Button>
               <span className="text-xs text-ink-3">Your edit is logged with the original value.</span>
@@ -161,7 +170,7 @@ export function FieldRow({
             >
               <span className="min-w-0 break-words">{shown ?? <Missing />}</span>
               <Pencil
-                className="size-3 flex-none text-ink-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="size-3 flex-none text-ink-3 group-hover:text-ink group-focus-visible:text-ink"
                 aria-hidden="true"
               />
             </button>

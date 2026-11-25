@@ -4,16 +4,17 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SourcePanel } from "@/components/documents/source-panel";
 import { ProblemAlert } from "@/components/shared/problem-alert";
 import { StatusChip } from "@/components/shared/status-chip";
 import { ErrorState } from "@/components/shared/states";
 import { api } from "@/lib/api/client";
-import { ApiProblem, fieldErrors, invalidIdAsMissing } from "@/lib/api/problem";
+import { ApiProblem, describeError, fieldErrors, invalidIdAsMissing } from "@/lib/api/problem";
 import type { InvoiceOut } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
 import {
@@ -27,7 +28,7 @@ import { documentOptions, invoiceOptions, queueOptions } from "@/lib/query/optio
 import { cn } from "@/lib/utils";
 import { useShortcuts } from "@/lib/shortcuts";
 import { CorrectionsPanel } from "./corrections-panel";
-import { FieldRow } from "./field-row";
+import { FieldRow, type SaveResult } from "./field-row";
 import { IssuesBanner } from "./issues-banner";
 import { LineItems } from "./line-items";
 import { useApproveInvoice, useCorrectInvoice } from "./use-invoice-actions";
@@ -40,21 +41,28 @@ function InvoiceShortcuts({ handlers }: { handlers: Record<string, () => void> }
   return null;
 }
 
-function Section({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
+function Section({
+  title,
+  children,
+  className,
+  bodyClassName,
+}: {
+  title: string;
+  children: ReactNode;
+  className?: string;
+  bodyClassName?: string;
+}) {
   return (
     <section className={cn("overflow-hidden rounded-lg border border-line bg-surface", className)}>
       <h2 className="border-b border-line px-4 py-2.5 text-sm font-semibold">{title}</h2>
-      <div className="overflow-x-auto">{children}</div>
+      <div className={cn("overflow-x-auto", bodyClassName)}>{children}</div>
     </section>
   );
 }
 
+/** The page chip is only useful when the invoice spans several pages: one page needs no pointer. */
 const pageLabel = (pages: number[] | null) =>
-  !pages || pages.length === 0
-    ? null
-    : pages.length === 1
-      ? `p.${pages[0]}`
-      : `p.${pages[0]}–${pages[pages.length - 1]}`;
+  !pages || pages.length < 2 ? null : `p.${pages[0]}–${pages[pages.length - 1]}`;
 
 const pagesText = (pages: number[] | null) =>
   !pages || pages.length === 0
@@ -89,8 +97,6 @@ export function InvoiceDetail({ id }: { id: string }) {
   const [tab, setTab] = useState<Tab>("fields");
   const [sourcePage, setSourcePage] = useState<number | undefined>(undefined);
   const [saved, setSaved] = useState<string | null>(null);
-  const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
-  const [savingField, setSavingField] = useState<FieldName | null>(null);
 
   const correct = useCorrectInvoice(id);
   const approve = useApproveInvoice(id);
@@ -125,21 +131,22 @@ export function InvoiceDetail({ id }: { id: string }) {
     });
   }
 
-  function save(name: FieldName, label: string, value: string | null) {
+  /** Resolves when the server has answered; the field closes its editor only on success. */
+  async function save(name: FieldName, label: string, value: string | null): Promise<SaveResult> {
     setSaved(null);
-    setServerErrors({});
-    setSavingField(name);
     const before = queryClient.getQueryData(invoiceOptions(api, id).queryKey);
-    correct.mutate(
-      { field: name, value },
-      {
-        onSuccess: (after) => setSaved(revalidationMessage(label, before, after)),
-        onError: (error) => {
-          if (error instanceof ApiProblem && error.status === 422) setServerErrors(fieldErrors(error));
-        },
-        onSettled: () => setSavingField(null),
-      },
-    );
+    try {
+      const after = await correct.mutateAsync({ field: name, value });
+      setSaved(revalidationMessage(label, before, after));
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof ApiProblem && error.status === 422) {
+        const message = fieldErrors(error)[name] ?? error.errors[0]?.msg;
+        if (message) return { ok: false, error: message };
+      }
+      const { title, message } = describeError(error);
+      return { ok: false, error: `${title}. ${message}` };
+    }
   }
 
   function doApprove() {
@@ -168,6 +175,17 @@ export function InvoiceDetail({ id }: { id: string }) {
       if (el instanceof HTMLButtonElement && el.id.startsWith("field-")) el.click();
     },
   };
+  const shortcutRows: [string, string][] = [
+    ...(inQueue
+      ? ([
+          ["J", "Next in queue"],
+          ["K", "Previous in queue"],
+        ] as [string, string][])
+      : []),
+    ["A", "Approve invoice"],
+    ["E", "Edit the focused field"],
+    ["/", "Search"],
+  ];
   const issuesLabel = `Issues${invoice.issues.length ? ` ${invoice.issues.length}` : ""}`;
 
   return (
@@ -202,55 +220,72 @@ export function InvoiceDetail({ id }: { id: string }) {
             )}
           </p>
         </div>
-        <div className="flex flex-none flex-wrap items-center gap-2">
-          {inQueue && (
-            <div className="flex items-center gap-1" aria-label="Queue navigation">
-              <span className="mr-1 text-xs text-ink-2 tabular-nums">
-                {position >= 0 ? `${position + 1} of ${queueIds.length} in queue` : `${queueIds.length} in queue`}
-              </span>
-              <Button asChild={Boolean(prevId)} variant="outline" size="icon-sm" disabled={!prevId} aria-label="Previous in queue">
-                {prevId ? (
-                  <Link href={hrefFor(prevId)}>
+        <div className="flex flex-none flex-col items-start gap-1.5 sm:items-end">
+          <div className="flex flex-wrap items-center gap-2">
+            {inQueue && (
+              <div className="flex items-center gap-1" aria-label="Queue navigation">
+                <span className="mr-1 text-xs text-ink-2 tabular-nums">
+                  {position >= 0 ? `${position + 1} of ${queueIds.length} in queue` : `${queueIds.length} in queue`}
+                </span>
+                <Button asChild={Boolean(prevId)} variant="outline" size="icon-sm" disabled={!prevId} aria-label="Previous in queue">
+                  {prevId ? (
+                    <Link href={hrefFor(prevId)}>
+                      <ChevronLeft aria-hidden="true" />
+                    </Link>
+                  ) : (
                     <ChevronLeft aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <ChevronLeft aria-hidden="true" />
-                )}
-              </Button>
-              <Button asChild={Boolean(nextId)} variant="outline" size="icon-sm" disabled={!nextId} aria-label="Next in queue">
-                {nextId ? (
-                  <Link href={hrefFor(nextId)}>
+                  )}
+                </Button>
+                <Button asChild={Boolean(nextId)} variant="outline" size="icon-sm" disabled={!nextId} aria-label="Next in queue">
+                  {nextId ? (
+                    <Link href={hrefFor(nextId)}>
+                      <ChevronRight aria-hidden="true" />
+                    </Link>
+                  ) : (
                     <ChevronRight aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <ChevronRight aria-hidden="true" />
-                )}
-              </Button>
-            </div>
+                  )}
+                </Button>
+              </div>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon-sm" className="max-lg:hidden" aria-label="Keyboard shortcuts">
+                  <CircleHelp aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="end">
+                <ul className="flex flex-col gap-1">
+                  {shortcutRows.map(([key, what]) => (
+                    <li key={key} className="flex items-center gap-2">
+                      <kbd className="min-w-5 rounded-sm border border-background/40 px-1 text-center font-mono text-[11px]">
+                        {key}
+                      </kbd>
+                      {what}
+                    </li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+            <Button
+              onClick={doApprove}
+              title="Approve invoice (A)"
+              disabled={approved || blocked || approve.isPending}
+              aria-describedby={blocked ? "approve-hint" : undefined}
+            >
+              <Check aria-hidden="true" /> {approved ? "Approved" : approve.isPending ? "Approving" : "Approve invoice"}
+            </Button>
+          </div>
+          {blocked && !approved && (
+            <p id="approve-hint" className="text-xs text-ink-2 sm:text-right">
+              Resolve {plural(errors.length, "error", "errors")} to approve this invoice.
+            </p>
           )}
-          <Button
-            onClick={doApprove}
-            title="Approve invoice (A)"
-            disabled={approved || blocked || approve.isPending}
-            aria-describedby={blocked ? "approve-hint" : undefined}
-          >
-            <Check aria-hidden="true" /> {approved ? "Approved" : approve.isPending ? "Approving" : "Approve invoice"}
-          </Button>
         </div>
-        {blocked && !approved && (
-          <p id="approve-hint" className="basis-full text-right text-xs text-ink-2">
-            Resolve {plural(errors.length, "error", "errors")} to approve this invoice.
-          </p>
-        )}
       </header>
 
       {approve.error && <ProblemAlert error={approve.error} />}
-      {correct.error && <ProblemAlert error={correct.error} />}
       <p role="status" className="min-h-0 text-[13px] text-ok empty:hidden">
         {saved}
-      </p>
-      <p className="hidden text-xs text-ink-3 lg:block">
-        Shortcuts: {inQueue ? "J next, K previous, " : ""}A approve, E edit the focused field, / search.
       </p>
 
       <div role="tablist" aria-label="Invoice sections" className="flex gap-1 border-b border-line lg:hidden">
@@ -288,7 +323,15 @@ export function InvoiceDetail({ id }: { id: string }) {
       </div>
 
       <div className="grid items-start gap-4 lg:grid-cols-2">
-        <Section title="Source" className={cn(tab !== "source" && "max-lg:hidden")}>
+        <Section
+          title="Source"
+          // Desktop: the source stays in view while the fields scroll, and scrolls inside itself.
+          className={cn(
+            "lg:sticky lg:top-0 lg:flex lg:max-h-[calc(100dvh-5.5rem)] lg:flex-col",
+            tab !== "source" && "max-lg:hidden",
+          )}
+          bodyClassName="lg:min-h-0 lg:overflow-y-auto"
+        >
           <div className="p-4">
             {sourceDoc ? (
               <SourcePanel
@@ -297,6 +340,7 @@ export function InvoiceDetail({ id }: { id: string }) {
                 pageNumbers={pages}
                 page={sourcePage}
                 onPageChange={setSourcePage}
+                layout="toggle"
               />
             ) : (
               <Skeleton className="h-[380px] w-full bg-skeleton" role="status" aria-label="Loading source" />
@@ -306,6 +350,7 @@ export function InvoiceDetail({ id }: { id: string }) {
 
         <div className={cn("flex flex-col gap-4", tab !== "fields" && "max-lg:hidden")}>
           <Section title="Extracted fields">
+            <p className="border-b border-line px-4 py-2 text-xs text-ink-2">Select a value to correct it.</p>
             <div className="divide-y divide-line">
               {FIELD_GROUPS.map((group) => (
                 <div key={group.title} role="group" aria-label={group.title}>
@@ -319,8 +364,6 @@ export function InvoiceDetail({ id }: { id: string }) {
                       edited={invoice.corrected_fields.includes(def.name)}
                       pageLabel={pageLabel(pages)}
                       issues={invoice.issues.filter((i) => i.field === def.name)}
-                      saving={savingField === def.name && correct.isPending}
-                      serverError={serverErrors[def.name]}
                       onSave={(value) => save(def.name, def.label, value)}
                       onShowPage={() => {
                         const first = pages?.[0];

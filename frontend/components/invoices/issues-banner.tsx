@@ -3,8 +3,18 @@
 import Link from "next/link";
 import { CircleAlert, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FIELD_LABELS, ruleTitle, type Issue } from "@/lib/invoices";
 import { cn } from "@/lib/utils";
+
+/**
+ * The expected/found line only when it adds something: the numeric rules already put both values
+ * in the message, and "a value / missing" (V-01) says nothing the message does not.
+ */
+function showsExpectedFound(issue: Issue): boolean {
+  if (!issue.expected || !issue.actual || issue.rule_id === "V-01") return false;
+  return !(issue.message.includes(issue.expected) && issue.message.includes(issue.actual));
+}
 
 /**
  * Validation issues in plain language. Each states what is wrong with the numbers (the API's
@@ -49,12 +59,18 @@ export function IssuesBanner({
             <div className="min-w-0 flex-1">
               <p className="text-[13px] text-ink">
                 <span className="font-semibold">{ruleTitle(issue.rule_id)}</span>{" "}
-                <span className="text-ink-3">
-                  {issue.rule_id} · {issue.severity === "error" ? "Error" : "Warning"}
-                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0} className="cursor-help rounded-sm text-ink-2 underline decoration-dotted underline-offset-2">
+                      {issue.severity === "error" ? "Error" : "Warning"}
+                      <span className="sr-only">, rule {issue.rule_id}</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Rule {issue.rule_id}</TooltipContent>
+                </Tooltip>
               </p>
               <p className="text-[13px] text-ink">{issue.message}</p>
-              {issue.expected && issue.actual && (
+              {showsExpectedFound(issue) && (
                 <p className="text-xs text-ink-2">
                   Expected {issue.expected}; found {issue.actual}.
                 </p>
