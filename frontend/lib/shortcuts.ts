@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 type Handlers = Record<string, () => void>;
 
-function isTyping(target: EventTarget | null): boolean {
+export function isTyping(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return true;
   // Custom text widgets and selects (a shadcn Select trigger is a button with role=combobox).
