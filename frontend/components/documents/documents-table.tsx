@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, type MouseEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,27 +13,69 @@ import { describeError } from "@/lib/api/problem";
 import type { DocumentOut } from "@/lib/api/types";
 import { formatBytes } from "@/lib/format";
 import { DOC_ROW, formatWhen, isActive, stageText, typeTile } from "@/lib/documents";
+import { documentInvoicesOptions } from "@/lib/query/options";
 import { prefetchDocument } from "@/lib/query/prefetch";
 import { openUploadPicker } from "./upload-section";
 import { cn } from "@/lib/utils";
 
 /** What the document is doing, or what it produced; a failed one also offers a new upload. */
 function Stage({ doc, wrap = false }: { doc: DocumentOut; wrap?: boolean }) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [opening, setOpening] = useState(false);
   const text = stageText(doc);
   const running = isActive(doc);
   const failed = doc.status === "failed";
+  const hasIssues = doc.status === "completed" && doc.issue_count > 0;
+
+  /** Open the first invoice of this document that has an issue, at its Issues section. */
+  async function openFirstIssue(event: MouseEvent) {
+    event.stopPropagation();
+    setOpening(true);
+    try {
+      const { items } = await queryClient.fetchQuery(documentInvoicesOptions(api, doc.id));
+      const target = items.find((inv) => inv.issues.length > 0);
+      if (target) {
+        router.push(`/invoices/${target.id}#issues`);
+        return;
+      }
+      toast.info("No open issues found in this document's invoices.");
+      router.push(`/documents/${doc.id}`);
+    } catch (error) {
+      const { title, message } = describeError(error);
+      toast.error(title, { description: message });
+      setOpening(false);
+    }
+  }
+
+  const textClass = cn(
+    wrap ? "break-words" : "truncate",
+    failed ? "text-danger" : hasIssues ? "text-warn" : "text-ink-2",
+  );
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <span
-        title={text}
-        className={cn(
-          wrap ? "break-words" : "truncate",
-          failed ? "text-danger" : doc.status === "completed" && doc.issue_count > 0 ? "text-warn" : "text-ink-2",
-        )}
-      >
-        {text}
-        {doc.status === "processing" && <span className="ml-1 text-ink-3 tabular-nums">{doc.progress}%</span>}
-      </span>
+      {hasIssues ? (
+        <button
+          type="button"
+          title={`Review the issues in ${doc.filename}`}
+          aria-label={`${text}. Review issues in ${doc.filename}`}
+          disabled={opening}
+          onClick={(e) => void openFirstIssue(e)}
+          onMouseEnter={() => prefetchDocument(queryClient, doc.id)}
+          onFocus={() => prefetchDocument(queryClient, doc.id)}
+          className={cn(
+            "-my-1 min-w-0 cursor-pointer rounded-sm py-1 text-left underline decoration-dotted underline-offset-2 hover:decoration-solid disabled:cursor-progress disabled:opacity-70",
+            textClass,
+          )}
+        >
+          {text}
+        </button>
+      ) : (
+        <span title={text} className={textClass}>
+          {text}
+          {doc.status === "processing" && <span className="ml-1 text-ink-3 tabular-nums">{doc.progress}%</span>}
+        </span>
+      )}
       {failed && (
         <button
           type="button"

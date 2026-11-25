@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
 import { toast } from "sonner";
@@ -101,6 +101,43 @@ export function InvoiceDetail({ id }: { id: string }) {
   const correct = useCorrectInvoice(id);
   const approve = useApproveInvoice(id);
 
+  // A link ending in #issues (from the documents list) lands on the Issues section. The hash is read
+  // here, after the invoice has rendered, never during render, so server and client markup match.
+  const loaded = Boolean(invoice);
+  // The field a "Go to <field>" button pointed at. `n` makes a second click on the same field count.
+  const [target, setTarget] = useState<{ name: string; n: number } | null>(null);
+  useEffect(() => {
+    if (!target) return;
+    // Runs after the commit that shows the Fields tab, so the row exists and has a layout (below lg too).
+    const el = document.getElementById(`field-${target.name}`);
+    if (el) {
+      const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.scrollIntoView({ block: "center", behavior: calm ? "auto" : "smooth" });
+      // preventScroll: a plain focus() cancels the smooth scroll above when the field is already in view.
+      el.focus({ preventScroll: true });
+    }
+    const timer = setTimeout(() => setTarget(null), 1800);
+    return () => clearTimeout(timer);
+  }, [target]);
+  const landOnIssues = useRef(false);
+  useEffect(() => {
+    if (!loaded || window.location.hash !== "#issues") return;
+    landOnIssues.current = true;
+    // Below lg the section is a tab, so open it first; on desktop this changes nothing visible.
+    const frame = requestAnimationFrame(() => setTab("issues"));
+    return () => cancelAnimationFrame(frame);
+  }, [loaded]);
+  // Runs once the Issues tab is on screen: scroll to the section and move focus to it.
+  useEffect(() => {
+    if (!landOnIssues.current || tab !== "issues") return;
+    landOnIssues.current = false;
+    const el = document.getElementById("issues");
+    if (!el) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
+    el.focus({ preventScroll: true });
+  }, [tab]);
+
   if (invoiceQuery.isPending) return <InvoiceDetailSkeleton />;
   if (invoiceQuery.error && !invoice) {
     return (
@@ -121,14 +158,10 @@ export function InvoiceDetail({ id }: { id: string }) {
   const nextId = position >= 0 ? queueIds[position + 1] : queueIds[0];
   const hrefFor = (target: string) => `/invoices/${target}?queue=1`;
 
+  /** Show the Fields tab and mark the field; the effect above scrolls once the row is on screen. */
   function goToField(name: string) {
     setTab("fields");
-    // The tab panel is shown on the next frame; focus then.
-    requestAnimationFrame(() => {
-      const el = document.getElementById(`field-${name}`);
-      el?.scrollIntoView({ block: "center", behavior: "smooth" });
-      el?.focus();
-    });
+    setTarget({ name, n: (target?.n ?? 0) + 1 });
   }
 
   /** Resolves when the server has answered; the field closes its editor only on success. */
@@ -364,6 +397,7 @@ export function InvoiceDetail({ id }: { id: string }) {
                       edited={invoice.corrected_fields.includes(def.name)}
                       pageLabel={pageLabel(pages)}
                       issues={invoice.issues.filter((i) => i.field === def.name)}
+                      highlighted={target?.name === def.name}
                       onSave={(value) => save(def.name, def.label, value)}
                       onShowPage={() => {
                         const first = pages?.[0];

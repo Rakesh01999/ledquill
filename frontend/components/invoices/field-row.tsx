@@ -27,6 +27,8 @@ export type FieldRowProps = {
   issues: Issue[];
   onSave: (value: string | null) => Promise<SaveResult>;
   onShowPage: () => void;
+  /** True for a moment after "Go to <field>" brings this row into view. */
+  highlighted?: boolean;
 };
 
 function display(def: FieldDef, value: string | null): string | null {
@@ -51,6 +53,7 @@ export function FieldRow({
   issues,
   onSave,
   onShowPage,
+  highlighted = false,
 }: FieldRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -107,10 +110,13 @@ export function FieldRow({
 
   return (
     <div
+      data-highlighted={highlighted || undefined}
       className={cn(
         "relative grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-1 border-l-2 px-3 py-2.5 sm:grid-cols-[132px_minmax(0,1fr)]",
         hasError ? "border-danger" : issues.length > 0 ? "border-warn-dot" : "border-transparent",
         level === "low" && value !== null && "bg-warn-field",
+        // A plain ring, no animation, so it reads the same with reduced motion.
+        highlighted && "ring-2 ring-inset ring-primary",
       )}
     >
       <label htmlFor={editing ? inputId : `field-${def.name}`} className="pt-1.5 text-xs text-ink-2">
