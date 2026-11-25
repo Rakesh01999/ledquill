@@ -9,7 +9,7 @@ rules (V-07, V-09), so archiving or restoring re-validates the invoices they can
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -28,38 +28,46 @@ def _refuse_if_active(doc: Document, action: str) -> None:
         raise AppError(409, f"Cannot {action}: the document is still {doc.status}.")
 
 
-def _revalidate(session: Session, changed: list[Invoice], *, include_changed: bool) -> None:
-    """Re-run V-01..V-09 where the archived or restored set `changed` matters: the invoices
-    flagged against it, and the live ones sharing its invoice numbers or its file hash. With
-    `include_changed` (a restore) the changed invoices are validated against the live data too."""
+def _revalidate(session: Session, changed: list[Invoice], *, restored: bool) -> None:
+    """Re-run V-01..V-09 where an archive or restore matters, with the duplicate rules limited to
+    earlier uploads (what the pipeline saw first), so archive then restore returns every invoice
+    to its previous issues and status.
+
+    Archive: the invoices that were flagged against the archived ones lose those flags.
+    Restore: the restored invoices are checked again, and so are the later invoices that share
+    their invoice number or file, which gain the flag back."""
     if not changed:
         return
     ids = {i.id for i in changed}
-    numbers = {i.invoice_number for i in changed if i.invoice_number}
-    hashes = set(
-        session.scalars(
-            select(Document.sha256).where(Document.id.in_({i.document_id for i in changed}))
-        )
-    )
     flagged = set(
         session.scalars(
             select(ValidationIssue.invoice_id).where(ValidationIssue.related_invoice_id.in_(ids))
         )
     )
-    shared = set(
-        session.scalars(
-            select(Invoice.id)
-            .join(Document, Invoice.document_id == Document.id)
-            .where(or_(Invoice.invoice_number.in_(numbers), Document.sha256.in_(hashes)))
+    later: set = set()
+    if restored:
+        numbers = {i.invoice_number for i in changed if i.invoice_number}
+        docs = [i.document_id for i in changed]
+        hashes = set(session.scalars(select(Document.sha256).where(Document.id.in_(docs))))
+        first = session.scalar(select(func.min(Document.created_at)).where(Document.id.in_(docs)))
+        later = set(
+            session.scalars(
+                select(Invoice.id)
+                .join(Document, Invoice.document_id == Document.id)
+                .where(
+                    or_(Invoice.invoice_number.in_(numbers), Document.sha256.in_(hashes)),
+                    Document.created_at >= first,
+                )
+            )
         )
-    )
-    others = sorted((flagged | shared) - ids)[:_NEIGHBOUR_CAP]
+    others = sorted((flagged | later) - ids)[:_NEIGHBOUR_CAP]
     live = select(Invoice).where(Invoice.id.in_(others), Invoice.archived_at.is_(None))
     rows = list(session.scalars(live))
-    if include_changed:
+    if restored:
         rows += changed
     for invoice in rows:
-        validate_invoice(session, invoice, session.get(Document, invoice.document_id))
+        document = session.get(Document, invoice.document_id)
+        validate_invoice(session, invoice, document, earlier_only=True)
 
 
 def archive_document(session: Session, document_id: uuid.UUID) -> Document:
@@ -77,7 +85,7 @@ def archive_document(session: Session, document_id: uuid.UUID) -> Document:
     for invoice in live:
         invoice.archived_at = stamp
     session.flush()
-    _revalidate(session, live, include_changed=False)
+    _revalidate(session, live, restored=False)
     session.commit()
     log.info("document_archived", document_id=str(doc.id), invoices=len(live))
     return doc
@@ -98,7 +106,7 @@ def restore_document(session: Session, document_id: uuid.UUID) -> Document:
     for invoice in back:
         invoice.archived_at = None
     session.flush()
-    _revalidate(session, back, include_changed=True)
+    _revalidate(session, back, restored=True)
     session.commit()
     log.info("document_restored", document_id=str(doc.id), invoices=len(back))
     return doc
@@ -128,7 +136,7 @@ def archive_invoice(session: Session, invoice_id: uuid.UUID) -> Invoice:
         return invoice
     invoice.archived_at = datetime.now(UTC)
     session.flush()
-    _revalidate(session, [invoice], include_changed=False)
+    _revalidate(session, [invoice], restored=False)
     session.commit()
     log.info("invoice_archived", invoice_id=str(invoice.id))
     return invoice
@@ -143,7 +151,7 @@ def restore_invoice(session: Session, invoice_id: uuid.UUID) -> Invoice:
         raise AppError(409, "Cannot restore: its document is archived. Restore the document first.")
     invoice.archived_at = None
     session.flush()
-    _revalidate(session, [invoice], include_changed=True)
+    _revalidate(session, [invoice], restored=True)
     session.commit()
     log.info("invoice_restored", invoice_id=str(invoice.id))
     return invoice

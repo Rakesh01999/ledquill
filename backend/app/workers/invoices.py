@@ -134,14 +134,28 @@ def _to_data(invoice: Invoice) -> InvoiceData:
     )
 
 
-def _candidates(session: Session, invoice: Invoice, document: Document) -> list[Candidate]:
+def _candidates(
+    session: Session, invoice: Invoice, document: Document, *, earlier_only: bool = False
+) -> list[Candidate]:
+    """Invoices this one may be a duplicate of. `earlier_only` keeps the same file and the
+    documents uploaded before it, which is what the pipeline saw when it first validated the
+    invoice: the later copy is flagged, not the original (FR-12)."""
     conditions = [and_(Document.sha256 == document.sha256, Document.id != document.id)]
     if invoice.invoice_number:
         conditions.append(Invoice.invoice_number == invoice.invoice_number)
+    scope = []
+    if earlier_only:
+        scope.append(
+            or_(
+                Document.id == document.id,
+                Document.created_at < document.created_at,
+                and_(Document.created_at == document.created_at, Document.id < document.id),
+            )
+        )
     rows = session.execute(
         select(Invoice, Document)
         .join(Document, Invoice.document_id == Document.id)
-        .where(Invoice.id != invoice.id, Invoice.archived_at.is_(None), or_(*conditions))
+        .where(Invoice.id != invoice.id, Invoice.archived_at.is_(None), or_(*conditions), *scope)
         .limit(_CANDIDATE_LIMIT)
     ).all()
     return [
@@ -159,9 +173,12 @@ def _candidates(session: Session, invoice: Invoice, document: Document) -> list[
     ]
 
 
-def validate_invoice(session: Session, invoice: Invoice, document: Document) -> list[Issue]:
+def validate_invoice(
+    session: Session, invoice: Invoice, document: Document, *, earlier_only: bool = False
+) -> list[Issue]:
     """Run V-01..V-09, replace the invoice's issues and derive its status. Never raises for
-    bad data: it only records issues."""
+    bad data: it only records issues. `earlier_only` limits the duplicate rules to earlier
+    uploads (used when archiving or restoring, so a round trip changes nothing)."""
     data = _to_data(invoice)
     raw = invoice.raw_extraction or {}
     issues = validate_fields(
@@ -170,7 +187,7 @@ def validate_invoice(session: Session, invoice: Invoice, document: Document) -> 
         injection_lines=int(raw.get("injection_lines_removed") or 0),
         poor_scan=raw.get("llm_status") == "poor_scan",
     )
-    candidates = _candidates(session, invoice, document)
+    candidates = _candidates(session, invoice, document, earlier_only=earlier_only)
     issues += duplicate_issues(
         data, document_id=document.id, sha256=document.sha256, candidates=candidates
     )

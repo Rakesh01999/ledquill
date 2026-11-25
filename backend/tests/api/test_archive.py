@@ -261,8 +261,8 @@ def test_v07_ignores_an_archived_original_and_returns_on_restore(client, db_sess
 
     post(client, f"{DOCS}/{original.document_id}/restore")
     assert "V-07" in rules(client, copy.id)
-    # The restored original is checked against the live data again.
-    assert "V-07" in rules(client, original.id) or "V-07" in rules(client, copy.id)
+    # The original is still not flagged: the later copy is, never the other way round (FR-12).
+    assert "V-07" not in rules(client, original.id)
 
 
 def test_v09_ignores_an_archived_invoice_and_returns_on_restore(client, db_session):
@@ -298,3 +298,41 @@ def test_the_old_delete_endpoint_still_works(client, db_session):
     r = client.delete(f"{DOCS}/{inv.document_id}", headers=API_HEADERS)
     assert r.status_code == 204
     assert rows(db_session, Document) == 0
+
+
+# --- archive then restore returns every invoice to where it was ----------------------------
+
+
+def snapshot(client, *invoices) -> dict[str, tuple[str, list[str]]]:
+    out = {}
+    for inv in invoices:
+        body = client.get(f"{INVOICES}/{inv.id}", headers=API_HEADERS).json()
+        out[str(inv.id)] = (body["status"], sorted(i["rule_id"] for i in body["issues"]))
+    return out
+
+
+@pytest.mark.parametrize("copy_total", ["1150.00", "999.00"])
+def test_archive_then_restore_leaves_duplicate_flags_and_status_unchanged(
+    client, db_session, copy_total
+):
+    original = seed_invoice(db_session, number="INV-RT", total="1150.00")
+    copy = seed_invoice(db_session, number="INV-RT", total=copy_total, subtotal=None, tax=None)
+    before = snapshot(client, original, copy)
+    assert "V-07" in before[str(copy.id)][1] and "V-07" not in before[str(original.id)][1]
+
+    for victim in (original, copy):
+        post(client, f"{DOCS}/{victim.document_id}/archive")
+        post(client, f"{DOCS}/{victim.document_id}/restore")
+        assert snapshot(client, original, copy) == before
+        post(client, f"{INVOICES}/{victim.id}/archive")
+        post(client, f"{INVOICES}/{victim.id}/restore")
+        assert snapshot(client, original, copy) == before
+
+
+def test_restoring_an_older_invoice_does_not_flag_it_against_a_newer_copy(client, db_session):
+    original = seed_invoice(db_session, number="INV-OLD")
+    copy = seed_invoice(db_session, number="INV-OLD")
+    post(client, f"{INVOICES}/{original.id}/archive")
+    assert "V-07" not in rules(client, copy.id)
+    post(client, f"{INVOICES}/{original.id}/restore")
+    assert rules(client, original.id) == [] and "V-07" in rules(client, copy.id)
