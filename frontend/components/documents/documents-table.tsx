@@ -12,8 +12,9 @@ import { api, unwrap } from "@/lib/api/client";
 import { describeError } from "@/lib/api/problem";
 import type { DocumentOut } from "@/lib/api/types";
 import { formatBytes } from "@/lib/format";
-import { DOC_ROW, formatWhen, isActive, stageText, typeTile } from "@/lib/documents";
+import { formatWhen, isActive, stageText, typeTile } from "@/lib/documents";
 import { documentInvoicesOptions } from "@/lib/query/options";
+import { HEAD, ROW } from "@/lib/table";
 import { prefetchDocument } from "@/lib/query/prefetch";
 import { openUploadPicker } from "./upload-section";
 import { cn } from "@/lib/utils";
@@ -141,21 +142,19 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
 
   return (
     <>
-      <Table className="hidden min-w-[800px] table-fixed lg:table">
-        <TableHeader className="sticky top-0 z-10 bg-surface-2 [&_tr]:border-line">
+      <Table className="hidden table-fixed lg:table">
+        <TableHeader className="bg-surface-2 [&_tr]:border-line">
           <TableRow className="h-9 hover:bg-transparent">
-            <TableHead className="w-[38%] pl-4 text-xs font-medium text-ink-2">File</TableHead>
-            <TableHead className="w-[124px] text-xs font-medium text-ink-2">Status</TableHead>
-            <TableHead className="text-xs font-medium text-ink-2">Stage</TableHead>
-            <TableHead className="w-[116px] text-right text-xs font-medium text-ink-2">Uploaded</TableHead>
-            <TableHead className="w-[112px] pr-4 text-right text-xs font-medium text-ink-2">
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead className={cn("w-[32%] pl-4", HEAD)}>File</TableHead>
+            <TableHead className={cn("w-[124px]", HEAD)}>Status</TableHead>
+            <TableHead className={HEAD}>Stage</TableHead>
+            <TableHead className={cn("w-[116px]", HEAD)}>Uploaded</TableHead>
+            <TableHead className={cn("w-[104px] pr-4 text-right", HEAD)}>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((doc) => (
-            <TableRow key={doc.id} className={cn(DOC_ROW, "border-line hover:bg-surface-2/60")}>
+            <TableRow key={doc.id} className={cn(ROW, "border-line hover:bg-surface-2/60")}>
               <TableCell className="pl-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <TypeTile type={doc.file_type} />
@@ -179,7 +178,7 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
               <TableCell>
                 <Stage doc={doc} />
               </TableCell>
-              <TableCell className="text-right text-ink-2" suppressHydrationWarning>
+              <TableCell className="text-ink-2" suppressHydrationWarning>
                 {formatWhen(doc.created_at)}
               </TableCell>
               <TableCell className="pr-4 text-right">

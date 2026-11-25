@@ -25,6 +25,15 @@ export function openUploadPicker(): void {
   document.getElementById(UPLOAD_INPUT_ID)?.click();
 }
 
+/** Header action: opens the same file picker as the dropzone. */
+export function UploadButton() {
+  return (
+    <Button onClick={openUploadPicker}>
+      <Upload aria-hidden="true" /> Upload files
+    </Button>
+  );
+}
+
 /**
  * Groups files into requests: at most FILES_PER_REQUEST each and, where the host caps the request
  * body, no more bytes than the cap. Every file is already within the cap on its own.
@@ -177,41 +186,47 @@ export function UploadSection() {
 
   return (
     <section aria-label="Upload documents" className="flex flex-col gap-3">
+      {/* The whole zone opens the picker on click; the button inside is the keyboard target. */}
       <div
+        onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
         }}
-        onDragLeave={() => setDragging(false)}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+        }}
         onDrop={onDrop}
         className={cn(
-          "flex flex-col gap-3 rounded-lg border border-dashed bg-surface px-5 py-4 transition-colors sm:flex-row sm:items-center sm:gap-5 sm:px-6 sm:py-5",
-          dragging ? "border-primary bg-primary-soft" : "border-line-strong",
+          "flex min-h-[200px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors duration-150 motion-reduce:transition-none",
+          dragging ? "border-primary bg-primary-soft" : "border-line-strong bg-surface hover:bg-surface-2/60",
         )}
       >
-        <div className="flex size-11 flex-none items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-2">
-          <Upload className="size-[18px]" aria-hidden="true" />
+        <div
+          className={cn(
+            "flex size-12 flex-none items-center justify-center rounded-lg border bg-surface-2 transition-colors duration-150",
+            dragging ? "border-primary text-primary" : "border-line text-ink-2",
+          )}
+        >
+          <Upload className="size-5" aria-hidden="true" />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="text-sm font-semibold">
-            Drop invoices here, or{" "}
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="-my-1.5 inline-block cursor-pointer rounded-sm py-1.5 font-semibold text-link underline-offset-2 hover:underline"
-            >
-              browse files
-            </button>
-          </div>
-          <div className="text-ink-2">
-            PDF, JPG, PNG, TIFF, XLSX, XLS, CSV ·{" "}
+        <div className="flex flex-col gap-1">
+          <div className="text-base font-semibold">{dragging ? "Release to upload" : "Drag invoices here and release"}</div>
+          <div className="text-ink-2">or choose them from your computer</div>
+        </div>
+        <Button type="button" variant="outline">
+          Browse files
+        </Button>
+        <div className="flex flex-col gap-0.5 text-[13px] text-ink-2">
+          <span>PDF, JPG, PNG, TIFF, XLSX, XLS, CSV</span>
+          <span>
             {HOSTED_MAX_MB !== null
-              ? `up to ${HOSTED_MAX_MB} MB per file (hosted demo)`
-              : "up to 25 MB per file"}{" "}
-            · 20 files per upload
-          </div>
+              ? `Up to ${HOSTED_MAX_MB} MB per file on the hosted demo`
+              : "Up to 25 MB per file"}{" "}
+            · 20 files per request
+          </span>
+          <span className="text-xs text-ink-3">Scans below 150 dpi may not be readable.</span>
         </div>
-        <div className="text-xs text-ink-3">Scans below 150 dpi may not be readable.</div>
         <input
           ref={inputRef}
           id={UPLOAD_INPUT_ID}
@@ -221,6 +236,7 @@ export function UploadSection() {
           className="sr-only"
           tabIndex={-1}
           aria-label="Choose files to upload"
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => {
             if (e.target.files) add(e.target.files);
             e.target.value = "";

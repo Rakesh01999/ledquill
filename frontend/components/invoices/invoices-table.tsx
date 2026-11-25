@@ -5,13 +5,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Missing, Money } from "@/components/shared/money";
 import { StatusChip } from "@/components/shared/status-chip";
 import { rowNavKeyDown } from "@/components/shared/row-nav";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { InvoiceOut } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
+import { HEAD, ROW } from "@/lib/table";
 import { prefetchInvoice } from "@/lib/query/prefetch";
 import { cn } from "@/lib/utils";
 
-const head = "text-xs font-medium text-ink-2";
+const head = HEAD;
 const MATCH_LABEL: Record<string, string> = { keyword: "Exact text", semantic: "Similar meaning" };
 
 export type InvoiceRow = { invoice: InvoiceOut; matchedBy?: string[] };
@@ -20,8 +22,8 @@ export type InvoiceRow = { invoice: InvoiceOut; matchedBy?: string[] };
 export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[]; showMatch?: boolean }) {
   const queryClient = useQueryClient();
   return (
-    <Table className="min-w-[860px]" onKeyDown={rowNavKeyDown}>
-      <TableHeader className="sticky top-0 z-10 bg-surface-2 [&_tr]:border-line">
+    <Table className="min-w-[900px] lg:min-w-0" onKeyDown={rowNavKeyDown}>
+      <TableHeader className="bg-surface-2 [&_tr]:border-line">
         <TableRow className="h-9 hover:bg-transparent">
           <TableHead className={cn("pl-4", head)}>Invoice</TableHead>
           <TableHead className={head}>Supplier</TableHead>
@@ -29,13 +31,14 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
           <TableHead className={head}>Currency</TableHead>
           <TableHead className={cn("text-right", head)}>Total</TableHead>
           <TableHead className={head}>Status</TableHead>
-          <TableHead className={cn("text-right", head, !showMatch && "pr-4")}>Issues</TableHead>
-          {showMatch && <TableHead className={cn("pr-4", head)}>Matched by</TableHead>}
+          <TableHead className={cn("text-right", head)}>Issues</TableHead>
+          {showMatch && <TableHead className={head}>Matched by</TableHead>}
+          <TableHead className={cn("pr-4 text-right", head)}>Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {rows.map(({ invoice: inv, matchedBy }) => (
-          <TableRow key={inv.id} className="h-10 border-line hover:bg-surface-2/60">
+          <TableRow key={inv.id} className={cn(ROW, "border-line hover:bg-surface-2/60")}>
             <TableCell className="pl-4">
               <Link
                 href={`/invoices/${inv.id}`}
@@ -62,17 +65,24 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
             <TableCell
               className={cn(
                 "text-right tabular-nums",
-                !showMatch && "pr-4",
                 inv.issues.length > 0 ? "font-medium text-warn" : "text-ink-3",
               )}
             >
               {inv.issues.length > 0 ? inv.issues.length : "None"}
             </TableCell>
             {showMatch && (
-              <TableCell className="pr-4 text-ink-2">
+              <TableCell className="text-ink-2">
                 {matchedBy?.map((m) => MATCH_LABEL[m] ?? m).join(" + ") || "—"}
               </TableCell>
             )}
+            <TableCell className="pr-4 text-right">
+              {/* The invoice number is the same link, so this one stays out of the tab order. */}
+              <Button asChild variant="ghost" size="sm" className="text-link">
+                <Link href={`/invoices/${inv.id}`} tabIndex={-1} aria-hidden="true">
+                  Open
+                </Link>
+              </Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

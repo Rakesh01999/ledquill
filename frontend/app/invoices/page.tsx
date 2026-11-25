@@ -5,7 +5,8 @@ import { InvoicesView } from "@/components/invoices/invoices-view";
 import { isSearchOnly, parseInvoiceParams } from "@/lib/invoices";
 import { invoicesOptions, searchOptions } from "@/lib/query/options";
 import { getQueryClient, prefetch } from "@/lib/query/server";
-import InvoicesLoading from "./loading";
+import { PageHeader } from "@/components/shared/page-header";
+import { InvoicesSkeleton } from "./loading";
 
 export const metadata: Metadata = { title: "Invoices" };
 
@@ -19,10 +20,13 @@ export default async function InvoicesPage({
   if (isSearchOnly(params)) await prefetch((c) => searchOptions(c, params.q ?? ""));
   else await prefetch((c) => invoicesOptions(c, params));
   return (
-    <HydrationBoundary state={dehydrate(getQueryClient())}>
-      <Suspense fallback={<InvoicesLoading />}>
-        <InvoicesView />
-      </Suspense>
-    </HydrationBoundary>
+    <>
+      <PageHeader title="Invoices" />
+      <HydrationBoundary state={dehydrate(getQueryClient())}>
+        <Suspense fallback={<InvoicesSkeleton />}>
+          <InvoicesView />
+        </Suspense>
+      </HydrationBoundary>
+    </>
   );
 }

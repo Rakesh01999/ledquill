@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SourcePanel } from "@/components/documents/source-panel";
+import { PageHeader } from "@/components/shared/page-header";
 import { ProblemAlert } from "@/components/shared/problem-alert";
 import { StatusChip } from "@/components/shared/status-chip";
 import { ErrorState } from "@/components/shared/states";
@@ -244,21 +245,16 @@ export function InvoiceDetail({ id }: { id: string }) {
   const issuesLabel = `Issues${invoice.issues.length ? ` ${invoice.issues.length}` : ""}`;
 
   return (
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
-      <InvoiceShortcuts handlers={shortcuts} />
-      <Link
-        href={inQueue ? "/review" : "/invoices"}
-        className="inline-flex min-h-8 w-fit items-center gap-1 text-[13px] text-link hover:underline"
-      >
-        <ArrowLeft className="size-3.5" aria-hidden="true" /> {inQueue ? "Review queue" : "Invoices"}
-      </Link>
-
-      <header className="flex flex-wrap items-start gap-x-4 gap-y-3">
-        <div className="min-w-0 basis-full sm:flex-1 sm:basis-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="min-w-0 truncate font-mono text-xl font-semibold">
-              {invoice.invoice_number ?? "No invoice number"}
-            </h2>
+    <>
+      <PageHeader
+        crumbs={[
+          { label: inQueue ? "Review queue" : "Invoices", href: inQueue ? "/review" : "/invoices" },
+          { label: invoice.invoice_number ?? "No invoice number" },
+        ]}
+        title={invoice.invoice_number ?? "No invoice number"}
+        titleClassName="font-mono"
+        meta={
+          <>
             <StatusChip status={invoice.status} />
             {invoice.issues.length > 0 && (
               <span className="text-[13px] font-medium">
@@ -268,22 +264,9 @@ export function InvoiceDetail({ id }: { id: string }) {
                 <span className="text-ink-2">, {plural(invoice.issues.length - errors.length, "warning", "warnings")}</span>
               </span>
             )}
-            {filePosition && <span className="text-[13px] text-ink-2">{filePosition}</span>}
-          </div>
-          <p className="mt-1 text-[13px] text-ink-2" suppressHydrationWarning>
-            {invoice.supplier_name ?? "Supplier not found"}
-            {invoice.invoice_date ? ` · ${formatDate(invoice.invoice_date)}` : ""}
-            {sourceDoc && (
-              <>
-                {" · from "}
-                <Link href={`/documents/${sourceDoc.id}`} className="text-link hover:underline">
-                  {sourceDoc.filename}
-                </Link>
-                {pagesText(pages)}
-              </>
-            )}
-          </p>
-        </div>
+          </>
+        }
+        actions={
         <div className="flex flex-none flex-col items-start gap-1.5 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">
             {inQueue && (
@@ -339,13 +322,30 @@ export function InvoiceDetail({ id }: { id: string }) {
               <Check aria-hidden="true" /> {approved ? "Approved" : approve.isPending ? "Approving" : "Approve invoice"}
             </Button>
           </div>
-          {blocked && !approved && (
-            <p id="approve-hint" className="text-xs text-ink-2 sm:text-right">
-              Resolve {plural(errors.length, "error", "errors")} to approve this invoice.
-            </p>
-          )}
         </div>
-      </header>
+        }
+      />
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
+      <InvoiceShortcuts handlers={shortcuts} />
+      {blocked && !approved && (
+        <p id="approve-hint" className="text-[13px] text-ink-2">
+          Resolve {plural(errors.length, "error", "errors")} to approve this invoice.
+        </p>
+      )}
+      <p className="text-[13px] text-ink-2" suppressHydrationWarning>
+        {filePosition && <span className="mr-2 font-medium text-ink">{filePosition}.</span>}
+        {invoice.supplier_name ?? "Supplier not found"}
+        {invoice.invoice_date ? ` · ${formatDate(invoice.invoice_date)}` : ""}
+        {sourceDoc && (
+          <>
+            {" · from "}
+            <Link href={`/documents/${sourceDoc.id}`} className="text-link hover:underline">
+              {sourceDoc.filename}
+            </Link>
+            {pagesText(pages)}
+          </>
+        )}
+      </p>
 
       {approve.error && <ProblemAlert error={approve.error} />}
       <p role="status" className="min-h-0 text-[13px] text-ok empty:hidden">
@@ -472,21 +472,21 @@ export function InvoiceDetail({ id }: { id: string }) {
         </Section>
       </div>
     </div>
+    </>
   );
 }
 
-/** Same blocks as the page: back link, header, issues, split view, line items. */
+/** Same blocks as the page: breadcrumb header, issues, split view, line items. */
 export function InvoiceDetailSkeleton() {
   return (
+    <>
+    <PageHeader
+      crumbs={[{ label: "Invoices", href: "/invoices" }, { label: "Invoice" }]}
+      title={<Skeleton className="h-6 w-56 bg-skeleton" />}
+      actions={<Skeleton className="h-9 w-36 bg-skeleton" />}
+    />
     <div className="mx-auto flex max-w-[1280px] flex-col gap-4" aria-busy="true">
-      <Skeleton className="h-4 w-28 bg-skeleton" />
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-6 w-56 bg-skeleton" />
-          <Skeleton className="h-4 w-80 bg-skeleton" />
-        </div>
-        <Skeleton className="h-9 w-36 bg-skeleton" />
-      </div>
+      <Skeleton className="h-4 w-80 bg-skeleton" />
       <Skeleton className="h-24 w-full rounded-lg bg-skeleton" />
       <div className="grid gap-4 lg:grid-cols-2">
         <Skeleton className="h-[520px] w-full rounded-lg bg-skeleton" />
@@ -494,5 +494,6 @@ export function InvoiceDetailSkeleton() {
       </div>
       <Skeleton className="h-48 w-full rounded-lg bg-skeleton" />
     </div>
+    </>
   );
 }

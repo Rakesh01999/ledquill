@@ -42,7 +42,7 @@ export function InvoicesView() {
   );
 
   return (
-    <div className="flex h-full min-h-[560px] flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <InvoiceFilters params={params} />
 
       <div className="flex min-h-5 flex-col gap-1 text-[13px] text-ink-2" role="status">
@@ -64,14 +64,8 @@ export function InvoicesView() {
         )}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-line bg-surface">
-        <div
-          aria-busy={active.isFetching}
-          className={cn(
-            "min-h-0 flex-1 scroll-pt-10 scroll-pb-2 overflow-auto [&_[data-slot=table-container]]:overflow-visible",
-            active.isPlaceholderData && "opacity-60 transition-opacity",
-          )}
-        >
+      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+        <div aria-busy={active.isFetching} className={cn(active.isPlaceholderData && "opacity-60 transition-opacity")}>
           {active.isPending && active.fetchStatus !== "idle" ? (
             <TableSkeleton rows={8} widths={SKELETON_WIDTHS} />
           ) : active.error && !rows ? (

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ApiStatus } from "./api-status";
-import { LogoMark } from "./logo";
+import { LogoLink } from "./logo";
 import { SidebarNav } from "./sidebar-nav";
 import { Topbar } from "./topbar";
 
@@ -12,10 +12,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-dvh min-h-0">
       <aside className="hidden w-14 flex-none flex-col border-r border-line bg-surface px-2 py-3.5 md:flex lg:w-[232px] lg:px-3">
-        <div className="flex items-center gap-2.5 px-1 pb-[18px] lg:px-2">
-          <LogoMark />
+        <div className="px-1 pb-[18px] lg:px-2">
+          <div className="lg:hidden">
+            <LogoLink showName={false} />
+          </div>
           <div className="hidden lg:block">
-            <div className="text-sm leading-tight font-semibold">LedQuill</div>
+            <LogoLink />
           </div>
         </div>
         <div className="lg:hidden">

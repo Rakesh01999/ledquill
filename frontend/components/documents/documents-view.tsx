@@ -11,7 +11,7 @@ import { api } from "@/lib/api/client";
 import { describeError } from "@/lib/api/problem";
 import { ApiProblem } from "@/lib/api/problem";
 import type { DocumentList } from "@/lib/api/types";
-import { DOC_ROW, isActive, listHref, parseListParams } from "@/lib/documents";
+import { isActive, listHref, parseListParams } from "@/lib/documents";
 import { PAGE_SIZE, documentsOptions } from "@/lib/query/options";
 import { useBackoffInterval } from "@/lib/query/polling";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ export function DocumentsView() {
   const filtered = Boolean(params.status || params.file_type);
 
   return (
-    <div className="flex h-full min-h-[560px] flex-col gap-5">
+    <div className="flex flex-col gap-5">
       <UploadSection />
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -51,16 +51,10 @@ export function DocumentsView() {
         </span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-line bg-surface">
-        <div
-          aria-busy={isFetching}
-          className={cn(
-            "min-h-0 flex-1 scroll-pt-10 scroll-pb-2 overflow-auto [&_[data-slot=table-container]]:overflow-visible",
-            isPlaceholderData && "opacity-60 transition-opacity",
-          )}
-        >
+      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+        <div aria-busy={isFetching} className={cn(isPlaceholderData && "opacity-60 transition-opacity")}>
           {isPending ? (
-            <TableSkeleton rows={8} rowClass={DOC_ROW} widths={["w-56", "w-24", "w-40", "w-20"]} />
+            <TableSkeleton rows={8} widths={["w-56", "w-24", "w-40", "w-20"]} />
           ) : error && !data ? (
             <ErrorState error={error} onRetry={() => void query.refetch()} />
           ) : data && data.items.length === 0 ? (

@@ -8,15 +8,17 @@ import { CountBadge } from "@/components/shared/count-badge";
 import { Missing, Money } from "@/components/shared/money";
 import { rowNavKeyDown } from "@/components/shared/row-nav";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api/client";
 import { formatAge } from "@/lib/documents";
 import { ruleTitle, topIssue } from "@/lib/invoices";
+import { HEAD, ROW } from "@/lib/table";
 import { prefetchInvoice } from "@/lib/query/prefetch";
 import { QUEUE_LIMIT, queueOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
 
-const head = "text-xs font-medium text-ink-2";
+const head = HEAD;
 
 /** Invoices that need a decision, worst first. Opening one enters queue mode (Next and Approve). */
 export function ReviewView() {
@@ -25,15 +27,15 @@ export function ReviewView() {
   const total = data?.total ?? 0;
 
   return (
-    <div className="flex h-full min-h-[480px] flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <h2 className="text-sm font-semibold">Needs review</h2>
         {data && total > 0 && <CountBadge count={total} />}
         <span className="text-xs text-ink-2">Sorted by severity: errors, then warnings, then low confidence; oldest first.</span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-line bg-surface">
-        <div className="min-h-0 flex-1 scroll-pt-10 scroll-pb-2 overflow-auto [&_[data-slot=table-container]]:overflow-visible">
+      <div className="overflow-hidden rounded-lg border border-line bg-surface">
+        <div>
           {isPending ? (
             <TableSkeleton rows={8} widths={["w-28", "w-44", "w-20", "w-72", "w-10"]} />
           ) : error ? (
@@ -49,22 +51,23 @@ export function ReviewView() {
             />
           ) : (
             <>
-            <Table className="hidden min-w-[860px] lg:table" onKeyDown={rowNavKeyDown}>
-              <TableHeader className="sticky top-0 z-10 bg-surface-2 [&_tr]:border-line">
+            <Table className="hidden lg:table" onKeyDown={rowNavKeyDown}>
+              <TableHeader className="bg-surface-2 [&_tr]:border-line">
                 <TableRow className="h-9 hover:bg-transparent">
                   <TableHead className={cn("pl-4", head)}>Invoice</TableHead>
                   <TableHead className={head}>Supplier</TableHead>
-                  <TableHead className={cn("text-right", head)}>Total</TableHead>
                   <TableHead className={head}>Currency</TableHead>
+                  <TableHead className={cn("text-right", head)}>Total</TableHead>
                   <TableHead className={head}>Top issue</TableHead>
-                  <TableHead className={cn("pr-4 text-right", head)}>Age</TableHead>
+                  <TableHead className={head}>Age</TableHead>
+                  <TableHead className={cn("pr-4 text-right", head)}>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.items.map((inv) => {
                   const issue = topIssue(inv);
                   return (
-                    <TableRow key={inv.id} className="h-11 border-line hover:bg-surface-2/60">
+                    <TableRow key={inv.id} className={cn(ROW, "border-line hover:bg-surface-2/60")}>
                       <TableCell className="pl-4">
                         <Link
                           href={`/invoices/${inv.id}?queue=1`}
@@ -80,10 +83,10 @@ export function ReviewView() {
                       <TableCell className="max-w-56 truncate" title={inv.supplier_name ?? undefined}>
                         {inv.supplier_name ?? <Missing />}
                       </TableCell>
+                      <TableCell>{inv.currency ?? <Missing />}</TableCell>
                       <TableCell className="text-right">
                         <Money value={inv.total} />
                       </TableCell>
-                      <TableCell>{inv.currency ?? <Missing />}</TableCell>
                       <TableCell className="max-w-md">
                         {issue ? (
                           <span className="flex items-center gap-2">
@@ -104,8 +107,16 @@ export function ReviewView() {
                           <span className="text-ink-3">None</span>
                         )}
                       </TableCell>
-                      <TableCell className="pr-4 text-right text-ink-2 tabular-nums" suppressHydrationWarning>
+                      <TableCell className="text-ink-2 tabular-nums" suppressHydrationWarning>
                         {formatAge(inv.created_at)}
+                      </TableCell>
+                      <TableCell className="pr-4 text-right">
+                        {/* The invoice number is the same link, so this one stays out of the tab order. */}
+                        <Button asChild variant="ghost" size="sm" className="text-link">
+                          <Link href={`/invoices/${inv.id}?queue=1`} tabIndex={-1} aria-hidden="true">
+                            Review
+                          </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );

@@ -8,10 +8,3 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/invoices", label: "Invoices", icon: Receipt },
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
 ];
-
-/** Title shown in the top bar for the current route. */
-export function titleFor(pathname: string): string {
-  if (pathname.startsWith("/invoices/")) return "Invoice review";
-  if (pathname.startsWith("/documents/")) return "Document";
-  return NAV_ITEMS.find((i) => pathname === i.href || pathname.startsWith(`${i.href}/`))?.label ?? "LedQuill";
-}

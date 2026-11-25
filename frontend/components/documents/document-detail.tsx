@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, RotateCw, Trash2 } from "lucide-react";
+import { RotateCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/shared/page-header";
 import { ProblemAlert } from "@/components/shared/problem-alert";
 import { StatusChip } from "@/components/shared/status-chip";
 import { ErrorState } from "@/components/shared/states";
@@ -114,12 +115,37 @@ export function DocumentDetail({ id }: { id: string }) {
   const paused = error instanceof ApiProblem && error.status === 429;
 
   return (
+    <>
+    <PageHeader
+      crumbs={[{ label: "Documents", href: "/documents" }, { label: doc.filename }]}
+      title={<span title={doc.filename}>{doc.filename}</span>}
+      meta={<StatusChip status={doc.status} />}
+      actions={
+        <>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={running || reprocess.isPending}
+            onClick={() => reprocess.mutate()}
+          >
+            <RotateCw aria-hidden="true" /> Reprocess
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-danger hover:text-danger"
+            onClick={() => {
+              remove.reset();
+              setConfirmDelete(true);
+            }}
+          >
+            <Trash2 aria-hidden="true" /> Delete
+          </Button>
+        </>
+      }
+    />
     <div className="mx-auto flex max-w-[1280px] flex-col gap-5">
-      <Link href="/documents" className="inline-flex min-h-8 w-fit items-center gap-1 text-[13px] text-link hover:underline">
-        <ArrowLeft className="size-3.5" aria-hidden="true" /> Documents
-      </Link>
-
-      <header className="flex flex-wrap items-start gap-x-4 gap-y-3">
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <span
           aria-hidden="true"
           className="flex h-[42px] w-9 flex-none items-end justify-center rounded-sm border border-line-strong bg-surface pb-1.5 font-mono text-[9px] font-semibold text-ink-2"
@@ -127,13 +153,7 @@ export function DocumentDetail({ id }: { id: string }) {
           {typeTile(doc.file_type)}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="min-w-0 truncate text-xl font-semibold" title={doc.filename}>
-              {doc.filename}
-            </h2>
-            <StatusChip status={doc.status} />
-          </div>
-          <p className="mt-1 text-[13px] text-ink-2" suppressHydrationWarning>
+          <p className="text-[13px] text-ink-2" suppressHydrationWarning>
             {formatBytes(doc.size_bytes)}
             {doc.page_count ? ` · ${doc.page_count} ${doc.page_count === 1 ? "page" : "pages"}` : ""}
             {` · Uploaded ${formatWhen(doc.created_at)}`}
@@ -160,27 +180,6 @@ export function DocumentDetail({ id }: { id: string }) {
               Live updates paused. {describeError(error).message}
             </p>
           )}
-        </div>
-        <div className="flex flex-none basis-full items-center gap-2 sm:basis-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={running || reprocess.isPending}
-            onClick={() => reprocess.mutate()}
-          >
-            <RotateCw aria-hidden="true" /> Reprocess
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-danger hover:text-danger"
-            onClick={() => {
-              remove.reset();
-              setConfirmDelete(true);
-            }}
-          >
-            <Trash2 aria-hidden="true" /> Delete
-          </Button>
         </div>
       </header>
 
@@ -237,18 +236,22 @@ export function DocumentDetail({ id }: { id: string }) {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </>
   );
 }
 
 /** Same blocks as the page: back link, header, three sections. */
 export function DocumentDetailSkeleton() {
   return (
+    <>
+    <PageHeader
+      crumbs={[{ label: "Documents", href: "/documents" }, { label: "Document" }]}
+      title={<Skeleton className="h-6 w-72 bg-skeleton" />}
+    />
     <div className="mx-auto flex max-w-[1280px] flex-col gap-5" aria-busy="true">
-      <Skeleton className="h-4 w-24 bg-skeleton" />
       <div className="flex items-start gap-4">
         <Skeleton className="h-[42px] w-9 bg-skeleton" />
         <div className="flex flex-1 flex-col gap-2">
-          <Skeleton className="h-6 w-72 bg-skeleton" />
           <Skeleton className="h-4 w-56 bg-skeleton" />
         </div>
       </div>
@@ -256,5 +259,6 @@ export function DocumentDetailSkeleton() {
       <Skeleton className="h-[460px] w-full rounded-lg bg-skeleton" />
       <Skeleton className="h-44 w-full rounded-lg bg-skeleton" />
     </div>
+    </>
   );
 }

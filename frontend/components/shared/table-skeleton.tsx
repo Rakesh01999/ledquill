@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { ROW } from "@/lib/table";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,7 +9,7 @@ import { cn } from "@/lib/utils";
 export function TableSkeleton({
   rows = 8,
   widths = ["w-48", "w-20", "w-24", "w-12", "w-16"],
-  rowClass = "h-10",
+  rowClass = ROW,
 }: {
   rows?: number;
   widths?: string[];

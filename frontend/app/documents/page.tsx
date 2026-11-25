@@ -5,7 +5,9 @@ import { parseListParams } from "@/lib/documents";
 import { documentsOptions } from "@/lib/query/options";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient, prefetch } from "@/lib/query/server";
-import DocumentsLoading from "./loading";
+import { PageHeader } from "@/components/shared/page-header";
+import { UploadButton } from "@/components/documents/upload-section";
+import { DocumentsSkeleton } from "./loading";
 
 export const metadata: Metadata = { title: "Documents" };
 
@@ -19,10 +21,13 @@ export default async function DocumentsPage({
   const params = parseListParams(await searchParams);
   await prefetch((client) => documentsOptions(client, params));
   return (
-    <HydrationBoundary state={dehydrate(getQueryClient())}>
-      <Suspense fallback={<DocumentsLoading />}>
-        <DocumentsView />
-      </Suspense>
-    </HydrationBoundary>
+    <>
+      <PageHeader title="Documents" actions={<UploadButton />} />
+      <HydrationBoundary state={dehydrate(getQueryClient())}>
+        <Suspense fallback={<DocumentsSkeleton />}>
+          <DocumentsView />
+        </Suspense>
+      </HydrationBoundary>
+    </>
   );
 }

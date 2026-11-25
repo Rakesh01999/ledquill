@@ -5,8 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { LogoMark } from "./logo";
-import { titleFor } from "./nav";
+import { LogoLink } from "./logo";
 import { SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { ApiStatus } from "./api-status";
@@ -46,9 +45,8 @@ export function Topbar() {
         </SheetTrigger>
         <SheetContent side="left" className="w-64 gap-0 bg-surface p-3">
           <SheetHeader className="p-0 pb-4">
-            <SheetTitle className="flex items-center gap-2.5 px-2 text-sm font-semibold">
-              <LogoMark />
-              LedQuill
+            <SheetTitle className="px-2">
+              <LogoLink onNavigate={() => setDrawerOpen(false)} />
             </SheetTitle>
             <SheetDescription className="sr-only">Navigate between screens</SheetDescription>
           </SheetHeader>
@@ -60,7 +58,9 @@ export function Topbar() {
         </SheetContent>
       </Sheet>
 
-      <h1 className="truncate text-base font-semibold">{titleFor(pathname)}</h1>
+      <div className="md:hidden">
+        <LogoLink showName={false} />
+      </div>
       <div className="flex-1" />
 
       <form role="search" onSubmit={submit} className="relative hidden w-full max-w-[380px] sm:block">

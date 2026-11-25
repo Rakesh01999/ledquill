@@ -10,9 +10,6 @@ export const FILE_TYPES: { value: FileType; label: string }[] = [
   { value: "csv", label: "CSV" },
 ];
 
-/** Height of a documents table row, shared with its skeleton so nothing shifts on load. */
-export const DOC_ROW = "h-[53px]";
-
 export const isActive = (d: Pick<DocumentOut, "status">) => d.status === "queued" || d.status === "processing";
 
 /** Read the list filters from URL search params, ignoring anything unexpected. */

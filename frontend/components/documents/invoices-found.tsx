@@ -6,12 +6,14 @@ import { Missing, Money } from "@/components/shared/money";
 import { StatusChip } from "@/components/shared/status-chip";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
+import { HEAD, ROW } from "@/lib/table";
 import { documentInvoicesOptions } from "@/lib/query/options";
 
-const head = "text-xs font-medium text-ink-2";
+const head = HEAD;
 
 export function InvoicesFound({ documentId, status }: { documentId: string; status: string }) {
   const { data, isPending, error, refetch } = useQuery(documentInvoicesOptions(api, documentId));
@@ -29,7 +31,7 @@ export function InvoicesFound({ documentId, status }: { documentId: string; stat
   }
 
   return (
-    <Table className="min-w-[640px]">
+    <Table className="min-w-[720px]">
       <TableHeader className="bg-surface-2 [&_tr]:border-line">
         <TableRow className="h-9 hover:bg-transparent">
           <TableHead className={`pl-4 ${head}`}>Invoice</TableHead>
@@ -38,12 +40,13 @@ export function InvoicesFound({ documentId, status }: { documentId: string; stat
           <TableHead className={head}>Currency</TableHead>
           <TableHead className={`text-right ${head}`}>Total</TableHead>
           <TableHead className={head}>Status</TableHead>
-          <TableHead className={`pr-4 text-right ${head}`}>Issues</TableHead>
+          <TableHead className={`text-right ${head}`}>Issues</TableHead>
+          <TableHead className={`pr-4 text-right ${head}`}>Action</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {data.items.map((inv) => (
-          <TableRow key={inv.id} className="h-10 border-line hover:bg-surface-2/60">
+          <TableRow key={inv.id} className={`${ROW} border-line hover:bg-surface-2/60`}>
             <TableCell className="pl-4 font-medium">
               <Link href={`/invoices/${inv.id}`} className="font-mono text-link hover:underline">
                 {inv.invoice_number ?? <Missing />}
@@ -60,8 +63,15 @@ export function InvoicesFound({ documentId, status }: { documentId: string; stat
             <TableCell>
               <StatusChip status={inv.status} />
             </TableCell>
-            <TableCell className="pr-4 text-right tabular-nums">
+            <TableCell className="text-right tabular-nums">
               {inv.issues.length > 0 ? inv.issues.length : <span className="text-ink-3">None</span>}
+            </TableCell>
+            <TableCell className="pr-4 text-right">
+              <Button asChild variant="ghost" size="sm" className="text-link">
+                <Link href={`/invoices/${inv.id}`} tabIndex={-1} aria-hidden="true">
+                  Open
+                </Link>
+              </Button>
             </TableCell>
           </TableRow>
         ))}
