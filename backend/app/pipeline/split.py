@@ -78,9 +78,29 @@ def split_pdf_pages(pages: Sequence[PageText]) -> list[Segment]:
 MIN_KNOWN_COLUMNS = 2  # known columns that make a header with blank cells a table
 
 
+def _line_items_header_at(rows: list[list[str]]) -> int | None:
+    """First row that heads a line-items table: a description column plus a quantity or unit
+    price column. Such a table lists the lines of one invoice, it is not a register."""
+    for i, row in enumerate(rows):
+        columns = map_columns(row)
+        if "description" in columns and ("quantity" in columns or "unit_price" in columns):
+            return i
+    return None
+
+
 def split_sheet(page: PageText) -> list[Segment]:
     rows = [line.split("\t") for line in page.text.split("\n")]
     header_at = detect_header_row(rows)
+    items_at = _line_items_header_at(rows)
+    if items_at is not None:
+        # A form-style invoice: key-value block, line items, totals. The "Invoice No." label of
+        # the block can look like a header row, so use the line-items header instead. Without an
+        # invoice-number column in it there is nothing to split by: one invoice, text only (the
+        # totals rows would otherwise be read as line items).
+        if "invoice_number" not in map_columns(rows[items_at]):
+            return [Segment([page.page_no], page.text)]
+        header_at = items_at
+
     if header_at is None or header_at + 1 >= len(rows):
         return [Segment([page.page_no], page.text)]  # no table: the whole sheet is one invoice
     preamble, header, data = rows[:header_at], rows[header_at], rows[header_at + 1 :]

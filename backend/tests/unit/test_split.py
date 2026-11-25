@@ -142,3 +142,57 @@ def test_segments_from_ocr_pages_are_marked_so_they_are_never_dropped():
     (ocr_seg,) = split_document(pages("noise", method="ocr"))
     (text_seg,) = split_document(pages("noise", method="text"))
     assert ocr_seg.ocr and not text_seg.ocr
+
+
+LINE_ITEMS_HEADER = ["#", "Description", "Qty", "Unit Price", "Amount", "Notes"]
+
+
+def test_form_style_invoice_with_a_line_items_table_is_one_invoice():
+    # regression: the "Invoice No." key-value row looked like the header (and mapped an
+    # invoice-number column), so every row below it became its own invoice
+    segments = split_document(
+        sheet(
+            ["SAMPLE INVOICE"],
+            ["DEMO COMPANY LTD. | 123 Business Road | hello@example.com"],
+            ["Invoice No.", "INV-2026-001", "", "Invoice Date", "2026-11-25"],
+            ["Bill To", "Sample Client", "", "Due Date", "2026-11-25"],
+            LINE_ITEMS_HEADER,
+            ["1", "Website Development", "1", "25000", "25000", "Landing page"],
+            ["2", "Maintenance Support", "2", "3000", "6000", ""],
+            ["", "", "", "Subtotal", "31000"],
+            ["", "", "", "Discount", "0"],
+            ["", "", "", "VAT / Tax", "0"],
+            ["", "", "", "Total Due", "31000"],
+            ["Payment Method: Bank Transfer | Account details: (Add your details)"],
+            ["Thank you for your business!"],
+        )  # fmt: skip
+    )
+    assert len(segments) == 1 and segments[0].table is None
+    for text in ("INV-2026-001", "Website Development", "Total Due", "Thank you"):
+        assert text in segments[0].text
+
+
+def test_line_items_header_without_quantity_or_unit_price_is_still_a_register():
+    segments = split_document(
+        sheet(
+            ["Supplier", "Description", "Amount"],
+            ["Acme", "Hosting", "10"],
+            ["Beta", "Support", "20"],
+        )  # fmt: skip
+    )
+    assert len(segments) == 2
+
+
+def test_line_items_table_with_an_invoice_number_column_still_groups_by_number():
+    header = ["Inv No", "Description", "Qty", "Unit Price", "Amount"]
+    segments = split_document(
+        sheet(
+            header,
+            ["A-1", "Widget", "2", "5", "10"],
+            ["A-1", "Gadget", "1", "7", "7"],
+            ["B-2", "Widget", "1", "5", "5"],
+        )  # fmt: skip
+    )
+    assert len(segments) == 2
+    assert [len(s.table.rows) for s in segments] == [2, 1]
+    assert segments[0].table.header == header
