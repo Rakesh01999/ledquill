@@ -1,5 +1,6 @@
 "use client";
 
+import { FilterChips, type Chip } from "@/components/shared/filter-chips";
 import { SegmentedFilter, type Segment } from "@/components/shared/segmented-filter";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
@@ -48,4 +49,17 @@ export function StatusFilter({ params }: { params: DocumentListParams }) {
       <SegmentedFilter label="Filter by file type" segments={types} />
     </div>
   );
+}
+
+/** The active status and file type as removable chips. */
+export function DocumentChips({ params }: { params: DocumentListParams }) {
+  const chips: Chip[] = [];
+  if (params.status) {
+    chips.push({ key: "status", label: `Status: ${LABELS[params.status]}`, href: listHref({ ...params, status: undefined, page: 1 }) });
+  }
+  if (params.file_type) {
+    const label = FILE_TYPES.find((t) => t.value === params.file_type)?.label ?? params.file_type;
+    chips.push({ key: "file_type", label: `Type: ${label}`, href: listHref({ ...params, file_type: undefined, page: 1 }) });
+  }
+  return <FilterChips chips={chips} clearHref={listHref({ page: 1, size: params.size })} />;
 }

@@ -8,8 +8,6 @@ import type { InvoiceListParams } from "@/lib/invoices";
  * serves server prefetching (server client, key added server-side) and the browser (proxy client).
  */
 
-export const PAGE_SIZE = 25;
-
 export const statsOptions = (client: ApiClient) =>
   queryOptions({
     queryKey: ["stats"],
@@ -30,20 +28,22 @@ export const healthOptions = (client: ApiClient) =>
     retry: false,
   });
 
-export type DocumentListParams = { status?: DocumentStatus; file_type?: FileType; page: number };
+export type DocumentListParams = { status?: DocumentStatus; file_type?: FileType; page: number; size: number };
 
 export const documentsOptions = (client: ApiClient, params: DocumentListParams) =>
   queryOptions({
     queryKey: ["documents", "list", params],
-    queryFn: () =>
+    // `signal` aborts the request when the query key changes or the view unmounts.
+    queryFn: ({ signal }) =>
       unwrap(
         client.GET("/api/v1/documents", {
+          signal,
           params: {
             query: {
               status: params.status,
               file_type: params.file_type,
-              limit: PAGE_SIZE,
-              offset: (params.page - 1) * PAGE_SIZE,
+              limit: params.size,
+              offset: (params.page - 1) * params.size,
             },
           },
         }),
@@ -110,9 +110,10 @@ export const queueOptions = (client: ApiClient) =>
 export const invoicesOptions = (client: ApiClient, params: InvoiceListParams) =>
   queryOptions({
     queryKey: ["invoices", "list", params],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       unwrap(
         client.GET("/api/v1/invoices", {
+          signal,
           params: {
             query: {
               q: params.q,
@@ -123,8 +124,8 @@ export const invoicesOptions = (client: ApiClient, params: InvoiceListParams) =>
               date_to: params.date_to,
               min_total: params.min_total,
               max_total: params.max_total,
-              limit: PAGE_SIZE,
-              offset: (params.page - 1) * PAGE_SIZE,
+              limit: params.size,
+              offset: (params.page - 1) * params.size,
             },
           },
         }),
@@ -138,8 +139,8 @@ export const SEARCH_LIMIT = 50;
 export const searchOptions = (client: ApiClient, q: string) =>
   queryOptions({
     queryKey: ["invoices", "search", q],
-    queryFn: () =>
-      unwrap(client.GET("/api/v1/search", { params: { query: { q, mode: "hybrid", limit: SEARCH_LIMIT } } })),
+    queryFn: ({ signal }) =>
+      unwrap(client.GET("/api/v1/search", { signal, params: { query: { q, mode: "hybrid", limit: SEARCH_LIMIT } } })),
     staleTime: 30_000,
     placeholderData: keepPreviousData,
     retry: false,

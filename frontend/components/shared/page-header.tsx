@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { CrumbLink } from "@/components/shared/crumb-link";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -36,9 +36,9 @@ export function PageHeader({
               return (
                 <li key={`${i}-${crumb.label}`} className={cn("flex min-w-0 items-center gap-1", last && "text-ink-3")}>
                   {crumb.href && !last ? (
-                    <Link href={crumb.href} className="rounded-sm hover:text-link hover:underline">
+                    <CrumbLink href={crumb.href} className="rounded-sm hover:text-link hover:underline">
                       {crumb.label}
-                    </Link>
+                    </CrumbLink>
                   ) : (
                     <span aria-current={last ? "page" : undefined} className="truncate">
                       {crumb.label}

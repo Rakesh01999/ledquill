@@ -12,11 +12,12 @@ import { describeError } from "@/lib/api/problem";
 import { ApiProblem } from "@/lib/api/problem";
 import type { DocumentList } from "@/lib/api/types";
 import { isActive, listHref, parseListParams } from "@/lib/documents";
-import { PAGE_SIZE, documentsOptions } from "@/lib/query/options";
+import { documentsOptions } from "@/lib/query/options";
 import { useBackoffInterval } from "@/lib/query/polling";
 import { cn } from "@/lib/utils";
 import { DocumentsTable } from "./documents-table";
-import { StatusFilter } from "./status-filter";
+import { Toolbar } from "@/components/shared/toolbar";
+import { DocumentChips, StatusFilter } from "./status-filter";
 import { UploadSection } from "./upload-section";
 
 const anyActive = (data: DocumentList) => data.items.some(isActive);
@@ -38,23 +39,26 @@ export function DocumentsView() {
     <div className="flex flex-col gap-5">
       <UploadSection />
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <div className="min-w-0 flex-1">
-          <StatusFilter params={params} />
+      <Toolbar>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="min-w-0 flex-1">
+            <StatusFilter params={params} />
+          </div>
+          <span role="status" className="text-xs text-ink-3">
+            {paused
+              ? `Live updates paused. ${describeError(error).message}`
+              : live
+                ? "Updating live"
+                : ""}
+          </span>
         </div>
-        <span role="status" className="text-xs text-ink-3">
-          {paused
-            ? `Live updates paused. ${describeError(error).message}`
-            : live
-              ? "Updating live"
-              : ""}
-        </span>
-      </div>
+        <DocumentChips params={params} />
+      </Toolbar>
 
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
         <div aria-busy={isFetching} className={cn(isPlaceholderData && "opacity-60 transition-opacity")}>
           {isPending ? (
-            <TableSkeleton rows={8} widths={["w-56", "w-24", "w-40", "w-20"]} />
+            <TableSkeleton rows={10} widths={["w-56", "w-24", "w-40", "w-20"]} />
           ) : error && !data ? (
             <ErrorState error={error} onRetry={() => void query.refetch()} />
           ) : data && data.items.length === 0 ? (
@@ -62,7 +66,7 @@ export function DocumentsView() {
               title={filtered ? "No documents match these filters." : "No documents yet. Drop files to start."}
               action={
                 filtered ? (
-                  <ShallowLink href={listHref({ page: 1 })} className="text-[13px] font-medium text-link hover:underline">
+                  <ShallowLink href={listHref({ page: 1, size: params.size })} className="text-[13px] font-medium text-link hover:underline">
                     Clear filters
                   </ShallowLink>
                 ) : undefined
@@ -75,9 +79,10 @@ export function DocumentsView() {
         {data && (
           <Pager
             page={params.page}
-            pageSize={PAGE_SIZE}
+            pageSize={params.size}
             total={data.total}
             hrefFor={(page) => listHref({ ...params, page })}
+            sizeHref={(size) => listHref({ ...params, size, page: 1 })}
           />
         )}
       </div>

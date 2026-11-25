@@ -8,6 +8,7 @@ import { Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SourcePanel } from "@/components/documents/source-panel";
 import { PageHeader } from "@/components/shared/page-header";
@@ -352,30 +353,15 @@ export function InvoiceDetail({ id }: { id: string }) {
         {saved}
       </p>
 
-      <div role="tablist" aria-label="Invoice sections" className="flex gap-1 border-b border-line lg:hidden">
-        {(
-          [
-            ["fields", "Fields"],
-            ["source", "Source"],
-            ["issues", issuesLabel],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            role="tab"
-            data-focus-inset
-            type="button"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={cn(
-              "-mb-px border-b-2 px-3 py-2 text-[13px] outline-none",
-              tab === key ? "border-primary font-semibold text-ink" : "border-transparent text-ink-2",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* Only the strip is a Radix Tabs: the panels below stay as they are and follow the same `tab`
+          state, so the banner, the Go-to buttons and the field markers keep switching tabs as before. */}
+      <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)} className="gap-0 lg:hidden">
+        <TabsList aria-label="Invoice sections">
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+          <TabsTrigger value="source">Source</TabsTrigger>
+          <TabsTrigger value="issues">{issuesLabel}</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <div className={cn(tab !== "issues" && "max-lg:hidden")}>
         <div className="flex flex-col gap-3">

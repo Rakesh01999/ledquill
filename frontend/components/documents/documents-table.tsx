@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useHoverPrefetch } from "@/components/shared/use-hover-prefetch";
 import { StatusChip } from "@/components/shared/status-chip";
 import { api, unwrap } from "@/lib/api/client";
 import { describeError } from "@/lib/api/problem";
@@ -62,7 +63,6 @@ function Stage({ doc, wrap = false }: { doc: DocumentOut; wrap?: boolean }) {
           aria-label={`${text}. Review issues in ${doc.filename}`}
           disabled={opening}
           onClick={(e) => void openFirstIssue(e)}
-          onMouseEnter={() => prefetchDocument(queryClient, doc.id)}
           onFocus={() => prefetchDocument(queryClient, doc.id)}
           className={cn(
             "-my-1 min-w-0 cursor-pointer rounded-sm py-1 text-left underline decoration-dotted underline-offset-2 hover:decoration-solid disabled:cursor-progress disabled:opacity-70",
@@ -125,6 +125,7 @@ const meta = (doc: DocumentOut) =>
  */
 export function DocumentsTable({ items }: { items: DocumentOut[] }) {
   const queryClient = useQueryClient();
+  const hoverPrefetch = useHoverPrefetch();
 
   async function reprocess(doc: DocumentOut) {
     try {
@@ -154,7 +155,11 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
         </TableHeader>
         <TableBody>
           {items.map((doc) => (
-            <TableRow key={doc.id} className={cn(ROW, "border-line hover:bg-surface-2/60")}>
+            <TableRow
+              key={doc.id}
+              className={cn(ROW, "border-line hover:bg-surface-2/60")}
+              {...hoverPrefetch(() => prefetchDocument(queryClient, doc.id))}
+            >
               <TableCell className="pl-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <TypeTile type={doc.file_type} />
@@ -162,7 +167,6 @@ export function DocumentsTable({ items }: { items: DocumentOut[] }) {
                     <Link
                       href={`/documents/${doc.id}`}
                       title={doc.filename}
-                      onMouseEnter={() => prefetchDocument(queryClient, doc.id)}
                       onFocus={() => prefetchDocument(queryClient, doc.id)}
                       className="block truncate font-medium text-ink hover:text-link hover:underline"
                     >

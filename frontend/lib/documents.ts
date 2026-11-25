@@ -1,4 +1,5 @@
 import type { DocumentOut, DocumentStatus, FileType } from "@/lib/api/types";
+import { parseSize, DEFAULT_PAGE_SIZE } from "@/lib/paging";
 import type { DocumentListParams } from "@/lib/query/options";
 
 export const STATUSES: DocumentStatus[] = ["processing", "queued", "completed", "failed"];
@@ -21,13 +22,14 @@ export function parseListParams(sp: URLSearchParams | Record<string, string | st
   const status = STATUSES.find((s) => s === get("status"));
   const file_type = FILE_TYPES.find((t) => t.value === get("file_type"))?.value;
   const page = Number.parseInt(get("page") ?? "1", 10);
-  return { status, file_type, page: Number.isFinite(page) && page >= 1 ? page : 1 };
+  return { status, file_type, page: Number.isFinite(page) && page >= 1 ? page : 1, size: parseSize(get("size")) };
 }
 
 export function listHref(params: DocumentListParams): string {
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
   if (params.file_type) q.set("file_type", params.file_type);
+  if (params.size !== DEFAULT_PAGE_SIZE) q.set("size", String(params.size));
   if (params.page > 1) q.set("page", String(params.page));
   const s = q.toString();
   return s ? `/documents?${s}` : "/documents";

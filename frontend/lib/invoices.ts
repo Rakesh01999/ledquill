@@ -1,5 +1,6 @@
 import type { InvoiceOut } from "@/lib/api/types";
 import { isMoneyInput, normalizeMoney } from "@/lib/decimal";
+import { DEFAULT_PAGE_SIZE, parseSize } from "@/lib/paging";
 
 export type FieldKind = "text" | "date" | "currency" | "money";
 export type FieldName =
@@ -178,6 +179,7 @@ export type InvoiceListParams = {
   min_total?: string;
   max_total?: string;
   page: number;
+  size: number;
 };
 
 const STATUS_VALUES = ["needs_review", "ready", "approved"] as const;
@@ -210,15 +212,17 @@ export function parseInvoiceParams(
     min_total: num("min_total"),
     max_total: num("max_total"),
     page: Number.isFinite(page) && page >= 1 ? page : 1,
+    size: parseSize(get("size")),
   };
 }
 
 export function invoicesHref(params: InvoiceListParams): string {
   const q = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
-    if (k === "page") continue;
+    if (k === "page" || k === "size") continue;
     if (typeof v === "string" && v) q.set(k, v);
   }
+  if (params.size !== DEFAULT_PAGE_SIZE) q.set("size", String(params.size));
   if (params.page > 1) q.set("page", String(params.page));
   const s = q.toString();
   return s ? `/invoices?${s}` : "/invoices";

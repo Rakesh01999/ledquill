@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { Missing, Money } from "@/components/shared/money";
 import { StatusChip } from "@/components/shared/status-chip";
+import { useHoverPrefetch } from "@/components/shared/use-hover-prefetch";
 import { rowNavKeyDown } from "@/components/shared/row-nav";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,6 +22,7 @@ export type InvoiceRow = { invoice: InvoiceOut; matchedBy?: string[] };
 /** Invoices as a table. In search results a "Matched by" column explains why each row is there. */
 export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[]; showMatch?: boolean }) {
   const queryClient = useQueryClient();
+  const hoverPrefetch = useHoverPrefetch();
   return (
     <Table className="min-w-[900px] lg:min-w-0" onKeyDown={rowNavKeyDown}>
       <TableHeader className="bg-surface-2 [&_tr]:border-line">
@@ -30,7 +32,7 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
           <TableHead className={head}>Date</TableHead>
           <TableHead className={head}>Currency</TableHead>
           <TableHead className={cn("text-right", head)}>Total</TableHead>
-          <TableHead className={head}>Status</TableHead>
+          <TableHead className={cn("pl-6", head)}>Status</TableHead>
           <TableHead className={cn("text-right", head)}>Issues</TableHead>
           {showMatch && <TableHead className={head}>Matched by</TableHead>}
           <TableHead className={cn("pr-4 text-right", head)}>Action</TableHead>
@@ -38,12 +40,15 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
       </TableHeader>
       <TableBody>
         {rows.map(({ invoice: inv, matchedBy }) => (
-          <TableRow key={inv.id} className={cn(ROW, "border-line hover:bg-surface-2/60")}>
+          <TableRow
+            key={inv.id}
+            className={cn(ROW, "border-line hover:bg-surface-2/60")}
+            {...hoverPrefetch(() => prefetchInvoice(queryClient, inv.id))}
+          >
             <TableCell className="pl-4">
               <Link
                 href={`/invoices/${inv.id}`}
                 data-row-link
-                onMouseEnter={() => prefetchInvoice(queryClient, inv.id)}
                 onFocus={() => prefetchInvoice(queryClient, inv.id)}
                 className="font-mono text-[13px] font-medium text-link hover:underline"
               >
@@ -59,7 +64,7 @@ export function InvoicesTable({ rows, showMatch = false }: { rows: InvoiceRow[];
             <TableCell className="text-right">
               <Money value={inv.total} />
             </TableCell>
-            <TableCell>
+            <TableCell className="pl-6">
               <StatusChip status={inv.status} />
             </TableCell>
             <TableCell

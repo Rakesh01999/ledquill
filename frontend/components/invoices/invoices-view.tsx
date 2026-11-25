@@ -9,8 +9,9 @@ import { Pager } from "@/components/shared/pager";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { api } from "@/lib/api/client";
 import { FALLBACK_NOTES, invoicesHref, isSearchOnly, parseInvoiceParams } from "@/lib/invoices";
-import { PAGE_SIZE, invoicesOptions, searchOptions } from "@/lib/query/options";
+import { invoicesOptions, searchOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
+import { Toolbar } from "@/components/shared/toolbar";
 import { InvoiceFilters } from "./invoice-filters";
 import { InvoicesTable, type InvoiceRow } from "./invoices-table";
 
@@ -43,7 +44,9 @@ export function InvoicesView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <InvoiceFilters params={params} />
+      <Toolbar>
+        <InvoiceFilters params={params} />
+      </Toolbar>
 
       <div className="flex min-h-5 flex-col gap-1 text-[13px] text-ink-2" role="status">
         {searchMode && search.data && (
@@ -67,7 +70,7 @@ export function InvoicesView() {
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
         <div aria-busy={active.isFetching} className={cn(active.isPlaceholderData && "opacity-60 transition-opacity")}>
           {active.isPending && active.fetchStatus !== "idle" ? (
-            <TableSkeleton rows={8} widths={SKELETON_WIDTHS} />
+            <TableSkeleton rows={10} widths={SKELETON_WIDTHS} />
           ) : active.error && !rows ? (
             <ErrorState error={active.error} onRetry={() => void active.refetch()} />
           ) : rows && rows.length === 0 ? (
@@ -89,7 +92,7 @@ export function InvoicesView() {
                   </ShallowLink>
                 ) : filtered ? (
                   <ShallowLink
-                    href={invoicesHref({ page: 1 })}
+                    href={invoicesHref({ page: 1, size: params.size })}
                     className="text-[13px] font-medium text-link hover:underline"
                   >
                     Clear filters
@@ -104,9 +107,10 @@ export function InvoicesView() {
         {!searchMode && list.data && (
           <Pager
             page={params.page}
-            pageSize={PAGE_SIZE}
+            pageSize={params.size}
             total={list.data.total}
             hrefFor={(page) => invoicesHref({ ...params, page })}
+            sizeHref={(size) => invoicesHref({ ...params, size, page: 1 })}
           />
         )}
       </div>

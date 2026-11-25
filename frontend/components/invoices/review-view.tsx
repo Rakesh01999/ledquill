@@ -6,6 +6,9 @@ import { CircleAlert, TriangleAlert } from "lucide-react";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { CountBadge } from "@/components/shared/count-badge";
 import { Missing, Money } from "@/components/shared/money";
+import { Pager } from "@/components/shared/pager";
+import { useHoverPrefetch } from "@/components/shared/use-hover-prefetch";
+import { useLocalPaging } from "@/components/shared/use-local-paging";
 import { rowNavKeyDown } from "@/components/shared/row-nav";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,8 @@ export function ReviewView() {
   const queryClient = useQueryClient();
   const { data, error, isPending, refetch } = useQuery(queueOptions(api));
   const total = data?.total ?? 0;
+  const hoverPrefetch = useHoverPrefetch();
+  const { pageItems, pagerProps } = useLocalPaging(data?.items ?? []);
 
   return (
     <div className="flex flex-col gap-4">
@@ -37,7 +42,7 @@ export function ReviewView() {
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
         <div>
           {isPending ? (
-            <TableSkeleton rows={8} widths={["w-28", "w-44", "w-20", "w-72", "w-10"]} />
+            <TableSkeleton rows={10} widths={["w-28", "w-44", "w-20", "w-72", "w-10"]} />
           ) : error ? (
             <ErrorState error={error} onRetry={() => void refetch()} />
           ) : data.items.length === 0 ? (
@@ -64,15 +69,18 @@ export function ReviewView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.items.map((inv) => {
+                {pageItems.map((inv) => {
                   const issue = topIssue(inv);
                   return (
-                    <TableRow key={inv.id} className={cn(ROW, "border-line hover:bg-surface-2/60")}>
+                    <TableRow
+                      key={inv.id}
+                      className={cn(ROW, "border-line hover:bg-surface-2/60")}
+                      {...hoverPrefetch(() => prefetchInvoice(queryClient, inv.id))}
+                    >
                       <TableCell className="pl-4">
                         <Link
                           href={`/invoices/${inv.id}?queue=1`}
                           data-row-link
-                          onMouseEnter={() => prefetchInvoice(queryClient, inv.id)}
                           onFocus={() => prefetchInvoice(queryClient, inv.id)}
                           className="font-mono text-[13px] font-medium text-link hover:underline"
                         >
@@ -125,7 +133,7 @@ export function ReviewView() {
             </Table>
 
             <ul className="divide-y divide-line lg:hidden">
-              {data.items.map((inv) => {
+              {pageItems.map((inv) => {
                 const issue = topIssue(inv);
                 return (
                   <li key={inv.id}>
@@ -178,6 +186,7 @@ export function ReviewView() {
             </>
           )}
         </div>
+        {data && data.items.length > 0 && <Pager {...pagerProps} />}
         {data && data.total > QUEUE_LIMIT && (
           <p className="border-t border-line px-4 py-2 text-xs text-ink-2">
             Showing the first {QUEUE_LIMIT} of {data.total}. Approve or fix some to see the rest.

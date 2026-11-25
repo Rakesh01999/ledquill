@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { DebouncedInput } from "@/components/shared/debounced-input";
+import { FilterChips, type Chip } from "@/components/shared/filter-chips";
 import { SegmentedFilter } from "@/components/shared/segmented-filter";
 import { invoicesHref, type InvoiceListParams } from "@/lib/invoices";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
   const set = (patch: Partial<InvoiceListParams>) => replaceUrl({ ...params, ...patch, page: 1 });
 
   return (
-    <div className="flex flex-col gap-3">
+    <>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-[380px] min-w-56 flex-1">
           <label htmlFor="invoice-q" className="sr-only">
@@ -120,6 +121,26 @@ export function InvoiceFilters({ params }: { params: InvoiceListParams }) {
           />
         </label>
       </div>
-    </div>
+      <InvoiceChips params={params} />
+    </>
   );
+}
+
+const STATUS_LABEL: Record<string, string> = { needs_review: "Needs review", ready: "Ready", approved: "Approved" };
+
+/** Every active filter, including the search text, as a removable chip. */
+function InvoiceChips({ params }: { params: InvoiceListParams }) {
+  const without = (patch: Partial<InvoiceListParams>) => invoicesHref({ ...params, ...patch, page: 1 });
+  const chips: Chip[] = [];
+  if (params.q) chips.push({ key: "q", label: `Search: “${params.q}”`, href: without({ q: undefined }) });
+  if (params.status) {
+    chips.push({ key: "status", label: `Status: ${STATUS_LABEL[params.status]}`, href: without({ status: undefined }) });
+  }
+  if (params.supplier) chips.push({ key: "supplier", label: `Supplier: ${params.supplier}`, href: without({ supplier: undefined }) });
+  if (params.currency) chips.push({ key: "currency", label: `Currency: ${params.currency}`, href: without({ currency: undefined }) });
+  if (params.date_from) chips.push({ key: "date_from", label: `Date from ${params.date_from}`, href: without({ date_from: undefined }) });
+  if (params.date_to) chips.push({ key: "date_to", label: `Date to ${params.date_to}`, href: without({ date_to: undefined }) });
+  if (params.min_total) chips.push({ key: "min_total", label: `Total from ${params.min_total}`, href: without({ min_total: undefined }) });
+  if (params.max_total) chips.push({ key: "max_total", label: `Total to ${params.max_total}`, href: without({ max_total: undefined }) });
+  return <FilterChips chips={chips} clearHref={invoicesHref({ page: 1, size: params.size })} />;
 }
