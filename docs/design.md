@@ -26,6 +26,8 @@ One upload creates one `document` and one `job`. The worker runs six stages in o
 | 5 | Validate | Rules V-01 to V-09, duplicates, cross-checks | Python rules | Never fails; it only records issues |
 | 6 | Index | Full-text vector and embedding saved | Postgres tsvector, fastembed | Retry; search still works by keyword |
 
+Cross-verification (V-09, `pipeline/validate.py` `cross_check_issues`): cross-document verification. When another document holds an invoice with the same invoice number and a compatible supplier, the new invoice's total (more than one cent apart), date and supplier must agree with it; otherwise an Error is recorded with `related_invoice_id` pointing at the other invoice. It is source-agnostic, so it works between any two documents, including a PDF and a spreadsheet (covered by `test_pdf_and_spreadsheet_copies_that_disagree_raise_v09_with_the_related_invoice`). It is not a separate PDF-to-Excel comparison feature.
+
 A 1,000-page PDF is read page by page (never loaded whole), progress is updated every 10 pages, and stage 4 runs per invoice, so one bad invoice never fails the whole document.
 
 ```mermaid

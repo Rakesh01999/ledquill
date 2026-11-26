@@ -9,6 +9,7 @@ you review, correct, approve and search the results.
 
 Specifications: [requirements](docs/requirements.md),
 [design](docs/design.md), [product requirements](docs/prd.md). Progress: [checklist](docs/CHECKLIST.md).
+Database schema and ER diagram: [docs/schema.md](docs/schema.md).
 
 ## Features
 
@@ -18,7 +19,10 @@ Specifications: [requirements](docs/requirements.md),
 - Rules pre-extraction, then an LLM with a model failover chain. Values the model returns that are
   not found in the source text become null (grounding check).
 - Validation rules V-01 to V-09: arithmetic, missing fields, duplicates, cross-document checks.
-  Invoices with issues are flagged for review with reasons.
+  Invoices with issues are flagged for review with reasons. V-09 is cross-document verification:
+  when two documents carry the same invoice number (and a compatible supplier), their total, date
+  and supplier must agree. It works between any two documents, including a PDF and a spreadsheet;
+  it is not a separate PDF-to-Excel comparison feature.
 - Review screen with the source beside the fields, inline edits with an audit trail, approve,
   review queue, dashboard, and hybrid (keyword plus semantic) search.
 - Corrupt and encrypted files fail with a readable reason; failed jobs can be reprocessed.
@@ -53,7 +57,7 @@ flowchart LR
 LLM order (`LLM_MODELS`): `groq:openai/gpt-oss-120b`, `groq:qwen/qwen3.8-27b`,
 `groq:openai/gpt-oss-20b`, `gemini:gemini-3.8-flash`. Token limits are tracked per model in Redis.
 The database schema is defined by the SQLAlchemy models in `backend/app/db` and the Alembic
-migrations.
+migrations; see [docs/schema.md](docs/schema.md) for the tables and an ER diagram.
 
 | Layer | Technology |
 |---|---|
@@ -82,21 +86,37 @@ docs/                  requirements, design, prompts, AI disclosure
 ## Setup (docker compose)
 
 Prerequisites: Docker with Compose, and Node.js for the frontend. You need a Groq API key and,
-for the fallback model, a Gemini API key.
+for the fallback model, a Gemini API key. Run the commands from the repository root.
+
+Bash (Git Bash, macOS, Linux):
 
 ```bash
 cp .env.example .env
-# edit .env: set LEDQUILL_API_KEY (for example: openssl rand -hex 32), GROQ_API_KEY, GEMINI_API_KEY
+openssl rand -hex 32                 # paste the result into LEDQUILL_API_KEY in .env
 docker compose up --build
 docker compose exec api alembic upgrade head
 ```
+
+PowerShell (Windows, one command per line):
+
+```powershell
+Copy-Item .env.example .env
+[guid]::NewGuid().ToString("N") + [guid]::NewGuid().ToString("N")   # paste into LEDQUILL_API_KEY in .env
+docker compose up --build
+docker compose exec api alembic upgrade head
+```
+
+Edit `.env` and set `LEDQUILL_API_KEY`, `GROQ_API_KEY` and `GEMINI_API_KEY`. `docker compose up`
+does not run migrations, so `alembic upgrade head` is a required step (run it in a second
+terminal once the containers are up). The migration command above runs against the local Docker
+database only.
 
 This starts PostgreSQL (pgvector), Redis, the API on http://localhost:8000 (interactive docs at
 `/docs`) and a Celery worker. Check http://localhost:8000/api/v1/health.
 
 Frontend (separate terminal). The server-side routes need `LEDQUILL_API_URL` and `LEDQUILL_API_KEY`
-in the frontend environment (for example in `frontend/.env.local`); use the same API key as the
-backend and `http://localhost:8000` as the URL.
+in `frontend/.env.local` (see `frontend/.env.example`); use the same API key as the backend and
+`http://localhost:8000` as the URL.
 
 ```bash
 cd frontend
@@ -104,11 +124,23 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-Other commands:
+PowerShell:
+
+```powershell
+Copy-Item frontend\.env.example frontend\.env.local
+cd frontend
+npm install
+npm run dev
+```
+
+Other commands (PowerShell: run each on its own line):
 
 ```bash
-docker compose exec api ruff check . --fix && docker compose exec api ruff format .
-cd frontend && npm run lint && npm run build
+docker compose exec api ruff check . --fix
+docker compose exec api ruff format .
+cd frontend
+npm run lint
+npm run build
 ```
 
 Processing limits are configurable in `.env` (`LEDQUILL_MAX_UPLOAD_MB`,
@@ -116,21 +148,37 @@ Processing limits are configurable in `.env` (`LEDQUILL_MAX_UPLOAD_MB`,
 `LEDQUILL_MAX_IMAGE_PIXELS`). If you use Upstash instead of a local Redis, the `REDIS_URL` needs
 `?ssl_cert_reqs=required`.
 
+### First run
+
+1. Start the services and run the migration (above). Wait for `/api/v1/health` to respond.
+2. Start the frontend and open http://localhost:3000.
+3. Upload a sample file. There is no separate sample folder; use the synthetic evaluation set in
+   `evaluation/data/` (for example `clean_01.pdf`, `scan_03_mild.jpg`, `scan_05_mild.tif`,
+   `register_01.xlsx`, `register_02.csv`; labels are in `evaluation/data/labels.json`), or the
+   small test files in `backend/tests/fixtures/`. All of these are generated, not real invoices.
+4. Watch the status change on the Documents page, then open the invoice to review, correct and
+   approve it, and try the search box.
+
 ## Testing
 
 ```bash
 docker compose exec api pytest -q
+cd frontend
+npx vitest run
+npx tsc --noEmit
+npm run lint
 ```
 
-Last run (2026-11-24): 527 passed, 2 skipped. Live LLM tests
-are opt-in (`RUN_LIVE_LLM=1`).
+Last run (2026-11-26): backend 659 passed, 2 skipped; frontend 94 passed (16 files); `tsc` and
+`eslint` clean. Live LLM tests are opt-in (`RUN_LIVE_LLM=1`). The browser UI is not covered by
+automated end-to-end tests.
 
 ## Evaluation results
 
 Source: `evaluation/results.json` and `evaluation/report.md`, produced by `evaluation/run_eval.py`
 through the real API on 2026-11-22 (58 of 58 files; `clean_13.pdf` and `register_01.xlsx` were run
 again afterwards and everything was rescored with the final scorer). The dataset is synthetic:
-58 files, 65 invoices, generated with a fixed seed by `evaluation/generate.py`, with labels in
+58 files, 64 expected invoices, generated with a fixed seed by `evaluation/generate.py`, with labels in
 `evaluation/data/labels.json`.
 
 | Metric | Result |
@@ -218,13 +266,20 @@ Deployment notes: the browser never holds the API key; Next.js server routes add
 
 ## Known limitations
 
+- The evaluation uses a synthetic labeled dataset (58 files); no real-world documents were run.
+- No 1000-page run was performed; the configured cap is 2000 pages (`LEDQUILL_MAX_PDF_PAGES`).
+- Semantic search is real (fastembed bge-small plus pgvector, fused with keyword search), but its
+  quality is modest on paraphrase queries. Example: "company that sells cloth" ranked an unrelated
+  supplier above the textile supplier.
+- Timings in the evaluation report have about 2 s resolution (status polling). The LLM answer
+  cache means a re-run of the same files does not call the live LLM.
+- The browser UI was not covered by automated end-to-end tests (component tests only).
 - Retrying a job deletes the stored pages and re-runs OCR; stored pages are not reused.
 - Duplicate flags (V-07, V-09) are set only on the later-processed invoice. A same-hash duplicate
   upload for which no invoice row exists is not caught.
 - Line items are read-only in the review screen.
 - Hybrid search only (no mode toggle in the UI).
-- The frontend performance budget in `docs/prd.md` section 8, Lighthouse, and a 1000-page PDF
-  were not measured.
+- The frontend performance budget in `docs/prd.md` section 8 and Lighthouse were not measured.
 - The Redis `llm:cache` keys on the Render Key Value instance were not read directly, so cache hits
   are not confirmed on the live service.
 - Status rule: a single V-02 or V-03 warning keeps an invoice "ready", and tax is not a required
