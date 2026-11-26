@@ -11,6 +11,20 @@ Specifications: [requirements](docs/requirements.md),
 [design](docs/design.md), [product requirements](docs/prd.md). Progress: [checklist](docs/CHECKLIST.md).
 Database schema and ER diagram: [docs/schema.md](docs/schema.md).
 
+## Live demo
+
+Open https://ledquill.vercel.app. No login or API key is needed: the web app's server routes add the
+API key, and the browser never holds it. The hosted demo holds a small synthetic sample set, and you
+can upload your own files too (PDF, JPG, PNG, TIFF, XLSX, XLS, CSV). Hosted limits:
+
+- About 4 MB per request (the platform rejects about 4.5 MB; the UI states 4 MB). The API itself allows 25 MB.
+- 10 uploads per minute (the configured default), shared by all visitors.
+- Slower processing on the free tier (0.1 CPU): a single-page PDF or XLSX takes about 7 to 9 s, an image longer.
+- The first request can be slow while the backend wakes up.
+- Search on the hosted demo is keyword-only; semantic and hybrid search run locally.
+
+Details: [Demo hosting](#demo-hosting) and [Demo hosting limits](#demo-hosting-limits).
+
 ## Features
 
 - Input: PDF, JPG, PNG, TIFF (multi-frame), XLSX, XLS and CSV. File type is detected from content.
