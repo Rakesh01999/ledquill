@@ -19,13 +19,37 @@ Database schema and ER diagram: [docs/schema.md](docs/schema.md).
 - Rules pre-extraction, then an LLM with a model failover chain. Values the model returns that are
   not found in the source text become null (grounding check).
 - Validation rules V-01 to V-09: arithmetic, missing fields, duplicates, cross-document checks.
-  Invoices with issues are flagged for review with reasons. V-09 is cross-document verification:
+  Invoices with issues are flagged for review with reasons. See [Validation rules](#validation-rules). V-09 is cross-document verification:
   when two documents carry the same invoice number (and a compatible supplier), their total, date
   and supplier must agree. It works between any two documents, including a PDF and a spreadsheet;
   it is not a separate PDF-to-Excel comparison feature.
 - Review screen with the source beside the fields, inline edits with an audit trail, approve,
   review queue, dashboard, and hybrid (keyword plus semantic) search.
 - Corrupt and encrypted files fail with a readable reason; failed jobs can be reprocessed.
+
+## Validation rules
+
+Rules run in the validate stage ([backend/app/pipeline/validate.py](backend/app/pipeline/validate.py));
+the spec is in [docs/requirements.md](docs/requirements.md) section 7. The review screen shows each
+issue with its name, code, field, message and a "What to do" hint. The names below are the ones
+shown in the UI ([frontend/lib/invoices.ts](frontend/lib/invoices.ts)).
+
+| Code | Name (UI) | What it checks | Severity | Blocks approval |
+|---|---|---|---|---|
+| V-01 | Required field missing | `invoice_number`, `invoice_date`, `supplier_name` or `total` is missing | error | yes |
+| V-02 | Invalid value | A subtotal, tax, total or line amount is negative (error); the currency is not a valid ISO 4217 code (warning) | error / warning | yes for negative amounts, no for the currency |
+| V-03 | Line total | For each line, quantity x unit price equals the line amount (tolerance 0.01) | warning | no |
+| V-04 | Subtotal | The sum of line amounts equals the subtotal (tolerance 0.01 or 0.5%) | error | yes |
+| V-05 | Total | Subtotal + tax equals the total (same tolerance) | error | yes |
+| V-06 | Date | The invoice date is not in the future and not before 2000-01-01 | warning | no |
+| V-07 | Possible duplicate | The same file hash, or the same supplier and invoice number, is already stored in another document | error | yes |
+| V-08 | Low confidence | A found required field has confidence below 0.7, the LLM was unavailable (pattern values only), the scan was too poor to read, or the text contains instruction-like lines | warning | no |
+| V-09 | Differs from another source | Another document with the same invoice number and a matching supplier disagrees on total (more than 0.01), date or supplier | error | yes |
+
+Status: any error, two or more warnings, or any V-08 issue makes an invoice `needs_review`;
+otherwise it is `ready`. Approval is refused while an error-severity issue is open
+(`approve_invoice` in `backend/app/services/invoices.py`); warnings do not block it, and a reviewer
+can approve past them. V-07 and V-09 are set on the later-processed invoice.
 
 ## Architecture
 
