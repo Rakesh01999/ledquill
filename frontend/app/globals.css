@@ -126,13 +126,25 @@
   --radius-lg: 8px;
   --radius-xl: 8px;
 
-  /* type scale: 12 caption, 13 table, 14 body, 16 section, 20 page title, 24 KPI */
-  --text-caption: 12px;
-  --text-table: 13px;
-  --text-body: 14px;
-  --text-section: 16px;
-  --text-title: 20px;
-  --text-kpi: 24px;
+  /*
+   * Fluid type scale, one place. Each size grows linearly from 360px to 1920px wide (no breakpoint
+   * jumps): caption 12->13, table 13->14.5, body 14->15.5, section 16->18, title 20->24, KPI 24->28.
+   * Tailwind's text-xs/sm/base/xl map onto the same tokens, so existing classes scale too.
+   */
+  --text-caption: clamp(0.75rem, 0.735rem + 0.064vw, 0.8125rem);
+  --text-table: clamp(0.8125rem, 0.79rem + 0.096vw, 0.906rem);
+  --text-body: clamp(0.875rem, 0.853rem + 0.096vw, 0.969rem);
+  --text-section: clamp(1rem, 0.971rem + 0.128vw, 1.125rem);
+  --text-title: clamp(1.25rem, 1.19rem + 0.256vw, 1.5rem);
+  --text-kpi: clamp(1.5rem, 1.44rem + 0.256vw, 1.75rem);
+  --text-xs: var(--text-caption);
+  --text-sm: var(--text-body);
+  --text-base: var(--text-section);
+  --text-xl: var(--text-title);
+
+  /* Fluid page padding and section gap (p-page, -mx-page, gap-section): 12px on a phone, 20px wide. */
+  --spacing-page: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+  --spacing-section: clamp(0.75rem, 0.6rem + 0.5vw, 1rem);
 }
 
 @layer base {
@@ -146,7 +158,7 @@
     background: var(--canvas);
     color: var(--ink);
     font-family: var(--font-sans);
-    font-size: 13px;
+    font-size: var(--text-table);
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
   }
@@ -168,6 +180,18 @@
   }
   ::selection {
     background: var(--primary-soft);
+  }
+}
+
+/*
+ * iOS Safari zooms the page when a field under 16px gets focus. One rule for every text field on a
+ * phone; unlayered, so it wins over the utility classes (text-table, text-xs) set on single inputs.
+ */
+@media (max-width: 767px) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="hidden"], [type="button"], [type="submit"]),
+  textarea,
+  select {
+    font-size: 16px;
   }
 }
 

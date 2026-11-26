@@ -133,7 +133,7 @@ export function DocumentDetail({ id }: { id: string }) {
       }
     />
     {actions.dialog}
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-5">
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-section">
       <header className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <span
           aria-hidden="true"
@@ -142,14 +142,14 @@ export function DocumentDetail({ id }: { id: string }) {
           {typeTile(doc.file_type)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] text-ink-2" suppressHydrationWarning>
+          <p className="text-table text-ink-2" suppressHydrationWarning>
             {formatBytes(doc.size_bytes)}
             {doc.page_count ? ` · ${doc.page_count} ${doc.page_count === 1 ? "page" : "pages"}` : ""}
             {` · Uploaded ${formatWhen(doc.created_at)}`}
           </p>
           {running && (
             <div className="mt-2 flex max-w-sm flex-col gap-1.5" role="status">
-              <span className="text-[13px] text-ink-2">
+              <span className="text-table text-ink-2">
                 {stageText(doc)} <span className="text-ink-3 tabular-nums">{doc.progress}%</span>
               </span>
               <div
@@ -232,7 +232,7 @@ export function DocumentDetailSkeleton() {
       crumbs={[{ label: "Documents", href: "/documents" }, { label: "Document" }]}
       title={<Skeleton className="h-6 w-72 bg-skeleton" />}
     />
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-5" aria-busy="true">
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-section" aria-busy="true">
       <div className="flex items-start gap-4">
         <Skeleton className="h-[42px] w-9 bg-skeleton" />
         <div className="flex flex-1 flex-col gap-2">

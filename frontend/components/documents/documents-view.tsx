@@ -45,7 +45,7 @@ export function DocumentsView() {
   }, [data, params, isPlaceholderData]);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-section">
       <UploadSection />
 
       <Toolbar>
@@ -78,7 +78,7 @@ export function DocumentsView() {
               title={filtered ? "No documents match these filters." : "No documents yet. Upload your first invoice."}
               action={
                 filtered ? (
-                  <ShallowLink href={listHref({ page: 1, size: params.size })} className="text-[13px] font-medium text-link hover:underline">
+                  <ShallowLink href={listHref({ page: 1, size: params.size })} className="text-table font-medium text-link hover:underline">
                     Clear filters
                   </ShallowLink>
                 ) : undefined

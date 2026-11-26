@@ -5,7 +5,7 @@ import { ApiProblem, describeError } from "@/lib/api/problem";
 /** One line saying why it is empty, and the next action. */
 export function EmptyState({ title, action }: { title: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+    <div className="flex flex-col items-center gap-3 px-6 py-8 text-center">
       <p className="text-sm text-ink-2">{title}</p>
       {action}
     </div>
@@ -16,10 +16,10 @@ export function EmptyState({ title, action }: { title: string; action?: ReactNod
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const { title, message } = describeError(error);
   return (
-    <div role="alert" className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+    <div role="alert" className="flex flex-col items-center gap-3 px-6 py-8 text-center">
       <div>
         <p className="text-sm font-semibold">{title}</p>
-        <p className="mt-1 text-[13px] text-ink-2">{message}</p>
+        <p className="mt-1 text-table text-ink-2">{message}</p>
         {error instanceof ApiProblem && error.requestId && (
           <p className="mt-2 text-xs text-ink-3">
             Reference: <span className="font-mono">{error.requestId}</span>

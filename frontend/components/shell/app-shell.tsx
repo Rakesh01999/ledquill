@@ -18,7 +18,7 @@ export function AppShell({ children, initialCollapsed = false }: { children: Rea
             screen-reader-only text). Without it they are placed against the viewport, are not clipped
             by <main>'s scrolling, and stretch the document, so the whole page (sidebar included)
             scrolls and leaves empty space under the content. */}
-        <main id="main" className="relative min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
+        <main id="main" className="relative min-h-0 flex-1 overflow-y-auto p-page">
           {children}
         </main>
       </div>

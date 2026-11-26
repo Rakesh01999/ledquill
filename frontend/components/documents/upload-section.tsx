@@ -198,35 +198,33 @@ export function UploadSection() {
         }}
         onDrop={onDrop}
         className={cn(
-          "flex min-h-[200px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors duration-150 motion-reduce:transition-none",
-          dragging ? "border-primary bg-primary-soft" : "border-line-strong bg-surface hover:bg-surface-2/60",
+          "flex min-h-11 w-full cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed px-4 py-3 text-center transition-colors duration-150 motion-reduce:transition-none sm:flex-row sm:text-left",
+          // Drag-over changes colour and adds a ring (no size change), so the zone never jumps.
+          dragging
+            ? "border-primary bg-primary-soft ring-2 ring-primary/30"
+            : "border-line-strong bg-surface hover:bg-surface-2/60",
         )}
       >
         <div
           className={cn(
-            "flex size-12 flex-none items-center justify-center rounded-lg border bg-surface-2 transition-colors duration-150",
+            "flex size-10 flex-none items-center justify-center rounded-lg border bg-surface-2 transition-colors duration-150",
             dragging ? "border-primary text-primary" : "border-line text-ink-2",
           )}
         >
           <Upload className="size-5" aria-hidden="true" />
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-base font-semibold">{dragging ? "Release to upload" : "Drag invoices here and release"}</div>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="text-body font-semibold">{dragging ? "Release to upload" : "Drag invoices here and release"}</div>
           <div className="text-ink-2">or choose them from your computer</div>
+          <div className="text-caption text-ink-3">
+            PDF, JPG, PNG, TIFF, XLSX, XLS, CSV ·{" "}
+            {HOSTED_MAX_MB !== null ? `Up to ${HOSTED_MAX_MB} MB per file on the hosted demo` : "Up to 25 MB per file"} ·
+            20 files per request. Scans below 150 dpi may not be readable.
+          </div>
         </div>
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" className="h-11 w-full flex-none sm:h-8 sm:w-auto">
           Browse files
         </Button>
-        <div className="flex flex-col gap-0.5 text-[13px] text-ink-2">
-          <span>PDF, JPG, PNG, TIFF, XLSX, XLS, CSV</span>
-          <span>
-            {HOSTED_MAX_MB !== null
-              ? `Up to ${HOSTED_MAX_MB} MB per file on the hosted demo`
-              : "Up to 25 MB per file"}{" "}
-            · 20 files per request
-          </span>
-          <span className="text-xs text-ink-3">Scans below 150 dpi may not be readable.</span>
-        </div>
         <input
           ref={inputRef}
           id={UPLOAD_INPUT_ID}
@@ -244,7 +242,7 @@ export function UploadSection() {
         />
       </div>
 
-      <div aria-live="polite" className="text-[13px] text-ink-2 empty:hidden">
+      <div aria-live="polite" className="text-table text-ink-2 empty:hidden">
         {queued > 0 && !entries.some((e) => e.state === "uploading")
           ? `${queued} ${queued === 1 ? "file" : "files"} accepted and queued. ${queued === 1 ? "It appears" : "They appear"} in the list below.`
           : null}
@@ -263,7 +261,7 @@ export function UploadSection() {
               )}
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">{e.name}</div>
-                <div className={cn("text-[13px]", e.state === "uploading" || e.state === "accepted" ? "text-ink-2" : "text-danger")}>
+                <div className={cn("text-table", e.state === "uploading" || e.state === "accepted" ? "text-ink-2" : "text-danger")}>
                   {e.state === "uploading" && "Uploading"}
                   {e.state === "accepted" && "Accepted. It is queued for processing."}
                   {e.state === "rejected" && `Rejected: ${e.reason}`}

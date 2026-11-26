@@ -14,7 +14,7 @@ export function Topbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <header className="flex h-14 flex-none items-center gap-3 border-b border-line bg-surface px-4 md:px-6">
+    <header className="flex h-14 flex-none items-center gap-3 border-b border-line bg-surface px-page">
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon-sm" className="md:hidden" aria-label="Open navigation">

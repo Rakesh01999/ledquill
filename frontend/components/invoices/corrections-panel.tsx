@@ -16,13 +16,13 @@ function show(field: string, value: string | null) {
 /** The audit trail: what a reviewer changed, from what, and when (newest first). */
 export function CorrectionsPanel({ corrections }: { corrections: InvoiceOut["corrections"] }) {
   if (corrections.length === 0) {
-    return <p className="px-4 py-6 text-center text-[13px] text-ink-2">No corrections yet.</p>;
+    return <p className="px-4 py-6 text-center text-table text-ink-2">No corrections yet.</p>;
   }
   const rows = [...corrections].sort((a, b) => b.created_at.localeCompare(a.created_at));
   return (
     <ul className="divide-y divide-line">
       {rows.map((c, i) => (
-        <li key={`${c.field}-${c.created_at}-${i}`} className="px-4 py-2.5 text-[13px]">
+        <li key={`${c.field}-${c.created_at}-${i}`} className="px-4 py-2.5 text-table">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <span className="font-medium">{FIELD_LABELS[c.field] ?? c.field}</span>
             <span className="text-xs text-ink-3" suppressHydrationWarning>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SlidingTabs } from "@/components/shared/sliding-tabs";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 import { api, unwrap } from "@/lib/api/client";
 import type { PageOut } from "@/lib/api/types";
@@ -153,11 +154,6 @@ export function SourcePanel({
   const [ownIndex, setOwnIndex] = useState(0);
   const [view, setView] = useState<"image" | "text">("image");
   const [open, setOpen] = useState(false);
-  const activeSheet = useRef<HTMLButtonElement>(null);
-  // Keep the selected sheet tab in view when the strip scrolls sideways (many sheets, narrow screen).
-  useEffect(() => {
-    activeSheet.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [ownIndex, controlledPage]);
 
   if (isPending) {
     return <Skeleton className="h-[380px] w-full bg-skeleton" role="status" aria-label="Loading pages" />;
@@ -200,28 +196,12 @@ export function SourcePanel({
     <div className={cn("flex flex-col gap-3", fill && "min-h-0 lg:h-full", large && "h-full")}>
       {isSheet && total > 1 && (
         // One tab per sheet. The API gives the sheet's position, not its name, so the tabs say "Sheet 2".
-        <div
-          role="tablist"
-          aria-label="Sheets"
-          className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
-        >
-          {pages.map((p, i) => (
-            <button
-              key={p.page_no}
-              ref={i === current ? activeSheet : undefined}
-              type="button"
-              role="tab"
-              aria-selected={i === current}
-              onClick={() => setIndex(i)}
-              className={cn(
-                "flex-none rounded-md border px-2.5 py-1 text-xs whitespace-nowrap outline-none hover:bg-surface-2",
-                i === current ? "border-line-strong bg-primary-soft font-semibold text-link" : "border-line text-ink-2",
-              )}
-            >
-              Sheet {p.page_no}
-            </button>
-          ))}
-        </div>
+        <SlidingTabs
+          label="Sheets"
+          items={pages.map((p) => ({ key: String(p.page_no), label: `Sheet ${p.page_no}` }))}
+          value={String(pages[current]?.page_no ?? "")}
+          onValueChange={(key) => setIndex(pages.findIndex((p) => String(p.page_no) === key))}
+        />
       )}
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -233,7 +213,7 @@ export function SourcePanel({
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
         </Button>
-        <span className="min-w-24 text-center text-[13px] tabular-nums" aria-live="polite">
+        <span className="min-w-24 text-center text-table tabular-nums" aria-live="polite">
           {noun} {current + 1} / {total}
         </span>
         <Button

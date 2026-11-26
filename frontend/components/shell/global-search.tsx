@@ -172,7 +172,7 @@ export function GlobalSearch() {
         onClick={openPalette}
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K /"
-        className="relative hidden h-8 w-full max-w-[380px] items-center rounded-md border border-line bg-canvas pr-2 pl-8 text-left text-[13px] text-ink-3 outline-none hover:border-line-strong focus-visible:ring-2 focus-visible:ring-primary sm:flex"
+        className="relative hidden h-8 w-full max-w-[380px] items-center rounded-md border border-line bg-canvas pr-2 pl-8 text-left text-table text-ink-3 outline-none hover:border-line-strong focus-visible:ring-2 focus-visible:ring-primary sm:flex"
       >
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">Search invoices, documents, suppliers, amounts</span>
@@ -276,7 +276,7 @@ export function GlobalSearch() {
                         <Icon className="size-4 flex-none text-ink-2" aria-hidden="true" />
                         <span className="flex min-w-0 flex-1 flex-col">
                           <span className="flex items-center gap-2">
-                            <span className={cn("min-w-0 truncate text-[13px] font-medium", row.kind === "invoice" && "font-mono")}>
+                            <span className={cn("min-w-0 truncate text-table font-medium", row.kind === "invoice" && "font-mono")}>
                               <Highlight text={row.title} query={trimmed} />
                             </span>
                             {row.archived && (
@@ -327,7 +327,7 @@ export function GlobalSearch() {
                   className={cn("flex cursor-pointer items-center gap-3 px-3 py-2", current === rows.length && "bg-primary-soft")}
                 >
                   <Search className="size-4 flex-none text-ink-2" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 truncate text-[13px]">
+                  <span className="min-w-0 flex-1 truncate text-table">
                     See all invoice results for <span className="font-medium">“{trimmed}”</span>
                   </span>
                   {current === rows.length && <CornerDownLeft className="size-3.5 flex-none text-ink-3" aria-hidden="true" />}
@@ -336,20 +336,20 @@ export function GlobalSearch() {
             )}
 
             {!searchable && (
-              <p className="px-4 py-8 text-center text-[13px] text-ink-2">
+              <p className="px-4 py-8 text-center text-table text-ink-2">
                 {trimmed.length === 0
                   ? "Type an invoice number, supplier, amount such as 2,970.00, file name or id."
                   : `Type at least ${MIN_QUERY} characters.`}
               </p>
             )}
             {searchable && !pending && rows.length === 0 && !failed && (
-              <p className="px-4 py-8 text-center text-[13px] text-ink-2">
+              <p className="px-4 py-8 text-center text-table text-ink-2">
                 Nothing matches “<span className="break-all">{trimmed}</span>”. Check the spelling or try fewer words.
               </p>
             )}
             {failed && (
               <div role="alert" className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-                <p className="text-[13px] text-ink-2">
+                <p className="text-table text-ink-2">
                   {describeError(query.error).title}. {describeError(query.error).message}
                 </p>
                 <Button variant="outline" size="sm" onClick={() => void query.refetch()}>

@@ -5,7 +5,7 @@ import { TableSkeleton } from "@/components/shared/table-skeleton";
 /** Same structure as the archived screen: tab row, table card with its top bar. */
 export function ArchivedSkeleton() {
   return (
-    <div className="flex flex-col gap-5" aria-busy="true">
+    <div className="flex flex-col gap-section" aria-busy="true">
       <Skeleton className="h-[54px] rounded-lg bg-skeleton" />
       <div className="overflow-clip rounded-lg border border-line bg-surface">
         <div className="h-11 border-b border-line" />

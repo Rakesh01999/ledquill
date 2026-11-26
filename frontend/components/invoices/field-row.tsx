@@ -147,7 +147,7 @@ export function FieldRow({
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? errorId : undefined}
               className={cn(
-                "h-8 w-full rounded-md border bg-surface px-2.5 text-[13px] text-ink outline-none",
+                "h-8 w-full rounded-md border bg-surface px-2.5 text-table text-ink outline-none",
                 def.kind === "money" && "text-right tabular-nums",
                 error ? "border-danger" : "border-line-strong",
               )}
@@ -181,7 +181,7 @@ export function FieldRow({
                   : `Edit ${def.label}${shown ? `, current value ${shown}` : ", not found in document"}`
               }
               className={cn(
-                "group -mx-1.5 flex min-h-7 max-w-full items-center gap-1.5 rounded-md px-1.5 text-left text-[13px] font-medium outline-none hover:bg-surface-2",
+                "group -mx-1.5 flex min-h-7 max-w-full items-center gap-1.5 rounded-md px-1.5 text-left text-table font-medium outline-none hover:bg-surface-2",
                 def.kind === "money" && "tabular-nums",
               )}
             >

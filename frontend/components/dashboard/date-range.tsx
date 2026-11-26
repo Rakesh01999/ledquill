@@ -6,7 +6,7 @@ import { dashboardHref, PRESETS, type DashRange } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 
 const field =
-  "h-8 w-36 rounded-md border border-line-strong bg-surface px-2.5 text-[13px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-primary";
+  "h-8 w-36 rounded-md border border-line-strong bg-surface px-2.5 text-table text-ink outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
 /**
  * The dashboard's date range: presets as links and a custom From / To. Everything is in the URL, so

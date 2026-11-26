@@ -32,7 +32,7 @@ export function FileIssuesLine({ invoiceId, documentId }: { invoiceId: string; d
   const partial = data.total > items.length;
 
   return (
-    <div role="status" className="flex flex-col gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-[13px] text-ink">
+    <div role="status" className="flex flex-col gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-table text-ink">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p className="min-w-0 flex-1">
           {partial

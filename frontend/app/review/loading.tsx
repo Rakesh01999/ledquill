@@ -4,7 +4,7 @@ import { TableSkeleton } from "@/components/shared/table-skeleton";
 /** Same structure as the review screen: one table card with its top bar. */
 export function ReviewSkeleton() {
   return (
-    <div className="flex flex-col gap-4" aria-busy="true">
+    <div className="flex flex-col gap-section" aria-busy="true">
       <div className="overflow-clip rounded-lg border border-line bg-surface">
         <div className="h-11 border-b border-line" />
         <div className="h-9 border-b border-line bg-surface-2" />

@@ -8,7 +8,7 @@ import { Archive, ArchiveRestore, Check, ChevronLeft, ChevronRight, CircleHelp }
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SlidingTabs } from "@/components/shared/sliding-tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SourcePanel } from "@/components/documents/source-panel";
 import { BackButton } from "@/components/shared/back-button";
@@ -310,7 +310,7 @@ export function InvoiceDetail({ id }: { id: string }) {
           <>
             <StatusChip status={invoice.status} />
             {invoice.issues.length > 0 && (
-              <span className="text-[13px] font-medium">
+              <span className="text-table font-medium">
                 <span className={errors.length > 0 ? "text-danger" : "text-ink-2"}>
                   {plural(errors.length, "error", "errors")}
                 </span>
@@ -397,7 +397,7 @@ export function InvoiceDetail({ id }: { id: string }) {
         </div>
         }
       />
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-section">
       <InvoiceShortcuts handlers={shortcuts} />
       {actions.dialog}
       {archived && (
@@ -414,11 +414,11 @@ export function InvoiceDetail({ id }: { id: string }) {
         </ArchivedNotice>
       )}
       {blocked && !approved && !archived && (
-        <p id="approve-hint" className="text-[13px] text-ink-2">
+        <p id="approve-hint" className="text-table text-ink-2">
           Resolve {plural(errors.length, "error", "errors")} to approve this invoice.
         </p>
       )}
-      <p className="text-[13px] text-ink-2" suppressHydrationWarning>
+      <p className="text-table text-ink-2" suppressHydrationWarning>
         {filePosition && <span className="mr-2 font-medium text-ink">{filePosition}.</span>}
         {invoice.supplier_name ?? "Supplier not found"}
         {invoice.invoice_date ? ` · ${formatDate(invoice.invoice_date)}` : ""}
@@ -434,19 +434,24 @@ export function InvoiceDetail({ id }: { id: string }) {
       </p>
 
       {approve.error && <ProblemAlert error={approve.error} />}
-      <p role="status" className="min-h-0 text-[13px] text-ok empty:hidden">
+      <p role="status" className="min-h-0 text-table text-ok empty:hidden">
         {saved}
       </p>
 
-      {/* Only the strip is a Radix Tabs: the panels below stay as they are and follow the same `tab`
+      {/* Only the strip is a tab bar: the panels below stay as they are and follow the same `tab`
           state, so the banner, the Go-to buttons and the field markers keep switching tabs as before. */}
-      <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)} className="gap-0 lg:hidden">
-        <TabsList aria-label="Invoice sections">
-          <TabsTrigger value="source">Source</TabsTrigger>
-          <TabsTrigger value="fields">Fields</TabsTrigger>
-          <TabsTrigger value="issues">{issuesLabel}</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <SlidingTabs
+        label="Invoice sections"
+        className="lg:hidden"
+        fill
+        value={tab}
+        onValueChange={(key) => setTab(key as Tab)}
+        items={[
+          { key: "source", label: "Source" },
+          { key: "fields", label: "Fields" },
+          { key: "issues", label: issuesLabel },
+        ]}
+      />
 
       <div className={cn(tab !== "issues" && "max-lg:hidden")}>
         <div className="flex flex-col gap-3">
@@ -454,7 +459,7 @@ export function InvoiceDetail({ id }: { id: string }) {
           <IssuesBanner issues={invoice.issues} onGoToField={goToField} />
         </div>
         {invoice.issues.length === 0 && (
-          <p className="rounded-lg border border-line bg-surface px-4 py-3 text-[13px] text-ink-2 lg:hidden">
+          <p className="rounded-lg border border-line bg-surface px-4 py-3 text-table text-ink-2 lg:hidden">
             No validation issues.
           </p>
         )}
@@ -529,7 +534,7 @@ export function InvoiceDetail({ id }: { id: string }) {
           <CorrectionsPanel corrections={invoice.corrections} />
         </Section>
         <Section title="Extraction details">
-          <dl className="grid grid-cols-[132px_minmax(0,1fr)] gap-y-1.5 px-4 py-3 text-[13px]">
+          <dl className="grid grid-cols-[132px_minmax(0,1fr)] gap-y-1.5 px-4 py-3 text-table">
             <dt className="text-ink-2">Status</dt>
             <dd>
               <StatusChip status={invoice.status} />
@@ -571,7 +576,7 @@ export function InvoiceDetailSkeleton() {
       title={<Skeleton className="h-6 w-56 bg-skeleton" />}
       actions={<Skeleton className="h-9 w-36 bg-skeleton" />}
     />
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-4" aria-busy="true">
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-section" aria-busy="true">
       <Skeleton className="h-4 w-80 bg-skeleton" />
       <Skeleton className="h-24 w-full rounded-lg bg-skeleton" />
       <div className="grid gap-4 lg:grid-cols-2">

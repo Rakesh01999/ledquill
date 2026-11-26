@@ -95,7 +95,7 @@ export function InvoicesTable({
                   href={`/invoices/${inv.id}`}
                   data-row-link
                   onFocus={() => prefetchInvoice(queryClient, inv.id)}
-                  className="font-mono text-[13px] font-medium text-link hover:underline"
+                  className="font-mono text-table font-medium text-link hover:underline"
                 >
                   {inv.invoice_number ?? <Missing />}
                   {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
@@ -161,7 +161,7 @@ export function InvoicesTable({
               <Link
                 href={`/invoices/${inv.id}`}
                 onFocus={() => prefetchInvoice(queryClient, inv.id)}
-                className="flex-none font-mono text-[13px] font-medium text-link hover:underline"
+                className="flex-none font-mono text-table font-medium text-link hover:underline"
               >
                 {inv.invoice_number ?? <Missing />}
                 {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}

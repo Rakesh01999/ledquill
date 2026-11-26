@@ -71,7 +71,7 @@ export function ConfirmDialog({
         {error && (
           <div
             role="alert"
-            className="rounded-md border border-danger/40 bg-danger-bg px-3 py-2 text-[13px] text-ink"
+            className="rounded-md border border-danger/40 bg-danger-bg px-3 py-2 text-table text-ink"
           >
             <p className="font-semibold text-danger">{error.title}</p>
             <p>{error.message}</p>

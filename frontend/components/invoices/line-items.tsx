@@ -13,7 +13,7 @@ const head = "text-xs font-medium text-ink-2";
 export function LineItems({ invoice, issues = [] }: { invoice: InvoiceOut; issues?: Issue[] }) {
   const items = invoice.line_items;
   if (items.length === 0) {
-    return <p className="px-4 py-6 text-center text-[13px] text-ink-2">No line items were found.</p>;
+    return <p className="px-4 py-6 text-center text-table text-ink-2">No line items were found.</p>;
   }
   const computed = sumDecimals(items.map((i) => i.amount));
   const printed = invoice.subtotal;

@@ -69,7 +69,7 @@ export function SearchInput({
         }}
         placeholder={placeholder}
         autoComplete="off"
-        className="h-8 w-full rounded-md border border-line-strong bg-surface pr-14 pl-8 text-[13px] text-ink outline-none placeholder:text-ink-3 focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-search-cancel-button]:hidden"
+        className="h-8 w-full rounded-md border border-line-strong bg-surface pr-14 pl-8 text-table text-ink outline-none placeholder:text-ink-3 focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="absolute top-1/2 right-1 flex -translate-y-1/2 items-center gap-0.5">
         {loading && <Loader2 className="size-3.5 animate-spin text-ink-3" role="status" aria-label="Searching" />}

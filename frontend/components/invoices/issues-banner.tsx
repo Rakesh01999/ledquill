@@ -97,7 +97,7 @@ export function IssuesBanner({
             className="flex scroll-mt-4 flex-wrap items-start gap-x-3 gap-y-1 py-2 outline-none target:bg-surface/50 focus-visible:ring-2 focus-visible:ring-primary"
           >
             <div className="min-w-0 flex-1">
-              <p className="flex flex-wrap items-center gap-x-2 text-[13px] text-ink">
+              <p className="flex flex-wrap items-center gap-x-2 text-table text-ink">
                 <span className={cn("font-semibold", issue.severity === "error" ? "text-danger" : "text-warn")}>
                   {issue.severity === "error" ? "Error" : "Warning"}
                 </span>
@@ -114,7 +114,7 @@ export function IssuesBanner({
                   {fieldName(issue)}
                 </span>
               </p>
-              <p className="text-[13px] text-ink">{issue.message}</p>
+              <p className="text-table text-ink">{issue.message}</p>
               {issue.rule_id === "V-09" && issue.expected && issue.actual ? (
                 <p className="mt-1 grid max-w-xl grid-cols-[auto_minmax(0,1fr)] gap-x-3 text-xs text-ink-2">
                   <span>This invoice:</span>

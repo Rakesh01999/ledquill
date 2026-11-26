@@ -5,7 +5,7 @@ import { TableSkeleton } from "@/components/shared/table-skeleton";
 /** Filter rows, then the table card. */
 export function InvoicesSkeleton() {
   return (
-    <div className="flex flex-col gap-4" aria-busy="true">
+    <div className="flex flex-col gap-section" aria-busy="true">
       <div className="flex flex-col gap-3">
         <div className="flex h-8 items-center gap-3">
           <Skeleton className="h-8 w-[380px] max-w-full bg-skeleton" />

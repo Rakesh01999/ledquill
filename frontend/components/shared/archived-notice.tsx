@@ -22,7 +22,7 @@ export function ArchivedNotice({
   return (
     <div
       role="status"
-      className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-line-strong bg-surface-2 px-4 py-3 text-[13px]"
+      className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-line-strong bg-surface-2 px-4 py-3 text-table"
     >
       <div className="min-w-0 flex-1 basis-64">
         <p className="font-semibold text-ink">{title}</p>

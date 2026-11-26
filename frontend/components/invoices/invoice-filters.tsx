@@ -20,7 +20,7 @@ const STATUS_SEGMENTS: { key: InvoiceListParams["status"] | "all"; label: string
 ];
 
 const field =
-  "h-8 rounded-md border border-line-strong bg-surface px-2.5 text-[13px] text-ink outline-none placeholder:text-ink-3";
+  "h-8 rounded-md border border-line-strong bg-surface px-2.5 text-table text-ink outline-none placeholder:text-ink-3";
 
 /** Change the URL only: replaceState while typing, so Back is not flooded with every keystroke. */
 function replaceUrl(params: InvoiceListParams) {

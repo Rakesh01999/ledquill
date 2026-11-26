@@ -121,7 +121,7 @@ export function IssuesInFile({ documentId, archived = false }: { documentId: str
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 bg-surface-2 px-4 py-1.5">
                   <Link
                     href={fromDocument(invoice.id, "#issues")}
-                    className="font-mono text-[13px] font-medium text-link hover:underline"
+                    className="font-mono text-table font-medium text-link hover:underline"
                   >
                     {invoice.invoice_number ?? <Missing />}
                     {!invoice.invoice_number && <span className="sr-only">Invoice without a number</span>}
@@ -137,7 +137,7 @@ export function IssuesInFile({ documentId, archived = false }: { documentId: str
                   {issues.map((issue, n) => (
                     <li
                       key={`${issue.rule_id}-${issue.field ?? ""}-${n}`}
-                      className={cn("flex flex-col gap-1 px-4 py-2.5 text-[13px]", ROW_GRID)}
+                      className={cn("flex flex-col gap-1 px-4 py-2.5 text-table", ROW_GRID)}
                     >
                       <span className="flex min-w-0 items-center gap-1.5">
                         <SeverityIcon severity={issue.severity} />

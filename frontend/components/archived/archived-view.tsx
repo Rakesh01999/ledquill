@@ -189,7 +189,7 @@ function InvoiceRows({ items, actions }: { items: InvoiceOut[]; actions: Actions
               <TableCell className="pl-4">
                 <Link
                   href={`/invoices/${inv.id}`}
-                  className="font-mono text-[13px] font-medium text-link hover:underline"
+                  className="font-mono text-table font-medium text-link hover:underline"
                 >
                   {inv.invoice_number ?? <Missing />}
                   {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
@@ -226,7 +226,7 @@ function InvoiceRows({ items, actions }: { items: InvoiceOut[]; actions: Actions
             <div className="flex items-baseline gap-3">
               <Link
                 href={`/invoices/${inv.id}`}
-                className="flex-none font-mono text-[13px] font-medium text-link hover:underline"
+                className="flex-none font-mono text-table font-medium text-link hover:underline"
               >
                 {inv.invoice_number ?? <Missing />}
                 {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
@@ -279,7 +279,7 @@ export function ArchivedView() {
   const noun = tab === "documents" ? "document" : "invoice";
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-section">
       <Toolbar>
         <div className="flex">
           <SegmentedFilter

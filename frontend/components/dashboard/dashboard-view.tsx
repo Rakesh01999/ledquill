@@ -90,7 +90,7 @@ function NoInvoices({ clearHref }: { clearHref: string | null }) {
       title="No invoices in this date range."
       action={
         clearHref ? (
-          <Link href={clearHref} className="text-[13px] font-medium text-link hover:underline">
+          <Link href={clearHref} className="text-table font-medium text-link hover:underline">
             Show all time
           </Link>
         ) : undefined
@@ -125,7 +125,7 @@ export function DashboardView() {
         <EmptyState
           title="No documents yet. Upload files to see pipeline figures."
           action={
-            <Link href="/documents" className="text-[13px] font-medium text-link hover:underline">
+            <Link href="/documents" className="text-table font-medium text-link hover:underline">
               Go to documents
             </Link>
           }
@@ -159,9 +159,9 @@ export function DashboardView() {
   }));
 
   return (
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-section">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-        <p className="text-[13px] text-ink-2">
+        <p className="text-table text-ink-2">
           Invoice figures for <span className="font-medium text-ink">{scope}</span>, by invoice date. Documents and
           pipeline figures cover all uploads.
         </p>
@@ -328,7 +328,7 @@ export function DashboardView() {
                             href={`/invoices/${inv.id}?queue=1`}
                             className="flex flex-col gap-0.5 px-4 py-2.5 outline-none hover:bg-surface-2/60 focus-visible:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
                           >
-                            <span className="flex items-baseline justify-between gap-3 text-[13px]">
+                            <span className="flex items-baseline justify-between gap-3 text-table">
                               <span className="min-w-0 truncate font-mono font-medium text-link">
                                 {inv.invoice_number ?? "No invoice number"}
                               </span>
@@ -352,7 +352,7 @@ export function DashboardView() {
                   </ul>
                   <Link
                     href="/review"
-                    className="border-t border-line px-4 py-2 text-[13px] font-medium text-link outline-none hover:underline focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+                    className="border-t border-line px-4 py-2 text-table font-medium text-link outline-none hover:underline focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
                   >
                     Open the review queue ({s.needs_review})
                   </Link>
@@ -378,7 +378,7 @@ export function DashboardView() {
                           href={`/documents/${doc.id}`}
                           className="flex flex-col gap-1 px-4 py-2.5 outline-none hover:bg-surface-2/60 focus-visible:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
                         >
-                          <span className="truncate text-[13px] font-medium text-link" title={doc.filename}>
+                          <span className="truncate text-table font-medium text-link" title={doc.filename}>
                             {doc.filename}
                           </span>
                           <span className="flex items-center gap-2 text-xs text-ink-2">
@@ -391,7 +391,7 @@ export function DashboardView() {
                   </ul>
                   <Link
                     href="/documents"
-                    className="border-t border-line px-4 py-2 text-[13px] font-medium text-link outline-none hover:underline focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
+                    className="border-t border-line px-4 py-2 text-table font-medium text-link outline-none hover:underline focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
                   >
                     All documents ({s.documents.total})
                   </Link>
@@ -443,7 +443,7 @@ export function DashboardView() {
 
         <Panel title="Average time per step">
           {stages.length === 0 ? (
-            <p className="px-4 py-6 text-center text-[13px] text-ink-2">No steps have finished yet.</p>
+            <p className="px-4 py-6 text-center text-table text-ink-2">No steps have finished yet.</p>
           ) : (
             <RowBars
               label="Average time per pipeline step"
@@ -464,7 +464,7 @@ export function DashboardView() {
 /** Same blocks as the page: range row, key figures, the charts and the lists. */
 export function DashboardSkeleton() {
   return (
-    <div className="mx-auto flex max-w-[1280px] flex-col gap-4" aria-busy="true">
+    <div className="mx-auto flex max-w-[1280px] flex-col gap-section" aria-busy="true">
       <Skeleton className="h-8 w-full max-w-xl bg-skeleton" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {Array.from({ length: 5 }, (_, i) => (

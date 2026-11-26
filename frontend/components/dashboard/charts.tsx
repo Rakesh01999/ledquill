@@ -189,7 +189,7 @@ export function RowBars({ rows, label, className }: { rows: Row[]; label: string
         );
         const inner = (
           <>
-            <span className="flex items-baseline gap-3 text-[13px]">
+            <span className="flex items-baseline gap-3 text-table">
               {name}
               <span className="flex-none text-right tabular-nums">{row.text}</span>
             </span>
@@ -259,7 +259,7 @@ export function StackedBar({ segments, label }: { segments: Segment[]; label: st
             );
           })}
       </div>
-      <ul className="flex flex-col gap-1.5 text-[13px]">
+      <ul className="flex flex-col gap-1.5 text-table">
         {segments.map((s) => {
           const body = (
             <>

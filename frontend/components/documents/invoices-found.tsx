@@ -119,7 +119,7 @@ export function InvoicesFound({
       {pageItems.map((inv) => (
         <li key={inv.id} className="flex flex-col gap-2 px-4 py-3">
           <div className="flex items-baseline gap-3">
-            <Link href={fromDocument(inv.id)} className="flex-none font-mono text-[13px] font-medium text-link hover:underline">
+            <Link href={fromDocument(inv.id)} className="flex-none font-mono text-table font-medium text-link hover:underline">
               {inv.invoice_number ?? <Missing />}
               {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
             </Link>

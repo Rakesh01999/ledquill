@@ -57,12 +57,12 @@ export function InvoicesView() {
   }, [list.data, list.isPlaceholderData, params, searchMode]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-section">
       <Toolbar>
         <InvoiceFilters params={params} searching={Boolean(params.q) && active.isFetching} />
       </Toolbar>
 
-      <div className="flex min-h-5 flex-col gap-1 text-[13px] text-ink-2" role="status">
+      <div className="flex min-h-5 flex-col gap-1 text-table text-ink-2" role="status">
         {searchMode && search.data && (
           <>
             {shown > 0 && (
@@ -113,14 +113,14 @@ export function InvoicesView() {
                 searchMode ? (
                   <ShallowLink
                     href={invoicesHref({ ...params, q: undefined, page: 1 })}
-                    className="text-[13px] font-medium text-link hover:underline"
+                    className="text-table font-medium text-link hover:underline"
                   >
                     Clear search
                   </ShallowLink>
                 ) : filtered ? (
                   <ShallowLink
                     href={invoicesHref({ page: 1, size: params.size })}
-                    className="text-[13px] font-medium text-link hover:underline"
+                    className="text-table font-medium text-link hover:underline"
                   >
                     Clear filters
                   </ShallowLink>

@@ -83,7 +83,7 @@ function Stage({ doc, wrap = false }: { doc: DocumentOut; wrap?: boolean }) {
         <button
           type="button"
           onClick={openUploadPicker}
-          className="-my-1 w-fit cursor-pointer rounded-sm py-1 text-[13px] font-medium text-link hover:underline"
+          className="-my-1 w-fit cursor-pointer rounded-sm py-1 text-table font-medium text-link hover:underline"
         >
           Upload a new copy
         </button>

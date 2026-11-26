@@ -55,7 +55,7 @@ export function ReviewView() {
             <EmptyState
               title="Nothing needs review."
               action={
-                <Link href="/documents" className="text-[13px] font-medium text-link hover:underline">
+                <Link href="/documents" className="text-table font-medium text-link hover:underline">
                   Go to documents
                 </Link>
               }
@@ -88,7 +88,7 @@ export function ReviewView() {
                           href={`/invoices/${inv.id}?queue=1`}
                           data-row-link
                           onFocus={() => prefetchInvoice(queryClient, inv.id)}
-                          className="font-mono text-[13px] font-medium text-link hover:underline"
+                          className="font-mono text-table font-medium text-link hover:underline"
                         >
                           {inv.invoice_number ?? <Missing />}
                           {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
@@ -164,7 +164,7 @@ export function ReviewView() {
                       className="flex flex-col gap-1.5 px-4 py-3 hover:bg-surface-2/60"
                     >
                       <span className="flex items-baseline gap-3">
-                        <span className="flex-none font-mono text-[13px] font-medium text-link">
+                        <span className="flex-none font-mono text-table font-medium text-link">
                           {inv.invoice_number ?? <Missing />}
                           {!inv.invoice_number && <span className="sr-only">Invoice without a number</span>}
                         </span>
@@ -176,7 +176,7 @@ export function ReviewView() {
                           {inv.currency && <span className="ml-1 text-xs text-ink-3">{inv.currency}</span>}
                         </span>
                       </span>
-                      <span className="flex items-start gap-2 text-[13px]">
+                      <span className="flex items-start gap-2 text-table">
                         {issue ? (
                           <>
                             {issue.severity === "error" ? (

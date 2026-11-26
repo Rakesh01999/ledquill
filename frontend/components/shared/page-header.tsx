@@ -29,7 +29,7 @@ export function PageHeader({
   return (
     <div
       data-page-header
-      className="sticky -top-4 z-20 -mx-4 -mt-4 mb-4 border-b border-line bg-canvas px-4 py-2.5 md:-top-6 md:-mx-6 md:-mt-6 md:mb-6 md:px-6">
+      className="sticky -top-page z-20 -mx-page -mt-page mb-section border-b border-line bg-canvas px-page py-2.5">
       <StickyOffset />
       <div className="mx-auto flex max-w-[1280px] flex-col gap-1">
         {crumbs.length > 0 && (

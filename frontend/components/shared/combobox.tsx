@@ -121,7 +121,7 @@ export function Combobox({
             aria-expanded={open}
             aria-labelledby={`${id}-label ${id}-value`}
             className={cn(
-              "flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-line-strong bg-surface px-2.5 text-left text-[13px] outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary",
+              "flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-line-strong bg-surface px-2.5 text-left text-table outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary",
               selected.length === 0 ? "text-ink-3" : "text-ink",
             )}
           >
@@ -155,7 +155,7 @@ export function Combobox({
             onKeyDown={onKeyDown}
             placeholder={searchPlaceholder}
             autoComplete="off"
-            className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-3"
+            className="h-9 min-w-0 flex-1 bg-transparent text-table text-ink outline-none placeholder:text-ink-3"
           />
           {loading && <Loader2 className="size-3.5 flex-none animate-spin text-ink-3" aria-label="Loading" />}
         </div>
@@ -181,7 +181,7 @@ export function Combobox({
                 onClick={() => toggle(option.value)}
                 onMouseMove={() => setActive(i)}
                 className={cn(
-                  "flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-[13px] text-ink",
+                  "flex cursor-pointer items-center gap-2 px-2.5 py-1.5 text-table text-ink",
                   i === current && "bg-surface-2",
                 )}
               >
@@ -197,7 +197,7 @@ export function Combobox({
           })}
         </ul>
         {shown.length === 0 && (
-          <p role="status" className="px-3 py-4 text-center text-[13px] text-ink-2">
+          <p role="status" className="px-3 py-4 text-center text-table text-ink-2">
             {error ? "Could not load the list." : loading ? "Loading" : emptyText}
           </p>
         )}
