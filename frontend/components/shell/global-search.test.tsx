@@ -6,8 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import type { GlobalSearchData } from "@/lib/global-search";
 import { GlobalSearch } from "./global-search";
 
-const mocks = vi.hoisted(() => ({ push: vi.fn(), get: vi.fn() }));
+const mocks = vi.hoisted(() => ({ push: vi.fn(), get: vi.fn(), setTheme: vi.fn(), theme: { resolved: "light" } }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
+vi.mock("next-themes", () => ({
+  useTheme: () => ({ resolvedTheme: mocks.theme.resolved, setTheme: mocks.setTheme }),
+}));
 vi.mock("@/lib/api/client", () => ({
   api: { GET: mocks.get },
   unwrap: async (call: Promise<{ data?: unknown; error?: unknown }>) => {
@@ -55,6 +58,8 @@ const searchBox = () => screen.findByRole("combobox", { name: /search invoices/i
 beforeEach(() => {
   mocks.push.mockReset();
   mocks.get.mockReset();
+  mocks.setTheme.mockReset();
+  mocks.theme.resolved = "light";
   mocks.get.mockImplementation(async (_path: string, init: { params: { query: { q: string } } }) => {
     const q = init.params.query.q;
     if (q === "none") return { data: result({ q }), response: { ok: true } };
@@ -114,9 +119,9 @@ describe("searching", () => {
     mount();
     await user.keyboard("{Control>}k{/Control}");
     const box = await searchBox();
-    expect(screen.getByText(/Type an invoice number/)).toBeInTheDocument();
+    expect(screen.getByText(/Or search invoices and documents/)).toBeInTheDocument();
     await user.type(box, "a");
-    expect(screen.getByText("Type at least 2 characters.")).toBeInTheDocument();
+    expect(screen.getByText("Type at least 2 characters to search invoices and documents.")).toBeInTheDocument();
     await user.type(box, "cme");
     await waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(1), { timeout: 2000 });
     expect(mocks.get.mock.calls[0]?.[1].params.query).toEqual({ q: "acme", limit: 5 });
@@ -128,13 +133,12 @@ describe("searching", () => {
     await user.keyboard("{Control>}k{/Control}");
     await user.type(await searchBox(), "acme");
     const list = await screen.findByRole("listbox", { name: "Search results" });
-    await within(list).findByText("Suppliers");
-    expect(within(list).getByRole("group", { name: "Invoices" })).toBeInTheDocument();
+    expect(await within(list).findByRole("group", { name: "Invoices" })).toBeInTheDocument();
+    expect(within(list).queryByText("Suppliers")).toBeNull();
     const archived = within(list).getByRole("group", { name: /Archived/ });
     expect(within(archived).getByText("OLD-1")).toBeInTheDocument();
     expect(within(archived).getAllByText("Archived").length).toBeGreaterThan(0);
     expect(list.querySelectorAll("mark").length).toBeGreaterThan(0);
-    expect(within(list).getByRole("option", { name: /See all invoice results for/ })).toBeInTheDocument();
   });
 
   it("never renders what the user typed as markup", async () => {
@@ -145,7 +149,7 @@ describe("searching", () => {
     await screen.findByRole("listbox");
     await waitFor(() => expect(mocks.get).toHaveBeenCalled());
     expect(document.querySelector("img[src='x']")).toBeNull();
-    expect(screen.getByRole("option", { name: /See all invoice results/ }).textContent).toContain("<img src=x onerror=alert(1)>");
+    expect(screen.queryByRole("option", { name: /See all/ })).toBeNull();
   });
 
   it("moves with the arrow keys and opens the chosen row with Enter", async () => {
@@ -153,8 +157,9 @@ describe("searching", () => {
     mount();
     await user.keyboard("{Control>}k{/Control}");
     const box = await searchBox();
-    await user.type(box, "inv");
-    await screen.findByRole("option", { name: /INV\s*-?\s*2970/ });
+    // Invoice-like text matches no page, so the first option is the first invoice.
+    await user.type(box, "INV-297");
+    await screen.findByRole("option", { name: /INV-297\s*0/ });
     expect(box).toHaveAttribute("aria-activedescendant", screen.getAllByRole("option")[0]?.id);
     await user.keyboard("{ArrowDown}");
     expect(screen.getAllByRole("option")[1]).toHaveAttribute("aria-selected", "true");
@@ -163,31 +168,26 @@ describe("searching", () => {
     await waitFor(() => expect(screen.queryByRole("combobox")).toBeNull());
   });
 
-  it("opens an archived invoice, a supplier and 'see all' with the right URLs", async () => {
+  it("opens an archived invoice from its row, and offers no supplier or 'see all' row", async () => {
     const user = userEvent.setup();
     mount();
     await user.keyboard("{Control>}k{/Control}");
     await user.type(await searchBox(), "acme");
-    await user.click(await screen.findByRole("option", { name: /OLD-1/ }));
+    expect(await screen.findByRole("option", { name: /INV-2970/ })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /invoices$/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /See all/ })).toBeNull();
+    await user.click(screen.getByRole("option", { name: /OLD-1/ }));
     expect(mocks.push).toHaveBeenLastCalledWith("/invoices/a1");
-    await user.keyboard("{Control>}k{/Control}");
-    await user.type(await searchBox(), "acme");
-    await user.click(await screen.findByRole("option", { name: /Acme Supplies Ltd.*2 invoices/ }));
-    expect(mocks.push).toHaveBeenLastCalledWith("/invoices?supplier=Acme+Supplies+Ltd&size=25".replace("&size=25", ""));
-    await user.keyboard("{Control>}k{/Control}");
-    await user.type(await searchBox(), "acme ltd");
-    await user.click(await screen.findByRole("option", { name: /See all invoice results/ }));
-    expect(mocks.push).toHaveBeenLastCalledWith("/invoices?q=acme+ltd");
   });
 
-  it("says so when nothing matches, and Enter still offers the full list", async () => {
+  it("says so when nothing matches, and Enter goes nowhere (it never writes a page filter)", async () => {
     const user = userEvent.setup();
     mount();
     await user.keyboard("{Control>}k{/Control}");
     await user.type(await searchBox(), "none");
     expect(await screen.findByText(/Nothing matches/)).toBeInTheDocument();
     await user.keyboard("{Enter}");
-    expect(mocks.push).toHaveBeenCalledWith("/invoices?q=none");
+    expect(mocks.push).not.toHaveBeenCalled();
   });
 
   it("shows an error with a retry", async () => {
@@ -198,5 +198,100 @@ describe("searching", () => {
     await user.type(await searchBox(), "acme");
     expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+  });
+});
+
+describe("pages and actions", () => {
+  it("lists the pages and the theme action as soon as it opens, with no request", async () => {
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    await searchBox();
+    const names = screen.getAllByRole("option").map((o) => o.textContent);
+    expect(names).toEqual([
+      expect.stringContaining("Dashboard"),
+      expect.stringContaining("Documents"),
+      expect.stringContaining("Review queue"),
+      expect.stringContaining("Invoices"),
+      expect.stringContaining("Archived"),
+      expect.stringContaining("Toggle theme"),
+    ]);
+    expect(screen.getByRole("group", { name: "Pages and actions" })).toBeInTheDocument();
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
+  it("filters them as you type, before any server result, and still makes no request for one letter", async () => {
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    await user.type(await searchBox(), "r");
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([expect.stringContaining("Review queue")]);
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
+  it("opens the page of a chosen item, closes, and changes no filter or URL", async () => {
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    await user.click(await screen.findByRole("option", { name: /Documents/ }));
+    expect(mocks.push).toHaveBeenCalledTimes(1);
+    expect(mocks.push).toHaveBeenCalledWith("/documents");
+    await waitFor(() => expect(screen.queryByRole("combobox")).toBeNull());
+    expect(window.location.search).toBe("");
+  });
+
+  it("toggles the theme from the action and closes", async () => {
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    await user.type(await searchBox(), "dark");
+    await user.click(await screen.findByRole("option", { name: /Toggle theme/ }));
+    expect(mocks.setTheme).toHaveBeenCalledWith("dark");
+    expect(mocks.push).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole("combobox")).toBeNull());
+  });
+
+  it("switches back to light when the theme is dark", async () => {
+    mocks.theme.resolved = "dark";
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    await user.type(await searchBox(), "theme{Enter}");
+    expect(mocks.setTheme).toHaveBeenCalledWith("light");
+  });
+
+  it("typing never writes a page filter: the URL stays clean and Enter on invoice-like text opens the invoice", async () => {
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    await user.type(await searchBox(), "INV-2970");
+    await screen.findByRole("option", { name: /INV-2970/ });
+    expect(screen.queryByRole("group", { name: "Pages and actions" })).toBeNull();
+    await user.keyboard("{Enter}");
+    expect(mocks.push).toHaveBeenCalledTimes(1);
+    expect(mocks.push).toHaveBeenCalledWith("/invoices/i1");
+    expect(window.location.search).toBe("");
+  });
+
+  it("walks one list across both groups with the arrows, Home and End", async () => {
+    const user = userEvent.setup();
+    mount();
+    await user.keyboard("{Control>}k{/Control}");
+    const box = await searchBox();
+    await user.type(box, "do");
+    await screen.findByRole("option", { name: /INV-2970/ });
+    const options = () => screen.getAllByRole("option");
+    expect(options()[0]).toHaveTextContent("Documents");
+    expect(options()[0]).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{ArrowDown}");
+    expect(options()[1]).toHaveAttribute("aria-selected", "true");
+    expect(options()[1]).toHaveTextContent("INV-2970");
+    await user.keyboard("{End}");
+    expect(options()[options().length - 1]).toHaveAttribute("aria-selected", "true");
+    expect(options()[options().length - 1]).toHaveTextContent("OLD-1");
+    await user.keyboard("{ArrowDown}");
+    expect(options()[0]).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{ArrowUp}{Home}{Enter}");
+    expect(mocks.push).toHaveBeenCalledWith("/documents");
   });
 });

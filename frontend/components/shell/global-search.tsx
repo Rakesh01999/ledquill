@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Archive, Building2, CornerDownLeft, FileText, Loader2, Receipt, Search, type LucideIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Archive, CornerDownLeft, FileText, Loader2, Receipt, Search, type LucideIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/shared/status-chip";
@@ -14,18 +15,17 @@ import {
   MIN_QUERY,
   buildGroups,
   highlightParts,
-  seeAllHref,
   type ResultGroup,
   type ResultRow,
 } from "@/lib/global-search";
 import { useShortcuts } from "@/lib/shortcuts";
 import { globalSearchOptions } from "@/lib/query/options";
 import { cn } from "@/lib/utils";
+import { matchItems, type PaletteItem } from "./palette-items";
 
 const ICONS: Record<ResultRow["kind"], LucideIcon> = {
   invoice: Receipt,
   document: FileText,
-  supplier: Building2,
 };
 
 /** The text with the query marked. Plain React text nodes: user input can never become markup. */
@@ -54,6 +54,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
  */
 export function GlobalSearch() {
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -105,9 +106,11 @@ export function GlobalSearch() {
   // Results belong to `debounced`; while the text has moved on they are the previous ones, shown dimmed.
   const groups: ResultGroup[] = useMemo(() => (query.data && settled ? buildGroups(query.data) : []), [query.data, settled]);
   const rows = useMemo(() => groups.flatMap((g) => g.rows), [groups]);
-  const seeAll = searchable ? seeAllHref(trimmed) : null;
-  // The "see all" line is one more option after the results.
-  const optionCount = rows.length + (seeAll ? 1 : 0);
+  // Pages and the theme action: matched here, at once, with no request. They come before the
+  // server groups, and the keyboard walks one flat list (static items first).
+  const staticItems = useMemo(() => matchItems(trimmed), [trimmed]);
+  const staticCount = staticItems.length;
+  const optionCount = staticCount + rows.length;
   const current = Math.min(active, Math.max(0, optionCount - 1));
   const pending = searchable && (trimmed !== settled || query.isFetching);
   const stale = searchable && trimmed !== settled;
@@ -115,7 +118,7 @@ export function GlobalSearch() {
 
   useEffect(() => {
     list.current?.querySelector<HTMLElement>(`[data-index="${current}"]`)?.scrollIntoView({ block: "nearest" });
-  }, [current, rows.length]);
+  }, [current, optionCount]);
 
   /** Every way of closing (Escape, a click outside, a result, the Close button) ends up here. */
   function changeOpen(next: boolean) {
@@ -133,10 +136,19 @@ export function GlobalSearch() {
     router.push(href);
   }
 
+  function runItem(item: PaletteItem) {
+    if (item.kind === "page") go(item.href);
+    else {
+      close();
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    }
+  }
+
   function openAt(index: number) {
-    const row = rows[index];
+    const item = staticItems[index];
+    if (item) return runItem(item);
+    const row = rows[index - staticCount];
     if (row) go(row.href);
-    else if (seeAll) go(seeAll);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -146,8 +158,8 @@ export function GlobalSearch() {
     else if (event.key === "End") setActive(Math.max(0, optionCount - 1));
     else if (event.key === "Enter") {
       if (event.nativeEvent.isComposing) return;
-      if (optionCount > 0 && !stale) openAt(current);
-      else if (seeAll) go(seeAll);
+      // A page or action is current at once; a server row only once its results match the text.
+      if (optionCount > 0 && (current < staticCount || !stale)) openAt(current);
     } else return;
     event.preventDefault();
   }
@@ -160,9 +172,9 @@ export function GlobalSearch() {
       ? "Search failed."
       : pending
         ? "Searching"
-        : rows.length === 0
+        : optionCount === 0
           ? "No results."
-          : `${rows.length} ${rows.length === 1 ? "result" : "results"}`;
+          : `${optionCount} ${optionCount === 1 ? "result" : "results"}`;
 
   return (
     <>
@@ -172,7 +184,7 @@ export function GlobalSearch() {
         onClick={openPalette}
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K /"
-        className="relative hidden h-8 w-full max-w-[380px] items-center rounded-md border border-line-control bg-canvas pr-2 pl-8 text-left text-table text-ink-3 outline-none hover:border-line-strong focus-visible:ring-2 focus-visible:ring-primary sm:flex"
+        className="relative hidden h-8 w-full max-w-[380px] items-center rounded-md border border-line-control bg-canvas pr-2 pl-8 text-left text-table text-ink-3 outline-none hover:border-line-strong sm:flex"
       >
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">Search invoices, documents, suppliers, amounts</span>
@@ -205,31 +217,39 @@ export function GlobalSearch() {
           <DialogDescription id={`${id}-help`} className="sr-only">
             Search invoices, documents, suppliers and archived items. Arrow keys move, Enter opens, Escape closes.
           </DialogDescription>
-          <div className="flex items-center gap-2 border-b border-line px-3">
-            <Search className="size-4 flex-none text-ink-3" aria-hidden="true" />
-            <input
-              ref={input}
-              data-focus-inset
-              role="combobox"
-              aria-expanded={optionCount > 0}
-              aria-controls={listId}
-              aria-autocomplete="list"
-              aria-haspopup="listbox"
-              aria-label="Search invoices, documents, suppliers and amounts"
-              aria-activedescendant={optionCount > 0 ? `${id}-opt-${current}` : undefined}
-              value={text}
-              maxLength={MAX_QUERY}
-              onChange={(e) => {
-                setText(e.target.value);
-                setActive(0);
-              }}
-              onKeyDown={onKeyDown}
-              placeholder="Invoice number, supplier, amount, file name or id"
-              autoComplete="off"
-              spellCheck={false}
-              className="h-12 min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-ink-3"
-            />
-            {pending && <Loader2 className="size-4 flex-none animate-spin text-ink-3" role="status" aria-label="Searching" />}
+          {/* p-3 leaves room for the global 2px focus outline (offset 2px) inside the dialog's clip. */}
+          <div className="flex items-center gap-2 border-b border-line p-3">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
+              <input
+                ref={input}
+                role="combobox"
+                aria-expanded={optionCount > 0}
+                aria-controls={listId}
+                aria-autocomplete="list"
+                aria-haspopup="listbox"
+                aria-label="Search invoices, documents, suppliers and amounts"
+                aria-activedescendant={optionCount > 0 ? `${id}-opt-${current}` : undefined}
+                value={text}
+                maxLength={MAX_QUERY}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  setActive(0);
+                }}
+                onKeyDown={onKeyDown}
+                placeholder="Invoice number, supplier, amount, file name or id"
+                autoComplete="off"
+                spellCheck={false}
+                className="h-11 w-full rounded-md border border-line-control bg-surface pr-9 pl-9 text-table text-ink outline-none placeholder:text-ink-3 sm:h-10"
+              />
+              {pending && (
+                <Loader2
+                  className="absolute top-1/2 right-2.5 size-4 -translate-y-1/2 animate-spin text-ink-3"
+                  role="status"
+                  aria-label="Searching"
+                />
+              )}
+            </div>
             <Button variant="ghost" size="sm" className="sm:hidden" onClick={close}>
               Close
             </Button>
@@ -240,8 +260,40 @@ export function GlobalSearch() {
             id={listId}
             role="listbox"
             aria-label="Search results"
-            className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain", stale && "opacity-60 transition-opacity")}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           >
+            {staticCount > 0 && (
+              <div role="group" aria-labelledby={`${id}-g-pages`} className="py-1">
+                <div id={`${id}-g-pages`} className="px-3 pt-2 pb-1 text-xs font-medium text-ink-2">
+                  Pages and actions
+                </div>
+                {staticItems.map((item, i) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.key}
+                      id={`${id}-opt-${i}`}
+                      role="option"
+                      aria-selected={i === current}
+                      data-index={i}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onMouseMove={() => setActive(i)}
+                      onClick={() => runItem(item)}
+                      className={cn("flex min-h-11 cursor-pointer items-center gap-3 px-3 py-2", i === current && "bg-primary-soft")}
+                    >
+                      <Icon className="size-4 flex-none text-ink-2" aria-hidden="true" />
+                      <span className="min-w-0 flex-1 truncate text-table font-medium">
+                        <Highlight text={item.label} query={trimmed} />
+                      </span>
+                      <span className="flex-none text-xs text-ink-3">{item.kind === "page" ? "Page" : "Action"}</span>
+                      {i === current && <CornerDownLeft className="size-3.5 flex-none text-ink-3" aria-hidden="true" />}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {/* Only the server results dim while the text has moved on; pages and actions never do. */}
+            <div className={cn(stale && "opacity-60 transition-opacity")}>
             {groups.map((group, groupIndex) => {
               const start = starts[groupIndex] ?? 0;
               return (
@@ -254,7 +306,7 @@ export function GlobalSearch() {
                     )}
                   </div>
                   {group.rows.map((row, i) => {
-                    const index = start + i;
+                    const index = staticCount + start + i;
                     const Icon = row.archived ? Archive : ICONS[row.kind];
                     return (
                       <div
@@ -313,38 +365,20 @@ export function GlobalSearch() {
                 </div>
               );
             })}
-
-            {seeAll && (
-              <div className="border-t border-line py-1">
-                <div
-                  id={`${id}-opt-${rows.length}`}
-                  role="option"
-                  aria-selected={current === rows.length}
-                  data-index={rows.length}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onMouseMove={() => setActive(rows.length)}
-                  onClick={() => go(seeAll)}
-                  className={cn("flex cursor-pointer items-center gap-3 px-3 py-2", current === rows.length && "bg-primary-soft")}
-                >
-                  <Search className="size-4 flex-none text-ink-2" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 truncate text-table">
-                    See all invoice results for <span className="font-medium">“{trimmed}”</span>
-                  </span>
-                  {current === rows.length && <CornerDownLeft className="size-3.5 flex-none text-ink-3" aria-hidden="true" />}
-                </div>
-              </div>
-            )}
+            </div>
 
             {!searchable && (
-              <p className="px-4 py-8 text-center text-table text-ink-2">
+              <p className={cn("px-4 text-center text-table text-ink-2", staticCount > 0 ? "py-3" : "py-8")}>
                 {trimmed.length === 0
-                  ? "Type an invoice number, supplier, amount such as 2,970.00, file name or id."
-                  : `Type at least ${MIN_QUERY} characters.`}
+                  ? "Or search invoices and documents: type an invoice number, supplier, amount such as 2,970.00, file name or id."
+                  : `Type at least ${MIN_QUERY} characters to search invoices and documents.`}
               </p>
             )}
             {searchable && !pending && rows.length === 0 && !failed && (
-              <p className="px-4 py-8 text-center text-table text-ink-2">
-                Nothing matches “<span className="break-all">{trimmed}</span>”. Check the spelling or try fewer words.
+              <p className={cn("px-4 text-center text-table text-ink-2", staticCount > 0 ? "py-3" : "py-8")}>
+                {staticCount > 0 ? "No invoices or documents match" : "Nothing matches"} “
+                <span className="break-all">{trimmed}</span>”.
+                {staticCount > 0 ? "" : " Check the spelling or try fewer words."}
               </p>
             )}
             {failed && (

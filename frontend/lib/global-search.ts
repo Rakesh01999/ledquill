@@ -1,6 +1,4 @@
 import type { components } from "@/lib/api/schema";
-import { DEFAULT_PAGE_SIZE } from "@/lib/paging";
-import { invoicesHref } from "@/lib/invoices";
 import { formatDate, formatDecimal } from "@/lib/format";
 
 export type GlobalSearchData = components["schemas"]["GlobalSearch"];
@@ -9,13 +7,13 @@ export type GlobalSearchData = components["schemas"]["GlobalSearch"];
 export const MIN_QUERY = 2;
 export const MAX_QUERY = 200;
 
-export type GroupKey = "invoices" | "documents" | "suppliers" | "archived";
+export type GroupKey = "invoices" | "documents" | "archived";
 
 export type ResultRow = {
   key: string;
   group: GroupKey;
   /** Drives the icon. */
-  kind: "invoice" | "document" | "supplier";
+  kind: "invoice" | "document";
   title: string;
   /** Text the palette highlights the query in. */
   detail: string;
@@ -34,9 +32,6 @@ const money = (total: string | null, currency: string | null): string | null => 
 
 /** Secondary line: whatever is known, joined, never an empty "null". */
 const join = (...parts: (string | null | undefined)[]) => parts.filter(Boolean).join(" · ");
-
-/** The "see all" target: the Invoices list with this text as its search (Part 2 URL filters). */
-export const seeAllHref = (q: string): string => invoicesHref({ q, page: 1, size: DEFAULT_PAGE_SIZE });
 
 /** The groups the palette shows, in order, without the empty ones. */
 export function buildGroups(data: GlobalSearchData): ResultGroup[] {
@@ -69,21 +64,6 @@ export function buildGroups(data: GlobalSearchData): ResultGroup[] {
         href: `/documents/${d.id}`,
         archived: false,
         status: d.status,
-      })),
-    },
-    {
-      key: "suppliers",
-      label: "Suppliers",
-      more: data.suppliers.more,
-      rows: data.suppliers.items.map((s) => ({
-        key: `supplier:${s.supplier}`,
-        group: "suppliers",
-        kind: "supplier",
-        title: s.supplier,
-        detail: `${s.count} ${s.count === 1 ? "invoice" : "invoices"}`,
-        // The exact name, in the Part 2 filter URL: the list shows this supplier's invoices only.
-        href: invoicesHref({ supplier: [s.supplier], page: 1, size: DEFAULT_PAGE_SIZE }),
-        archived: false,
       })),
     },
     {

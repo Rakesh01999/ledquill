@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGroups, highlightParts, seeAllHref, type GlobalSearchData } from "./global-search";
+import { buildGroups, highlightParts, type GlobalSearchData } from "./global-search";
 
 const empty = { items: [], more: false };
 const data = (patch: Partial<GlobalSearchData>): GlobalSearchData => ({
@@ -57,16 +57,13 @@ describe("buildGroups", () => {
             { id: "i2", document_id: "d1", invoice_number: null, supplier_name: null, total: null, currency: null, invoice_date: null, status: "needs_review" },
           ],
         },
-        suppliers: { more: false, items: [{ supplier: "Acme Ltd", count: 1 }] },
       }),
     );
-    expect(groups.map((g) => g.key)).toEqual(["invoices", "suppliers"]);
+    expect(groups.map((g) => g.key)).toEqual(["invoices"]);
     const [first, second] = groups[0]!.rows;
     expect(first).toMatchObject({ title: "INV-1", detail: "Acme Ltd · USD 2,970.00 · 1 Sep 2026", href: "/invoices/i1", status: "ready", archived: false });
     expect(second).toMatchObject({ title: "No invoice number", detail: "Supplier not found" });
     expect(groups[0]!.more).toBe(true);
-    // a supplier opens the list filtered to that exact name
-    expect(groups[1]!.rows[0]).toMatchObject({ detail: "1 invoice", href: "/invoices?supplier=Acme+Ltd" });
   });
 
   it("keeps archived items in their own marked group and links them to their page", () => {
@@ -87,9 +84,9 @@ describe("buildGroups", () => {
     expect(document).toMatchObject({ archived: true, href: "/documents/d9", detail: "Document · PDF" });
   });
 
-  it("is empty when nothing matched, and builds the see-all URL from the Part 2 filters", () => {
+  it("is empty when nothing matched, and never builds a group for suppliers", () => {
     expect(buildGroups(data({}))).toEqual([]);
-    expect(seeAllHref("acme ltd")).toBe("/invoices?q=acme+ltd");
-    expect(seeAllHref("100%")).toBe("/invoices?q=100%25");
+    const withSupplier = data({ suppliers: { items: [{ supplier: "Acme", count: 2 }], more: false } });
+    expect(buildGroups(withSupplier)).toEqual([]);
   });
 });
