@@ -75,7 +75,7 @@ export function DocumentsView() {
             <ErrorState error={error} onRetry={() => void query.refetch()} />
           ) : data && data.items.length === 0 ? (
             <EmptyState
-              title={filtered ? "No documents match these filters." : "No documents yet. Drop files to start."}
+              title={filtered ? "No documents match these filters." : "No documents yet. Upload your first invoice."}
               action={
                 filtered ? (
                   <ShallowLink href={listHref({ page: 1, size: params.size })} className="text-[13px] font-medium text-link hover:underline">

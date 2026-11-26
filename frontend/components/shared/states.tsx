@@ -20,6 +20,11 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
       <div>
         <p className="text-sm font-semibold">{title}</p>
         <p className="mt-1 text-[13px] text-ink-2">{message}</p>
+        {error instanceof ApiProblem && error.requestId && (
+          <p className="mt-2 text-xs text-ink-3">
+            Reference: <span className="font-mono">{error.requestId}</span>
+          </p>
+        )}
       </div>
       {onRetry && !(error instanceof ApiProblem && error.status === 404) && (
         <Button variant="outline" size="sm" onClick={onRetry}>

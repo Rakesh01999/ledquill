@@ -12,6 +12,8 @@ export class ApiProblem extends Error {
   readonly blockingRules: string[];
   readonly retryAfter: number | null;
   readonly extra: Record<string, unknown>;
+  /** Id the server put in the 500 body and its log line; what to quote to an administrator. */
+  readonly requestId: string | null;
 
   constructor(status: number, body: unknown, retryAfter: number | null) {
     const b = isRecord(body) ? body : {};
@@ -25,6 +27,7 @@ export class ApiProblem extends Error {
     this.blockingRules = Array.isArray(b.blocking_rules) ? (b.blocking_rules as string[]) : [];
     this.retryAfter = retryAfter;
     this.extra = b;
+    this.requestId = typeof b.request_id === "string" && b.request_id ? b.request_id : null;
   }
 }
 
