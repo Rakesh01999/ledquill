@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import { Loader, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ export function RowAction({
   href,
   onClick,
   disabled,
+  pending = false,
   title,
   tone = "link",
   variant = "ghost",
@@ -31,6 +32,8 @@ export function RowAction({
   href?: string;
   onClick?: () => void;
   disabled?: boolean;
+  /** The action is running: the icon becomes a spinner and the button is disabled. */
+  pending?: boolean;
   /** Explains why the button is disabled; otherwise it names the action. */
   title?: string;
   tone?: "link" | "muted";
@@ -43,7 +46,7 @@ export function RowAction({
   const classes = cn(tone === "link" ? "text-link" : "text-ink-2", compact && "max-xl:px-2 max-xl:has-[>svg]:px-2", className);
   const content = (
     <>
-      <Icon aria-hidden="true" />
+      {pending ? <Loader aria-hidden="true" className="motion-safe:animate-spin" /> : <Icon aria-hidden="true" />}
       <span className={cn(compact && "max-xl:sr-only")}>{label}</span>
     </>
   );
@@ -66,7 +69,8 @@ export function RowAction({
       variant={variant}
       size="sm"
       className={classes}
-      disabled={disabled}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
       title={title ?? name ?? label}
       aria-label={name}
       onClick={onClick}

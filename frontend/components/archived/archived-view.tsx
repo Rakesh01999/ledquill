@@ -13,7 +13,7 @@ import { EmptyState, ErrorState } from "@/components/shared/states";
 import { TableBar } from "@/components/shared/table-bar";
 import { TableSkeleton } from "@/components/shared/table-skeleton";
 import { Toolbar } from "@/components/shared/toolbar";
-import { useArchiveActions } from "@/components/shared/use-archive";
+import { useConfirmedActions } from "@/components/shared/use-confirmed-actions";
 import { ArchiveRestore, ExternalLink } from "lucide-react";
 import { RowAction } from "@/components/shared/row-action";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -38,7 +38,7 @@ export function archivedHref(tab: Tab, page: number, size: number): string {
   return s ? `/archived?${s}` : "/archived";
 }
 
-type Actions = ReturnType<typeof useArchiveActions>;
+type Actions = ReturnType<typeof useConfirmedActions>;
 
 /**
  * A server that has not been updated ignores `archived=true` and returns every row. Rows that
@@ -63,8 +63,8 @@ function DocumentRows({ items, actions }: { items: DocumentOut[]; actions: Actio
         name={`Restore ${doc.filename}`}
         variant={variant}
         compact={compact}
-        disabled={actions.isBusy("document", doc.id)}
-        onClick={() => void actions.restore("document", doc.id, doc.filename)}
+        pending={actions.isBusy("document", doc.id)}
+        onClick={() => actions.askRestore("document", doc.id, doc.filename)}
       />
     </>
   );
@@ -163,8 +163,8 @@ function InvoiceRows({ items, actions }: { items: InvoiceOut[]; actions: Actions
         name={`Restore ${invoiceLabel(inv)}`}
         variant={variant}
         compact={compact}
-        disabled={actions.isBusy("invoice", inv.id)}
-        onClick={() => void actions.restore("invoice", inv.id, invoiceLabel(inv))}
+        pending={actions.isBusy("invoice", inv.id)}
+        onClick={() => actions.askRestore("invoice", inv.id, invoiceLabel(inv))}
       />
     </>
   );
@@ -260,7 +260,7 @@ export function ArchivedView() {
   const size = parseSize(searchParams.get("size") ?? undefined);
   const wanted = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const page = Number.isFinite(wanted) && wanted >= 1 ? wanted : 1;
-  const actions = useArchiveActions();
+  const actions = useConfirmedActions();
 
   const docParams = useMemo(() => ({ page, size, archived: true }), [page, size]);
   const documents = useQuery({ ...documentsOptions(api, docParams), enabled: tab === "documents" });
@@ -334,6 +334,7 @@ export function ArchivedView() {
           />
         )}
       </div>
+      {actions.dialog}
     </div>
   );
 }

@@ -114,7 +114,7 @@ export function DocumentDetail({ id }: { id: string }) {
               size="sm"
               disabled={running || actions.isBusy("document", id)}
               title={waiting}
-              onClick={() => void actions.restore("document", id, doc.filename)}
+              onClick={() => actions.askRestore("document", id, doc.filename)}
             >
               <ArchiveRestore aria-hidden="true" /> Restore
             </Button>
@@ -190,7 +190,7 @@ export function DocumentDetail({ id }: { id: string }) {
           title="This document is archived"
           restoring={actions.isBusy("document", id)}
           restoreLabel="Restore document"
-          onRestore={() => void actions.restore("document", id, doc.filename)}
+          onRestore={() => actions.askRestore("document", id, doc.filename)}
         >
           It and its invoices are hidden from lists, search, the review queue and the dashboard numbers, and no longer
           count as duplicates. Nothing was deleted. Restore it to edit, approve or reprocess.

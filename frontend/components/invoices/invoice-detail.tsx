@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, ArchiveRestore, Check, ChevronLeft, ChevronRight, CircleHelp } from "lucide-react";
+import { Archive, ArchiveRestore, Check, ChevronLeft, ChevronRight, CircleHelp, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -250,16 +250,16 @@ export function InvoiceDetail({ id }: { id: string }) {
     }
   }
 
+  // The button and the A shortcut both open the confirmation; the dialog runs this and shows a failure.
   function doApprove() {
-    approve.mutate(undefined, {
-      onSuccess: () => {
-        toast.success("Invoice approved");
-        if (inQueue) {
-          // Approving a clean invoice moves straight on to the next one in the queue.
-          if (nextId) router.push(hrefFor(nextId));
-          else router.push("/review");
-        }
-      },
+    if (!invoice) return;
+    actions.askApprove(invoiceLabel(invoice), async () => {
+      await approve.mutateAsync();
+      toast.success("Invoice approved");
+      if (inQueue) {
+        // Approving a clean invoice moves straight on to the next one in the queue.
+        router.push(nextId ? hrefFor(nextId) : "/review");
+      }
     });
   }
 
@@ -372,7 +372,7 @@ export function InvoiceDetail({ id }: { id: string }) {
                 variant="outline"
                 disabled={fileArchived || actions.isBusy("invoice", id)}
                 title={fileArchived ? "Restore the file first" : undefined}
-                onClick={() => void actions.restore("invoice", id, invoiceLabel(invoice))}
+                onClick={() => actions.askRestore("invoice", id, invoiceLabel(invoice))}
               >
                 <ArchiveRestore aria-hidden="true" /> Restore
               </Button>
@@ -391,7 +391,12 @@ export function InvoiceDetail({ id }: { id: string }) {
               disabled={approved || blocked || archived || approve.isPending}
               aria-describedby={blocked ? "approve-hint" : undefined}
             >
-              <Check aria-hidden="true" /> {approved ? "Approved" : approve.isPending ? "Approving" : "Approve invoice"}
+              {approve.isPending ? (
+                <Loader aria-hidden="true" className="motion-safe:animate-spin" />
+              ) : (
+                <Check aria-hidden="true" />
+              )}{" "}
+              {approved ? "Approved" : approve.isPending ? "Approving" : "Approve invoice"}
             </Button>
           </div>
         </div>
@@ -406,7 +411,7 @@ export function InvoiceDetail({ id }: { id: string }) {
           restoring={actions.isBusy("invoice", id)}
           disabled={fileArchived}
           restoreLabel="Restore invoice"
-          onRestore={() => void actions.restore("invoice", id, invoiceLabel(invoice))}
+          onRestore={() => actions.askRestore("invoice", id, invoiceLabel(invoice))}
         >
           It is hidden from lists, search, the review queue and the dashboard numbers, and no longer counts as a
           duplicate. Nothing was deleted. Restore it to edit or approve it.

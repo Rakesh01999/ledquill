@@ -23,10 +23,11 @@ const post = {
 } as const;
 
 /**
- * Archive, restore and reprocess, shared by every table and both detail pages. Archiving is
- * reversible, so there is no confirmation: a toast with Undo follows. Every call refreshes the
- * lists, the review queue and the dashboard numbers. A failure is shown as a toast with the
- * API's own reason ("the document is still processing"), never a generic message.
+ * Archive, restore and reprocess calls, shared by every table and both detail pages. Screens use
+ * them through `useConfirmedActions`, which asks first; the Undo toast of an Archive calls restore
+ * directly. Every call refreshes the lists, the review queue and the dashboard numbers. A failure
+ * is a toast with the API's own reason ("the document is still processing"), or shows in the
+ * confirmation dialog when `onError` is given, never a generic message.
  */
 export function useArchiveActions() {
   const queryClient = useQueryClient();
@@ -74,14 +75,31 @@ export function useArchiveActions() {
     async (kind: ArchiveKind, id: string, label: string, options?: CallOptions): Promise<boolean> => {
       const ok = await run(`${kind}:${id}`, () => post[`${kind}:archive`](id), options);
       if (ok) {
-        toast.success(`Archived ${label}`, {
+        // Undo turns this same toast into a loading toast, then a success or error one. The toast
+        // stays open on click (preventDefault) and a second click while it runs is ignored.
+        let undoing = false;
+        const toastId = toast.success(`Archived ${label}`, {
           duration: 8000,
-          action: { label: "Undo", onClick: () => void restore(kind, id, label) },
+          action: {
+            label: "Undo",
+            onClick: (event) => {
+              event.preventDefault();
+              if (undoing) return;
+              undoing = true;
+              toast.loading(`Restoring ${label}`, { id: toastId, action: undefined, duration: Infinity });
+              void run(`${kind}:${id}`, () => post[`${kind}:restore`](id), {
+                onError: (problem) =>
+                  toast.error(problem.title, { id: toastId, description: problem.message, action: undefined, duration: 4000 }),
+              }).then((restored) => {
+                if (restored) toast.success(`Restored ${label}`, { id: toastId, action: undefined, duration: 4000 });
+              });
+            },
+          },
         });
       }
       return ok;
     },
-    [run, restore],
+    [run],
   );
 
   const reprocess = useCallback(

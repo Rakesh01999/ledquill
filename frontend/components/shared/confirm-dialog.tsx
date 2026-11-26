@@ -14,10 +14,12 @@ import { Button } from "@/components/ui/button";
 import type { ProblemMessage } from "@/lib/api/problem";
 
 /**
- * The one confirmation dialog of the app (Archive, Reprocess). Radix gives it the focus trap, Esc
- * to close, and focus back to the button that opened it. Focus starts on the primary button, so
- * Enter confirms; Tab reaches Cancel. While the request runs both buttons are disabled and Esc
- * does nothing. A failure stays in the dialog as readable text, and the dialog stays open.
+ * The one confirmation dialog of the app (Restore, Archive, Reprocess, Approve). Radix gives it the
+ * focus trap, Esc to close, and focus back to the button that opened it. Focus starts on Cancel,
+ * so a stray Enter never changes data; a dialog that is the expected next step (Approve) sets
+ * `initialFocus="confirm"` so Enter confirms. `destructive` gives the confirm button the danger
+ * style. While the request runs both buttons are disabled and Esc does nothing. A failure stays in
+ * the dialog as readable text, and the dialog stays open.
  */
 export function ConfirmDialog({
   open,
@@ -30,6 +32,8 @@ export function ConfirmDialog({
   error,
   onConfirm,
   returnFocusTo,
+  initialFocus = "cancel",
+  destructive = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,14 +49,19 @@ export function ConfirmDialog({
    * dialog is opened from many row buttons, so the opener is passed in and focused on close.
    */
   returnFocusTo?: RefObject<HTMLElement | null>;
+  /** Which button gets focus when the dialog opens. */
+  initialFocus?: "cancel" | "confirm";
+  /** Danger style for the confirm button; only for operations that destroy data. */
+  destructive?: boolean;
 }) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   return (
     <AlertDialog open={open} onOpenChange={(next) => (pending ? undefined : onOpenChange(next))}>
       <AlertDialogContent
         onOpenAutoFocus={(event) => {
           event.preventDefault();
-          confirmRef.current?.focus();
+          (initialFocus === "confirm" ? confirmRef : cancelRef).current?.focus();
         }}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
@@ -85,8 +94,14 @@ export function ConfirmDialog({
           </div>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
-          <Button ref={confirmRef} type="button" disabled={pending} onClick={onConfirm}>
+          <AlertDialogCancel ref={cancelRef} disabled={pending}>Cancel</AlertDialogCancel>
+          <Button
+            ref={confirmRef}
+            type="button"
+            variant={destructive ? "destructive" : "default"}
+            disabled={pending}
+            onClick={onConfirm}
+          >
             {pending ? pendingLabel : confirmLabel}
           </Button>
         </AlertDialogFooter>
