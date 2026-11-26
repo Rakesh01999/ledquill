@@ -1,5 +1,6 @@
 """RFC 7807 problem+json error handling, registered once on the app."""
 
+import uuid
 from http import HTTPStatus
 
 from fastapi import FastAPI, Request
@@ -61,8 +62,17 @@ async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResp
 
 
 async def _unhandled_error(request: Request, exc: Exception) -> JSONResponse:
-    log.error("unhandled_error", path=request.url.path, error_type=type(exc).__name__)
-    return problem(500, "Internal server error")
+    # The id is the only handle a user can give an administrator; the same id is in the log line.
+    request_id = uuid.uuid4().hex[:12]
+    log.error(
+        "unhandled_error",
+        request_id=request_id,
+        path=request.url.path,
+        error_type=type(exc).__name__,
+    )
+    response = problem(500, "Internal server error", extra={"request_id": request_id})
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 
 def register_error_handlers(app: FastAPI) -> None:
