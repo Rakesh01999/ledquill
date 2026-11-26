@@ -202,7 +202,7 @@ export function UploadSection() {
           // Drag-over changes colour and adds a ring (no size change), so the zone never jumps.
           dragging
             ? "border-primary bg-primary-soft ring-2 ring-primary/30"
-            : "border-line-strong bg-surface hover:bg-surface-2/60",
+            : "border-line-control bg-surface hover:bg-surface-2/60",
         )}
       >
         <div

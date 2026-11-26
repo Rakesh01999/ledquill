@@ -121,7 +121,7 @@ export function Combobox({
             aria-expanded={open}
             aria-labelledby={`${id}-label ${id}-value`}
             className={cn(
-              "flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-line-strong bg-surface px-2.5 text-left text-table outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary",
+              "flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-line-control bg-surface px-2.5 text-left text-table outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-primary",
               selected.length === 0 ? "text-ink-3" : "text-ink",
             )}
           >

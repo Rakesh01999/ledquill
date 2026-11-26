@@ -105,7 +105,7 @@ export function SlidingTabs({ label, items, value, onValueChange, fill, classNam
       role="tablist"
       aria-label={label}
       className={cn(
-        "relative flex max-w-full min-w-0 overflow-x-auto rounded-md border border-line bg-surface text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "relative flex max-w-full min-w-0 overflow-x-auto rounded-md border border-line-control bg-surface text-table [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         fill && "w-full",
         className,
       )}
@@ -130,8 +130,8 @@ export function SlidingTabs({ label, items, value, onValueChange, fill, classNam
           className: cn(
             "relative z-10 px-2.5 py-1.5 whitespace-nowrap outline-none transition-colors duration-150 motion-reduce:transition-none",
             fill ? "flex-1" : "flex-none",
-            i > 0 && "border-l border-line",
-            active ? "font-semibold text-link" : "text-ink-2 hover:bg-surface-2",
+            i > 0 && "border-l border-line-control",
+            active ? "font-semibold text-link" : "font-medium text-ink-2 hover:bg-surface-2",
             active && "[[role=tablist]:not([data-ready])_&]:bg-primary-soft",
           ),
         };

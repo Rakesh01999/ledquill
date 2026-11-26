@@ -16,6 +16,8 @@
   --surface-2: #f1f3f6;
   --line: #e2e5eb;
   --line-strong: #cfd4dd;
+  /* Border of an interactive control (inputs, selects, tab bar). Same as --line-strong in light mode. */
+  --line-control: #cfd4dd;
   --ink: #14182b;
   --ink-2: #4e566a;
   --ink-3: #646b80;
@@ -47,9 +49,11 @@
   --surface-2: #1a1f38;
   --line: #252b47;
   --line-strong: #353c5e;
+  /* 3.18:1 on surface (WCAG 1.4.11); --line and --line-strong stay quiet for dividers and decoration. */
+  --line-control: #5a6595;
   --ink: #e7e9f2;
-  --ink-2: #a9afc6;
-  --ink-3: #9198b1;
+  --ink-2: #bbc1d6;
+  --ink-3: #a0a7c0;
   --primary: #4459d1;
   --primary-ink: #ffffff;
   --primary-soft: #1e2650;
@@ -92,7 +96,7 @@
   --color-accent-foreground: var(--link);
   --color-destructive: var(--danger);
   --color-border: var(--line);
-  --color-input: var(--line-strong);
+  --color-input: var(--line-control);
   --color-ring: var(--ring-color);
 
   /* product names */
@@ -101,6 +105,7 @@
   --color-surface-2: var(--surface-2);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-line-control: var(--line-control);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);

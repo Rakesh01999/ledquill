@@ -149,7 +149,7 @@ export function FieldRow({
               className={cn(
                 "h-8 w-full rounded-md border bg-surface px-2.5 text-table text-ink outline-none",
                 def.kind === "money" && "text-right tabular-nums",
-                error ? "border-danger" : "border-line-strong",
+                error ? "border-danger" : "border-line-control",
               )}
             />
             {error && (

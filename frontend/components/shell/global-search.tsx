@@ -172,7 +172,7 @@ export function GlobalSearch() {
         onClick={openPalette}
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K /"
-        className="relative hidden h-8 w-full max-w-[380px] items-center rounded-md border border-line bg-canvas pr-2 pl-8 text-left text-table text-ink-3 outline-none hover:border-line-strong focus-visible:ring-2 focus-visible:ring-primary sm:flex"
+        className="relative hidden h-8 w-full max-w-[380px] items-center rounded-md border border-line-control bg-canvas pr-2 pl-8 text-left text-table text-ink-3 outline-none hover:border-line-strong focus-visible:ring-2 focus-visible:ring-primary sm:flex"
       >
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">Search invoices, documents, suppliers, amounts</span>

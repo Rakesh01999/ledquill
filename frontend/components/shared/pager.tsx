@@ -67,7 +67,7 @@ export function Pager({ page, pageSize, total, hrefFor, sizeHref, onPageChange, 
               if (sizeHref) window.history.pushState(null, "", sizeHref(size));
               else onSizeChange?.(size);
             }}
-            className="h-7 rounded-md border border-line-strong bg-surface px-1.5 text-xs text-ink"
+            className="h-7 rounded-md border border-line-control bg-surface px-1.5 text-xs text-ink"
           >
             {PAGE_SIZES.map((n) => (
               <option key={n} value={n}>
